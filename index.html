@@ -21,15 +21,13 @@ body{
 body:before{
   content:"";
   position:fixed;
-  inset:-20%;
+  inset:0;
   z-index:-2;
-  background:
-    radial-gradient(circle at 10% 12%,#ff37c077,transparent 25%),
-    radial-gradient(circle at 88% 15%,#00eeff66,transparent 27%),
-    radial-gradient(circle at 78% 70%,#6941ff66,transparent 30%),
-    radial-gradient(circle at 22% 82%,#00ffaa44,transparent 25%),
-    linear-gradient(135deg,#24104f,#173c72 32%,#075b69 58%,#3c175d 82%,#24103f);
-  animation:bg 9s ease-in-out infinite alternate
+  background-image:url("IMG_7896.jpeg");
+  background-size:cover;
+  background-position:center top;
+  background-repeat:no-repeat;
+  background-attachment:fixed;
 }
 @keyframes bg{
   to{transform:scale(1.08) rotate(2deg);filter:hue-rotate(15deg)}
@@ -39,12 +37,7 @@ body:after{
   position:fixed;
   inset:0;
   z-index:-1;
-  opacity:.25;
-  background-image:
-    radial-gradient(#fff 1px,transparent 1px),
-    radial-gradient(#00ffff 1px,transparent 1px);
-  background-size:34px 34px,57px 57px;
-  animation:stars 16s linear infinite
+  background:rgba(0,0,0,.32);
 }
 @keyframes stars{
   to{background-position:120px 80px,80px 120px}
