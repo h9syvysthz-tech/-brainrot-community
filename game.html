@@ -1,1 +1,525 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>BRAINROT SCORE BATTLE</title>
 
+<style>
+*{
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
+}
+
+body{
+  margin:0;
+  min-height:100vh;
+  font-family:Arial,sans-serif;
+  color:white;
+  text-align:center;
+  background:
+    radial-gradient(circle at 20% 10%,#512da8 0,transparent 35%),
+    radial-gradient(circle at 80% 30%,#006064 0,transparent 35%),
+    linear-gradient(160deg,#080817,#15113a 55%,#071d2c);
+}
+
+.wrap{
+  width:min(94%,650px);
+  margin:auto;
+  padding:25px 0 50px;
+}
+
+h1{
+  margin:10px 0 4px;
+  font-size:32px;
+  background:linear-gradient(90deg,#66e8ff,#c778ff,#ffcf5a);
+  -webkit-background-clip:text;
+  color:transparent;
+}
+
+.sub{
+  color:#cbd3ef;
+  margin-bottom:25px;
+}
+
+.panel{
+  background:rgba(8,10,30,.82);
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:25px;
+  padding:24px 18px;
+  box-shadow:0 15px 50px rgba(0,0,0,.3);
+}
+
+input{
+  width:100%;
+  padding:16px;
+  border:1px solid #ffffff30;
+  border-radius:15px;
+  font-size:16px;
+  color:white;
+  background:#ffffff10;
+  outline:none;
+  margin:12px 0;
+}
+
+button{
+  border:0;
+  border-radius:16px;
+  padding:15px 22px;
+  font-size:17px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.mainButton{
+  width:100%;
+  color:#07111b;
+  background:linear-gradient(90deg,#52e5ff,#a97cff,#ffd45a);
+  margin-top:10px;
+}
+
+.stats{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+  margin-bottom:12px;
+}
+
+.stat{
+  padding:11px 4px;
+  background:#ffffff10;
+  border-radius:14px;
+}
+
+.stat small{
+  display:block;
+  color:#aeb8da;
+  font-size:11px;
+}
+
+.stat strong{
+  display:block;
+  font-size:21px;
+  margin-top:3px;
+}
+
+#gameScreen,
+#resultScreen{
+  display:none;
+}
+
+#arena{
+  position:relative;
+  height:430px;
+  overflow:hidden;
+  border-radius:23px;
+  background:
+    linear-gradient(#ffffff08,#ffffff02),
+    radial-gradient(circle at center,#25255a,#080817);
+  border:1px solid #ffffff20;
+  touch-action:manipulation;
+}
+
+.target{
+  position:absolute;
+  width:82px;
+  height:82px;
+  border:0;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:45px;
+  background:linear-gradient(145deg,#513b8e,#17204e);
+  box-shadow:0 0 22px #9d7cff99;
+  user-select:none;
+  transition:transform .08s;
+}
+
+.target:active{
+  transform:scale(.82);
+}
+
+.combo{
+  color:#ffd85a;
+}
+
+.resultScore{
+  font-size:52px;
+  font-weight:bold;
+  margin:10px 0;
+}
+
+.best{
+  color:#69efff;
+  font-weight:bold;
+}
+
+.ranking{
+  margin-top:22px;
+  text-align:left;
+}
+
+.rankRow{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  background:#ffffff0d;
+  border-radius:13px;
+  padding:12px 14px;
+  margin:7px 0;
+}
+
+.note{
+  margin-top:16px;
+  color:#aeb8da;
+  font-size:12px;
+  line-height:1.6;
+}
+
+.back{
+  display:inline-block;
+  color:#cfd6ff;
+  margin-top:25px;
+  text-decoration:none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="wrap">
+
+<h1>🧠 BRAINROT</h1>
+<h1>SCORE BATTLE</h1>
+
+<p class="sub">制限時間内にブレインロットを捕まえろ！</p>
+
+<div id="startScreen" class="panel">
+
+<h2>PLAYER NAME</h2>
+
+<p>ランキングに表示する名前を入力</p>
+
+<input
+  id="username"
+  maxlength="12"
+  placeholder="ユーザーネーム"
+  autocomplete="off"
+>
+
+<button id="startButton" class="mainButton">
+🎮 GAME START
+</button>
+
+<p class="note">
+出現するキャラクターを素早くタップ！<br>
+連続で捕まえるとコンボボーナス！
+</p>
+
+</div>
+
+
+<div id="gameScreen">
+
+<div class="stats">
+
+<div class="stat">
+<small>SCORE</small>
+<strong id="score">0</strong>
+</div>
+
+<div class="stat">
+<small>TIME</small>
+<strong id="time">30</strong>
+</div>
+
+<div class="stat">
+<small>COMBO</small>
+<strong id="combo" class="combo">0</strong>
+</div>
+
+</div>
+
+<div id="arena"></div>
+
+</div>
+
+
+<div id="resultScreen" class="panel">
+
+<h2>GAME OVER</h2>
+
+<p id="resultName"></p>
+
+<div class="resultScore" id="resultScore">0</div>
+
+<p>POINTS</p>
+
+<p class="best" id="bestText"></p>
+
+<button id="retryButton" class="mainButton">
+🔄 もう一度プレイ
+</button>
+
+<div class="ranking">
+
+<h3>🏆 RANKING</h3>
+
+<div id="rankingList"></div>
+
+</div>
+
+<p class="note">
+現在はこの端末内でのランキングです。<br>
+次の段階でオンラインランキングに接続します。
+</p>
+
+</div>
+
+<a class="back" href="index.html">
+← コミュニティサイトへ戻る
+</a>
+
+</div>
+
+
+<script>
+
+const startScreen=document.getElementById("startScreen");
+const gameScreen=document.getElementById("gameScreen");
+const resultScreen=document.getElementById("resultScreen");
+
+const startButton=document.getElementById("startButton");
+const retryButton=document.getElementById("retryButton");
+
+const usernameInput=document.getElementById("username");
+
+const arena=document.getElementById("arena");
+
+const scoreText=document.getElementById("score");
+const timeText=document.getElementById("time");
+const comboText=document.getElementById("combo");
+
+const resultName=document.getElementById("resultName");
+const resultScore=document.getElementById("resultScore");
+const bestText=document.getElementById("bestText");
+const rankingList=document.getElementById("rankingList");
+
+let score=0;
+let time=30;
+let combo=0;
+let timer=null;
+let playerName="";
+
+const characters=[
+  {icon:"🧠",points:10},
+  {icon:"🐊",points:15},
+  {icon:"🦈",points:20},
+  {icon:"🐉",points:30},
+  {icon:"👑",points:50}
+];
+
+let localRanking=[];
+
+try{
+  localRanking=JSON.parse(localStorage.getItem("brainrotRanking"))||[];
+}catch(e){
+  localRanking=[];
+}
+
+
+function startGame(){
+
+  const name=usernameInput.value.trim();
+
+  if(!name){
+    alert("ユーザーネームを入力してください！");
+    return;
+  }
+
+  playerName=name;
+  score=0;
+  combo=0;
+  time=30;
+
+  scoreText.textContent=score;
+  comboText.textContent=combo;
+  timeText.textContent=time;
+
+  startScreen.style.display="none";
+  resultScreen.style.display="none";
+  gameScreen.style.display="block";
+
+  spawnTarget();
+
+  clearInterval(timer);
+
+  timer=setInterval(()=>{
+
+    time--;
+    timeText.textContent=time;
+
+    if(time<=0){
+      endGame();
+    }
+
+  },1000);
+}
+
+
+function spawnTarget(){
+
+  arena.innerHTML="";
+
+  if(time<=0)return;
+
+  const data=
+    characters[Math.floor(Math.random()*characters.length)];
+
+  const target=document.createElement("button");
+
+  target.className="target";
+  target.type="button";
+  target.textContent=data.icon;
+
+  const maxX=Math.max(0,arena.clientWidth-90);
+  const maxY=Math.max(0,arena.clientHeight-90);
+
+  target.style.left=
+    Math.floor(Math.random()*maxX)+"px";
+
+  target.style.top=
+    Math.floor(Math.random()*maxY)+"px";
+
+
+  target.addEventListener("click",()=>{
+
+    combo++;
+
+    const bonus=
+      Math.min(Math.floor(combo/5)*5,30);
+
+    score+=data.points+bonus;
+
+    scoreText.textContent=score;
+    comboText.textContent=combo;
+
+    spawnTarget();
+
+  });
+
+  arena.appendChild(target);
+}
+
+
+function endGame(){
+
+  clearInterval(timer);
+  timer=null;
+
+  arena.innerHTML="";
+
+  gameScreen.style.display="none";
+  resultScreen.style.display="block";
+
+  resultName.textContent=playerName;
+  resultScore.textContent=score;
+
+  saveScore();
+
+}
+
+
+function saveScore(){
+
+  const old=
+    localRanking.find(x=>x.name===playerName);
+
+  if(!old){
+
+    localRanking.push({
+      name:playerName,
+      score:score
+    });
+
+  }else if(score>old.score){
+
+    old.score=score;
+
+  }
+
+  localRanking.sort((a,b)=>b.score-a.score);
+
+  localRanking=localRanking.slice(0,10);
+
+  try{
+    localStorage.setItem(
+      "brainrotRanking",
+      JSON.stringify(localRanking)
+    );
+  }catch(e){}
+
+  const best=
+    localRanking.find(x=>x.name===playerName);
+
+  bestText.textContent=
+    "BEST SCORE : "+(best?best.score:score);
+
+  showRanking();
+
+}
+
+
+function showRanking(){
+
+  rankingList.innerHTML="";
+
+  if(localRanking.length===0){
+    rankingList.textContent="まだ記録がありません";
+    return;
+  }
+
+  localRanking.forEach((item,index)=>{
+
+    const row=document.createElement("div");
+    row.className="rankRow";
+
+    const name=document.createElement("span");
+    const points=document.createElement("strong");
+
+    let medal=(index+1)+".";
+
+    if(index===0)medal="🥇";
+    if(index===1)medal="🥈";
+    if(index===2)medal="🥉";
+
+    name.textContent=
+      medal+" "+item.name;
+
+    points.textContent=
+      item.score+" PT";
+
+    row.appendChild(name);
+    row.appendChild(points);
+
+    rankingList.appendChild(row);
+
+  });
+
+}
+
+
+startButton.addEventListener("click",startGame);
+
+retryButton.addEventListener("click",()=>{
+
+  resultScreen.style.display="none";
+  startScreen.style.display="block";
+
+});
+
+</script>
+
+</body>
+</html>
