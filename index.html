@@ -489,7 +489,9 @@ footer{
 const databaseURL = "https://brainrot-score-battle-default-rtdb.asia-southeast1.firebasedatabase.app/";
 fetch(databaseURL + ".json")
   .then(response => response.json())
-  .then(data => console.log(data));
+.then(data => {
+  document.getElementById("memberCount").textContent = Number(data).toLocaleString() + "人";
+});
 </script>
 </body>
 </html>
