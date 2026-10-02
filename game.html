@@ -519,6 +519,16 @@ retryButton.addEventListener("click",()=>{
 
 });
 const rankingDatabaseURL = "https://brainrot-score-battle-default-rtdb.asia-southeast1.firebasedatabase.app";
+function saveRanking(name, score){
+  fetch(rankingDatabaseURL + "/ranking.json", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+      name: name,
+      score: score
+    })
+  });
+}
 </script>
 
 </body>
