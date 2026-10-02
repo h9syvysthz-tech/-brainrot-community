@@ -488,6 +488,7 @@ footer{
 <script>
 const databaseURL = "https://brainrot-score-battle-default-rtdb.asia-southeast1.firebasedatabase.app/";
 fetch(databaseURL + ".json")
+  .then(response => response.json())
 </script>
 </body>
 </html>
