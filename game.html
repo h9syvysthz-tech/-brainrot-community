@@ -515,7 +515,7 @@ onlineRanking.sort((a,b) => b.score - a.score);
  localRanking = onlineRanking; 
 showRanking();          
 }
-
+loadOnlineRanking();
 startButton.addEventListener("click",startGame);
 
 retryButton.addEventListener("click",()=>{
