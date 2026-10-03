@@ -508,7 +508,8 @@ function showRanking(){
   });
 
 }
-
+async function loadOnlineRanking(){const response = await fetch(rankingDatabaseURL + "/ranking.json");
+}
 
 startButton.addEventListener("click",startGame);
 
