@@ -509,6 +509,7 @@ function showRanking(){
 
 }
 async function loadOnlineRanking(){const response = await fetch(rankingDatabaseURL + "/ranking.json");
+const data = await response.json();                                   
 }
 
 startButton.addEventListener("click",startGame);
