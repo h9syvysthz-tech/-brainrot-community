@@ -508,6 +508,7 @@ function showRanking(){
   });
 
 }
+const rankingDatabaseURL = "https://brainrot-score-battle-default-rtdb.asia-southeast1.firebasedatabase.app";
 async function loadOnlineRanking(){const response = await fetch(rankingDatabaseURL + "/ranking.json");
 const data = await response.json();
 const onlineRanking = data ? Object.values(data) : [];
@@ -524,7 +525,7 @@ retryButton.addEventListener("click",()=>{
   startScreen.style.display="block";
 
 });
-const rankingDatabaseURL = "https://brainrot-score-battle-default-rtdb.asia-southeast1.firebasedatabase.app";
+  
 function saveRanking(name, score){
   fetch(rankingDatabaseURL + "/ranking.json", {
     method: "POST",
