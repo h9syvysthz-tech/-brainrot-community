@@ -512,7 +512,8 @@ async function loadOnlineRanking(){const response = await fetch(rankingDatabaseU
 const data = await response.json();
 const onlineRanking = data ? Object.values(data) : [];
 onlineRanking.sort((a,b) => b.score - a.score);
- localRanking = onlineRanking;                                  
+ localRanking = onlineRanking; 
+showRanking();          
 }
 
 startButton.addEventListener("click",startGame);
