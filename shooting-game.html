@@ -1,0 +1,2023 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>BRAINROT SHOOTING GAME</title>
+
+<style>
+*{
+  box-sizing:border-box;
+  user-select:none;
+  -webkit-user-select:none;
+  touch-action:none;
+}
+
+body{
+  margin:0;
+  background:#050b20;
+  color:white;
+  font-family:system-ui,sans-serif;
+}
+
+#boss-shooting-game{
+  max-width:720px;
+  margin:auto;
+}
+
+.bs-wrap{
+  background:#080d1c;
+  border:1px solid #334155;
+  border-radius:18px;
+  padding:14px;
+}
+
+.bs-head{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-bottom:10px;
+}
+
+.bs-stat{
+  background:#172033;
+  padding:8px 11px;
+  border-radius:10px;
+  font-weight:800;
+}
+
+.bs-field{
+  position:relative;
+  width:100%;
+  aspect-ratio:16/10;
+  min-height:300px;
+  background:linear-gradient(#070b18,#17213b);
+  border-radius:14px;
+  overflow:hidden;
+  border:1px solid #475569;
+}
+
+.bs-player{
+  position:absolute;
+  width:44px;
+  height:36px;
+  bottom:12px;
+  text-align:center;
+  font-size:30px;
+  line-height:36px;
+  z-index:5;
+}
+
+.bs-enemy{
+  position:absolute;
+  width:40px;
+  height:40px;
+  text-align:center;
+  font-size:29px;
+  line-height:40px;
+  z-index:3;
+}
+
+.bs-boss{
+  position:absolute;
+  width:100px;
+  height:80px;
+  text-align:center;
+  font-size:65px;
+  line-height:80px;
+  z-index:4;
+  left:calc(50% - 50px);
+  top:18px;
+}
+
+.bs-finalboss{
+  position:absolute;
+  width:130px;
+  height:100px;
+  text-align:center;
+  font-size:82px;
+  line-height:100px;
+  z-index:4;
+  left:calc(50% - 65px);
+  top:15px;
+}
+
+.bs-heal{
+  position:absolute;
+  width:40px;
+  height:40px;
+  text-align:center;
+  font-size:30px;
+  line-height:40px;
+  z-index:4;
+}
+
+.bs-bossbar,
+.bs-finalbar{
+  position:absolute;
+  top:8px;
+  left:18%;
+  width:64%;
+  height:14px;
+  background:#334155;
+  border-radius:10px;
+  overflow:hidden;
+  z-index:8;
+  display:none;
+}
+
+.bs-bossbar > div{
+  height:100%;
+  width:100%;
+  background:#ef4444;
+  transition:width .12s;
+}
+
+.bs-finalbar{
+  top:28px;
+}
+
+.bs-finalbar > div{
+  height:100%;
+  width:100%;
+  background:#a855f7;
+  transition:width .08s;
+}
+
+.bs-bullet{
+  position:absolute;
+  width:5px;
+  height:15px;
+  border-radius:5px;
+  background:#fff;
+  z-index:7;
+}
+
+.bs-bossbullet{
+  position:absolute;
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  background:#f97316;
+  z-index:6;
+  box-shadow:0 0 8px #f97316;
+}
+
+.bs-finalbullet{
+  position:absolute;
+  width:24px;
+  height:24px;
+  border-radius:50%;
+  background:#a855f7;
+  z-index:6;
+  box-shadow:0 0 16px #a855f7;
+}
+
+.bs-message{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  font-size:25px;
+  font-weight:900;
+  background:#0009;
+  z-index:20;
+  padding:20px;
+}
+
+.bs-controls{
+  display:flex;
+  justify-content:center;
+  gap:10px;
+  margin-top:12px;
+  flex-wrap:wrap;
+}
+
+.bs-controls button,
+.bs-restart{
+  min-width:70px;
+  min-height:48px;
+  border:0;
+  border-radius:12px;
+  background:#334155;
+  color:#fff;
+  font-size:18px;
+  font-weight:800;
+}
+
+.bs-controls .fire{
+  min-width:110px;
+}
+
+.bs-restart{
+  width:100%;
+  margin-top:10px;
+  font-size:15px;
+}
+
+.bs-notice{
+  position:absolute;
+  top:27px;
+  left:0;
+  right:0;
+  text-align:center;
+  color:#fecaca;
+  font-weight:900;
+  font-size:18px;
+  z-index:9;
+  display:none;
+}
+
+.bs-star{
+  position:absolute;
+  color:#64748b;
+  font-size:10px;
+  opacity:.7;
+}
+</style>
+</head>
+
+<body>
+
+<div id="boss-shooting-game">
+
+<div class="bs-wrap">
+
+<div class="bs-head">
+
+<div class="bs-stat">
+🎯 <span id="bs-score">0</span>
+</div>
+
+<div class="bs-stat">
+❤️ HP <span id="bs-hp">5</span>/5
+</div>
+
+<div class="bs-stat">
+👾 撃破 <span id="bs-kills">0</span>
+</div>
+
+<div class="bs-stat">
+👹 ボス撃破 <span id="bs-bosscount">0</span>
+</div>
+
+<div class="bs-stat">
+☠️ ラスボス撃破 <span id="bs-finalcount">0</span>
+</div>
+
+</div>
+
+
+<div class="bs-field" id="bs-field">
+
+<div class="bs-bossbar" id="bs-bossbar">
+<div id="bs-bossfill"></div>
+</div>
+
+<div class="bs-finalbar" id="bs-finalbar">
+<div id="bs-finalfill"></div>
+</div>
+
+<div class="bs-notice" id="bs-notice">
+⚠️ BOSS ATTACK！
+</div>
+
+<div class="bs-player" id="bs-player">
+🚀
+</div>
+
+<div class="bs-message" id="bs-message">
+敵を倒せ！
+<br>
+<small style="font-size:15px">
+「🔴 発射」でスタート
+</small>
+</div>
+
+</div>
+
+
+<div class="bs-controls">
+
+<button type="button" id="bs-left">
+◀
+</button>
+
+<button type="button" class="fire" id="bs-fire">
+🔴 発射
+</button>
+
+<button type="button" id="bs-right">
+▶
+</button>
+
+</div>
+
+
+<button type="button" class="bs-restart" id="bs-restart">
+🔄 リスタート
+</button>
+
+</div>
+
+<script>
+
+(() => {
+
+const root =
+document.getElementById("boss-shooting-game");
+
+if(!root || root.dataset.ready) return;
+
+root.dataset.ready="1";
+
+
+const field =
+root.querySelector("#bs-field");
+
+const player =
+root.querySelector("#bs-player");
+
+const scoreEl =
+root.querySelector("#bs-score");
+
+const hpEl =
+root.querySelector("#bs-hp");
+
+const killsEl =
+root.querySelector("#bs-kills");
+
+const bossCountEl =
+root.querySelector("#bs-bosscount");
+
+const finalCountEl =
+root.querySelector("#bs-finalcount");
+
+const msg =
+root.querySelector("#bs-message");
+
+const bossBar =
+root.querySelector("#bs-bossbar");
+
+const bossFill =
+root.querySelector("#bs-bossfill");
+
+const finalBar =
+root.querySelector("#bs-finalbar");
+
+const finalFill =
+root.querySelector("#bs-finalfill");
+
+const notice =
+root.querySelector("#bs-notice");
+
+
+let x=50;
+
+let score=0;
+let hp=5;
+let kills=0;
+let bossCount=0;
+let finalCount=0;
+
+let running=false;
+let gameEnded=false;
+
+let last=0;
+
+let spawnTimer=0;
+let bossTimer=0;
+let finalTimer=0;
+let shootTimer=0;
+let bossAttackTimer=0;
+let finalAttackTimer=0;
+let healTimer=0;
+
+let bossHits=0;
+let finalHits=0;
+
+let bossActive=false;
+let finalBossActive=false;
+
+let animationFrame=null;
+
+let keys={
+  left:false,
+  right:false,
+  fire:false
+};
+
+
+const bullets=[];
+const enemies=[];
+const bossBullets=[];
+const finalBullets=[];
+const heals=[];
+
+
+/* =========================
+   ステータス
+========================= */
+
+function updateStats(){
+
+  scoreEl.textContent=score;
+
+  hpEl.textContent=Math.max(0,hp);
+
+  killsEl.textContent=kills;
+
+  bossCountEl.textContent=bossCount;
+
+  finalCountEl.textContent=finalCount;
+
+}
+
+
+/* =========================
+   プレイヤー
+========================= */
+
+function setPlayerX(){
+
+  x=Math.max(5,Math.min(95,x));
+
+  player.style.left=
+    "calc("+x+"% - 22px)";
+}
+
+
+/* =========================
+   ゲーム開始
+========================= */
+
+function startGame(){
+
+  if(running || gameEnded) return;
+
+  running=true;
+
+  msg.style.display="none";
+
+  last=performance.now();
+
+  animationFrame=
+    requestAnimationFrame(gameLoop);
+
+}
+
+
+/* =========================
+   ゲームオーバー
+========================= */
+
+function gameOver(message="💥 GAME OVER"){
+
+  if(gameEnded) return;
+
+  gameEnded=true;
+
+  running=false;
+
+  hp=0;
+
+  keys.left=false;
+  keys.right=false;
+  keys.fire=false;
+
+  updateStats();
+
+
+  msg.innerHTML=
+    message+
+    "<br>"+
+    "<small style='font-size:16px'>"+
+    "スコア "+score+
+    "　撃破 "+kills+
+    "<br>"+
+    "🔄 リスタートしてください"+
+    "</small>";
+
+  msg.style.display="flex";
+
+
+  if(animationFrame){
+
+    cancelAnimationFrame(animationFrame);
+
+    animationFrame=null;
+
+  }
+
+}
+
+
+/* =========================
+   リセット
+========================= */
+
+function resetGame(){
+
+  if(animationFrame){
+
+    cancelAnimationFrame(animationFrame);
+
+    animationFrame=null;
+
+  }
+
+
+  [
+    ...bullets,
+    ...enemies,
+    ...bossBullets,
+    ...finalBullets,
+    ...heals
+  ].forEach(obj=>{
+    if(obj.el) obj.el.remove();
+  });
+
+
+  bullets.length=0;
+  enemies.length=0;
+  bossBullets.length=0;
+  finalBullets.length=0;
+  heals.length=0;
+
+
+  const oldBoss=
+    field.querySelector(".bs-boss");
+
+  if(oldBoss) oldBoss.remove();
+
+
+  const oldFinal=
+    field.querySelector(".bs-finalboss");
+
+  if(oldFinal) oldFinal.remove();
+
+
+  score=0;
+  hp=5;
+  kills=0;
+  bossCount=0;
+  finalCount=0;
+
+  x=50;
+
+  running=false;
+  gameEnded=false;
+
+  spawnTimer=0;
+  bossTimer=0;
+
+  /*
+   * リセット時に0にすることで、
+   * ゲーム開始から5分でラスボス
+   */
+
+  finalTimer=0;
+
+  shootTimer=0;
+  bossAttackTimer=0;
+  finalAttackTimer=0;
+  healTimer=0;
+
+  bossHits=0;
+  finalHits=0;
+
+  bossActive=false;
+  finalBossActive=false;
+
+
+  bossBar.style.display="none";
+  finalBar.style.display="none";
+
+  notice.style.display="none";
+
+  bossFill.style.width="100%";
+  finalFill.style.width="100%";
+
+
+  msg.innerHTML=
+    "敵を倒せ！"+
+    "<br>"+
+    "<small style='font-size:15px'>"+
+    "「🔴 発射」でスタート"+
+    "</small>";
+
+  msg.style.display="flex";
+
+
+  setPlayerX();
+
+  updateStats();
+
+}
+
+
+/* =========================
+   プレイヤー発射
+========================= */
+
+function shoot(){
+
+  if(gameEnded) return;
+
+
+  if(!running){
+
+    startGame();
+
+  }
+
+
+  if(!running) return;
+
+
+  const bullet=
+    document.createElement("div");
+
+  bullet.className="bs-bullet";
+
+
+  const px=
+    field.clientWidth*x/100;
+
+
+  bullet.style.left=
+    (px-2)+"px";
+
+  bullet.style.top=
+    (field.clientHeight-55)+"px";
+
+
+  field.appendChild(bullet);
+
+
+  bullets.push({
+
+    el:bullet,
+
+    x:px,
+
+    y:field.clientHeight-55
+
+  });
+
+}
+
+
+/* =========================
+   通常敵
+========================= */
+
+function spawnEnemy(){
+
+  if(gameEnded || finalBossActive) return;
+
+
+  const enemy=
+    document.createElement("div");
+
+  enemy.className="bs-enemy";
+
+
+  /*
+   * 通常敵は👾だけ
+   */
+
+  enemy.textContent="👾";
+
+
+  const ex=
+    8+Math.random()*84;
+
+
+  enemy.style.left=
+    "calc("+ex+"% - 20px)";
+
+  enemy.style.top="-40px";
+
+
+  field.appendChild(enemy);
+
+
+  enemies.push({
+
+    el:enemy,
+
+    x:field.clientWidth*ex/100,
+
+    y:-40,
+
+    speed:65+Math.random()*55
+
+  });
+
+}
+
+
+/* =========================
+   回復アイテム
+========================= */
+
+function spawnHeal(){
+
+  if(gameEnded || bossActive || finalBossActive)
+    return;
+
+
+  const heal=
+    document.createElement("div");
+
+  heal.className="bs-heal";
+
+  heal.textContent="❤️";
+
+
+  const hx=
+    8+Math.random()*84;
+
+
+  heal.style.left=
+    "calc("+hx+"% - 20px)";
+
+  heal.style.top="-40px";
+
+
+  field.appendChild(heal);
+
+
+  heals.push({
+
+    el:heal,
+
+    x:field.clientWidth*hx/100,
+
+    y:-40,
+
+    speed:75
+
+  });
+
+}
+
+
+/* =========================
+   通常ボス
+========================= */
+
+function spawnBoss(){
+
+  if(
+    gameEnded ||
+    bossActive ||
+    finalBossActive
+  ) return;
+
+
+  bossActive=true;
+
+  bossHits=0;
+
+  bossAttackTimer=0;
+
+
+  const boss=
+    document.createElement("div");
+
+  boss.className="bs-boss";
+
+  boss.textContent="👹";
+
+  field.appendChild(boss);
+
+
+  bossBar.style.display="block";
+
+  bossFill.style.width="100%";
+
+
+  notice.textContent=
+    "⚠️ BOSS出現！ 20発当てろ！";
+
+  notice.style.display="block";
+
+
+  setTimeout(()=>{
+
+    if(
+      !gameEnded &&
+      bossActive
+    ){
+
+      notice.style.display="none";
+
+    }
+
+  },1400);
+
+}
+
+
+/* =========================
+   通常ボスダメージ
+========================= */
+
+function damageBoss(){
+
+  if(
+    gameEnded ||
+    !bossActive
+  ) return;
+
+
+  bossHits++;
+
+  score+=50;
+
+
+  bossFill.style.width=
+    Math.max(
+      0,
+      100-bossHits*5
+    )+"%";
+
+
+  updateStats();
+
+
+  if(bossHits>=20){
+
+    const boss=
+      field.querySelector(".bs-boss");
+
+    if(boss) boss.remove();
+
+
+    bossActive=false;
+
+    bossCount++;
+
+    bossBar.style.display="none";
+
+
+    score+=1000;
+
+    updateStats();
+
+
+    notice.textContent=
+      "🎉 BOSS DEFEATED! +1000";
+
+    notice.style.display="block";
+
+
+    setTimeout(()=>{
+
+      if(!gameEnded){
+
+        notice.style.display="none";
+
+      }
+
+    },1200);
+
+  }
+
+}
+
+
+/* =========================
+   通常ボス攻撃
+========================= */
+
+function bossAttack(){
+
+  if(
+    gameEnded ||
+    !bossActive
+  ) return;
+
+
+  const bullet=
+    document.createElement("div");
+
+  bullet.className="bs-bossbullet";
+
+
+  const bx=
+    field.clientWidth*x/100;
+
+
+  bullet.style.left=
+    (bx-5)+"px";
+
+  bullet.style.top="90px";
+
+
+  field.appendChild(bullet);
+
+
+  bossBullets.push({
+
+    el:bullet,
+
+    x:bx,
+
+    y:90,
+
+    speed:150
+
+  });
+
+}
+
+
+/* =========================
+   ラスボス出現
+========================= */
+
+function spawnFinalBoss(){
+
+  if(
+    gameEnded ||
+    finalBossActive
+  ) return;
+
+
+  /*
+   * 通常敵・通常ボスを消す
+   */
+
+  enemies.forEach(e=>{
+    if(e.el) e.el.remove();
+  });
+
+  enemies.length=0;
+
+
+  bossBullets.forEach(b=>{
+    if(b.el) b.el.remove();
+  });
+
+  bossBullets.length=0;
+
+
+  if(bossActive){
+
+    const normalBoss=
+      field.querySelector(".bs-boss");
+
+    if(normalBoss)
+      normalBoss.remove();
+
+    bossActive=false;
+
+    bossBar.style.display="none";
+
+  }
+
+
+  /*
+   * ラスボス開始
+   */
+
+  finalBossActive=true;
+
+  finalHits=0;
+
+  finalAttackTimer=0;
+
+
+  const finalBoss=
+    document.createElement("div");
+
+  finalBoss.className="bs-finalboss";
+
+  finalBoss.textContent="☠️";
+
+  finalBoss.id="bs-finalboss";
+
+
+  field.appendChild(finalBoss);
+
+
+  finalBar.style.display="block";
+
+  finalFill.style.width="100%";
+
+
+  notice.textContent=
+    "☠️ FINAL BOSS出現！ 150発当てろ！";
+
+  notice.style.display="block";
+
+
+  setTimeout(()=>{
+
+    if(
+      !gameEnded &&
+      finalBossActive
+    ){
+
+      notice.style.display="none";
+
+    }
+
+  },1800);
+
+}
+
+
+/* =========================
+   ラスボスダメージ
+========================= */
+
+function damageFinalBoss(){
+
+  if(
+    gameEnded ||
+    !finalBossActive
+  ) return;
+
+
+  finalHits++;
+
+  /*
+   * ラスボスへの攻撃では
+   * 1発につき50点
+   */
+
+  score+=50;
+
+
+  finalFill.style.width=
+    Math.max(
+      0,
+      100-(finalHits/150)*100
+    )+"%";
+
+
+  updateStats();
+
+
+  /*
+   * 150発で撃破
+   */
+
+  if(finalHits>=150){
+
+    const finalBoss=
+      field.querySelector(
+        ".bs-finalboss"
+      );
+
+    if(finalBoss)
+      finalBoss.remove();
+
+
+    finalBossActive=false;
+
+    finalCount++;
+
+    finalBar.style.display="none";
+
+
+    /*
+     * ラスボス撃破報酬
+     */
+
+    score+=20000;
+
+
+    updateStats();
+
+
+    notice.textContent=
+      "🎉 FINAL BOSS DEFEATED! +20000";
+
+    notice.style.display="block";
+
+
+    setTimeout(()=>{
+
+      if(!gameEnded){
+
+        notice.style.display="none";
+
+      }
+
+    },2000);
+
+  }
+
+}
+
+
+/* =========================
+   ラスボス攻撃
+========================= */
+
+function finalBossAttack(){
+
+  if(
+    gameEnded ||
+    !finalBossActive
+  ) return;
+
+
+  const bullet=
+    document.createElement("div");
+
+  bullet.className=
+    "bs-finalbullet";
+
+
+  const bx=
+    field.clientWidth*x/100;
+
+
+  bullet.style.left=
+    (bx-12)+"px";
+
+  bullet.style.top="105px";
+
+
+  field.appendChild(bullet);
+
+
+  finalBullets.push({
+
+    el:bullet,
+
+    x:bx,
+
+    y:105,
+
+    /*
+     * 通常ボスより速い
+     */
+
+    speed:220
+
+  });
+
+}
+
+
+/* =========================
+   プレイヤーダメージ
+========================= */
+
+function damagePlayer(){
+
+  if(gameEnded) return;
+
+
+  hp=Math.max(
+    0,
+    hp-1
+  );
+
+
+  updateStats();
+
+
+  if(hp<=0){
+
+    gameOver();
+
+  }
+
+}
+
+
+/* =========================
+   メインループ
+========================= */
+
+function gameLoop(time){
+
+  if(
+    !running ||
+    gameEnded
+  ) return;
+
+
+  const dt=
+    Math.min(
+      0.035,
+      (time-last)/1000
+    );
+
+
+  last=time;
+
+
+  spawnTimer+=dt;
+  bossTimer+=dt;
+  finalTimer+=dt;
+
+  shootTimer+=dt;
+  bossAttackTimer+=dt;
+  finalAttackTimer+=dt;
+  healTimer+=dt;
+
+
+  /*
+   * プレイヤー移動
+   */
+
+  if(keys.left)
+    x-=55*dt;
+
+  if(keys.right)
+    x+=55*dt;
+
+  setPlayerX();
+
+
+  /*
+   * ラスボスがいない時だけ
+   * 通常敵を出す
+   */
+
+  if(
+    spawnTimer>0.75 &&
+    !bossActive &&
+    !finalBossActive
+  ){
+
+    spawnTimer=0;
+
+    spawnEnemy();
+
+  }
+
+
+  /*
+   * 通常ボス
+   *
+   * ラスボス出現中は停止
+   */
+
+  if(
+    bossTimer>=45 &&
+    !bossActive &&
+    !finalBossActive
+  ){
+
+    bossTimer=0;
+
+    spawnBoss();
+
+  }
+
+
+  /*
+   * 5分ごとにラスボス
+   */
+
+  if(
+    finalTimer>=300 &&
+    !finalBossActive
+  ){
+
+    finalTimer=0;
+
+    spawnFinalBoss();
+
+  }
+
+
+  /*
+   * 回復アイテム
+   */
+
+  if(
+    healTimer>=2.5 &&
+    !bossActive &&
+    !finalBossActive
+  ){
+
+    healTimer=0;
+
+
+    if(Math.random()<0.055){
+
+      spawnHeal();
+
+    }
+
+  }
+
+
+  /*
+   * プレイヤー連射
+   */
+
+  if(
+    keys.fire &&
+    shootTimer>0.28
+  ){
+
+    shootTimer=0;
+
+    shoot();
+
+  }
+
+
+  /*
+   * 通常ボス攻撃
+   */
+
+  if(
+    bossActive &&
+    bossAttackTimer>1
+  ){
+
+    bossAttackTimer=0;
+
+    bossAttack();
+
+  }
+
+
+  /*
+   * ラスボス攻撃
+   *
+   * 約0.35秒ごと
+   * 通常ボスよりかなり高頻度
+   */
+
+  if(
+    finalBossActive &&
+    finalAttackTimer>0.35
+  ){
+
+    finalAttackTimer=0;
+
+    finalBossAttack();
+
+  }
+
+
+  /*
+   * プレイヤーの弾
+   */
+
+  for(
+    let i=bullets.length-1;
+    i>=0;
+    i--
+  ){
+
+    if(gameEnded) return;
+
+
+    const bullet=
+      bullets[i];
+
+
+    bullet.y-=430*dt;
+
+
+    bullet.el.style.top=
+      bullet.y+"px";
+
+
+    if(bullet.y<-20){
+
+      bullet.el.remove();
+
+      bullets.splice(i,1);
+
+      continue;
+
+    }
+
+
+    /*
+     * ラスボス命中
+     */
+
+    if(
+      finalBossActive &&
+      bullet.y<135 &&
+      Math.abs(
+        bullet.x-
+        field.clientWidth/2
+      )<80
+    ){
+
+      bullet.el.remove();
+
+      bullets.splice(i,1);
+
+      damageFinalBoss();
+
+      continue;
+
+    }
+
+
+    /*
+     * 通常ボス命中
+     */
+
+    if(
+      bossActive &&
+      bullet.y<125 &&
+      Math.abs(
+        bullet.x-
+        field.clientWidth/2
+      )<65
+    ){
+
+      bullet.el.remove();
+
+      bullets.splice(i,1);
+
+      damageBoss();
+
+      continue;
+
+    }
+
+
+    /*
+     * 通常敵命中
+     */
+
+    let hitEnemy=false;
+
+
+    for(
+      let j=enemies.length-1;
+      j>=0;
+      j--
+    ){
+
+      const enemy=
+        enemies[j];
+
+
+      if(
+        Math.abs(
+          bullet.x-enemy.x
+        )<32 &&
+        Math.abs(
+          bullet.y-enemy.y
+        )<35
+      ){
+
+        enemy.el.remove();
+
+        enemies.splice(j,1);
+
+        bullet.el.remove();
+
+        bullets.splice(i,1);
+
+
+        score+=100;
+
+        kills++;
+
+
+        updateStats();
+
+
+        hitEnemy=true;
+
+        break;
+
+      }
+
+    }
+
+
+    if(hitEnemy) continue;
+
+
+    /*
+     * 回復アイテム
+     */
+
+    for(
+      let j=heals.length-1;
+      j>=0;
+      j--
+    ){
+
+      const heal=
+        heals[j];
+
+
+      if(
+        Math.abs(
+          bullet.x-heal.x
+        )<32 &&
+        Math.abs(
+          bullet.y-heal.y
+        )<35
+      ){
+
+        heal.el.remove();
+
+        heals.splice(j,1);
+
+        bullet.el.remove();
+
+        bullets.splice(i,1);
+
+
+        hp=Math.min(
+          5,
+          hp+1
+        );
+
+
+        score+=150;
+
+
+        updateStats();
+
+
+        notice.textContent=
+          hp>=5
+          ? "❤️ HPは満タン！"
+          : "❤️ HP +1！";
+
+
+        notice.style.display=
+          "block";
+
+
+        setTimeout(()=>{
+
+          if(!gameEnded){
+
+            notice.style.display=
+              "none";
+
+          }
+
+        },700);
+
+
+        break;
+
+      }
+
+    }
+
+  }
+
+
+  /*
+   * 通常敵移動
+   */
+
+  for(
+    let i=enemies.length-1;
+    i>=0;
+    i--
+  ){
+
+    const enemy=
+      enemies[i];
+
+
+    enemy.y+=
+      enemy.speed*dt;
+
+
+    enemy.el.style.top=
+      enemy.y+"px";
+
+
+    if(
+      enemy.y>
+      field.clientHeight-55
+    ){
+
+      enemy.el.remove();
+
+      enemies.splice(i,1);
+
+
+      damagePlayer();
+
+
+      if(gameEnded)
+        return;
+
+    }
+
+  }
+
+
+  /*
+   * 回復アイテム移動
+   */
+
+  for(
+    let i=heals.length-1;
+    i>=0;
+    i--
+  ){
+
+    const heal=
+      heals[i];
+
+
+    heal.y+=
+      heal.speed*dt;
+
+
+    heal.el.style.top=
+      heal.y+"px";
+
+
+    if(
+      heal.y>
+      field.clientHeight+20
+    ){
+
+      heal.el.remove();
+
+      heals.splice(i,1);
+
+    }
+
+  }
+
+
+  /*
+   * 通常ボス弾
+   */
+
+  for(
+    let i=bossBullets.length-1;
+    i>=0;
+    i--
+  ){
+
+    if(gameEnded) return;
+
+
+    const bullet=
+      bossBullets[i];
+
+
+    bullet.y+=
+      bullet.speed*dt;
+
+
+    bullet.el.style.top=
+      bullet.y+"px";
+
+
+    const px=
+      field.clientWidth*x/100;
+
+
+    if(
+      Math.abs(
+        bullet.x-px
+      )<28 &&
+      bullet.y>
+      field.clientHeight-80
+    ){
+
+      bullet.el.remove();
+
+      bossBullets.splice(i,1);
+
+
+      damagePlayer();
+
+
+      if(gameEnded)
+        return;
+
+
+      continue;
+
+    }
+
+
+    if(
+      bullet.y>
+      field.clientHeight+20
+    ){
+
+      bullet.el.remove();
+
+      bossBullets.splice(i,1);
+
+    }
+
+  }
+
+
+  /*
+   * ラスボス弾
+   */
+
+  for(
+    let i=finalBullets.length-1;
+    i>=0;
+    i--
+  ){
+
+    if(gameEnded) return;
+
+
+    const bullet=
+      finalBullets[i];
+
+
+    bullet.y+=
+      bullet.speed*dt;
+
+
+    bullet.el.style.top=
+      bullet.y+"px";
+
+
+    const px=
+      field.clientWidth*x/100;
+
+
+    /*
+     * 通常ボス弾より大きいので
+     * 当たり判定も大きめ
+     */
+
+    if(
+      Math.abs(
+        bullet.x-px
+      )<40 &&
+      bullet.y>
+      field.clientHeight-95
+    ){
+
+      bullet.el.remove();
+
+      finalBullets.splice(i,1);
+
+
+      damagePlayer();
+
+
+      if(gameEnded)
+        return;
+
+
+      continue;
+
+    }
+
+
+    if(
+      bullet.y>
+      field.clientHeight+30
+    ){
+
+      bullet.el.remove();
+
+      finalBullets.splice(i,1);
+
+    }
+
+  }
+
+
+  updateStats();
+
+
+  animationFrame=
+    requestAnimationFrame(gameLoop);
+
+}
+
+
+/* =========================
+   タッチ操作
+========================= */
+
+const leftButton=
+root.querySelector("#bs-left");
+
+
+leftButton.addEventListener(
+  "pointerdown",
+  ()=>{
+    if(gameEnded) return;
+
+    keys.left=true;
+
+    startGame();
+  }
+);
+
+
+[
+  "pointerup",
+  "pointerleave",
+  "pointercancel"
+].forEach(event=>{
+
+  leftButton.addEventListener(
+    event,
+    ()=>{
+      keys.left=false;
+    }
+  );
+
+});
+
+
+const rightButton=
+root.querySelector("#bs-right");
+
+
+rightButton.addEventListener(
+  "pointerdown",
+  ()=>{
+    if(gameEnded) return;
+
+    keys.right=true;
+
+    startGame();
+  }
+);
+
+
+[
+  "pointerup",
+  "pointerleave",
+  "pointercancel"
+].forEach(event=>{
+
+  rightButton.addEventListener(
+    event,
+    ()=>{
+      keys.right=false;
+    }
+  );
+
+});
+
+
+const fireButton=
+root.querySelector("#bs-fire");
+
+
+fireButton.addEventListener(
+  "pointerdown",
+  ()=>{
+    if(gameEnded) return;
+
+    keys.fire=true;
+
+    shoot();
+  }
+);
+
+
+[
+  "pointerup",
+  "pointerleave",
+  "pointercancel"
+].forEach(event=>{
+
+  fireButton.addEventListener(
+    event,
+    ()=>{
+      keys.fire=false;
+    }
+  );
+
+});
+
+
+/* =========================
+   リスタート
+========================= */
+
+root
+.querySelector("#bs-restart")
+.addEventListener(
+  "click",
+  resetGame
+);
+
+
+/* =========================
+   PCキーボード
+========================= */
+
+root.addEventListener(
+  "keydown",
+  event=>{
+
+    if(gameEnded) return;
+
+
+    if(event.key==="ArrowLeft"){
+
+      keys.left=true;
+
+      startGame();
+
+      event.preventDefault();
+
+    }
+
+
+    if(event.key==="ArrowRight"){
+
+      keys.right=true;
+
+      startGame();
+
+      event.preventDefault();
+
+    }
+
+
+    if(event.key===" "){
+
+      keys.fire=true;
+
+      shoot();
+
+      event.preventDefault();
+
+    }
+
+  }
+);
+
+
+root.addEventListener(
+  "keyup",
+  event=>{
+
+    if(event.key==="ArrowLeft")
+      keys.left=false;
+
+    if(event.key==="ArrowRight")
+      keys.right=false;
+
+    if(event.key===" ")
+      keys.fire=false;
+
+  }
+);
+
+
+/* =========================
+   背景の星
+========================= */
+
+for(let i=0;i<20;i++){
+
+  const star=
+    document.createElement("span");
+
+  star.className="bs-star";
+
+  star.textContent="✦";
+
+  star.style.left=
+    Math.random()*100+"%";
+
+  star.style.top=
+    Math.random()*80+"%";
+
+
+  field.appendChild(star);
+
+}
+
+
+setPlayerX();
+
+updateStats();
+
+})();
+</script>
+
+</div>
+
+</body>
+</html>
