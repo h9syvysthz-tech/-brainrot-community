@@ -1,1 +1,637 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>爆弾を避けろ！</title>
 
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+      background: linear-gradient(135deg, #111827, #1f2937);
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .game-container {
+      width: 100%;
+      max-width: 500px;
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 8px;
+      font-size: 32px;
+    }
+
+    .description {
+      color: #cbd5e1;
+      margin-bottom: 15px;
+    }
+
+    .score-board {
+      display: flex;
+      justify-content: space-between;
+      background: #374151;
+      padding: 12px 20px;
+      border-radius: 12px;
+      margin-bottom: 12px;
+      font-size: 18px;
+    }
+
+    .game-area {
+      position: relative;
+      width: 100%;
+      height: 450px;
+      background: linear-gradient(#172033, #0f172a);
+      border: 3px solid #64748b;
+      border-radius: 18px;
+      overflow: hidden;
+    }
+
+    .message {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 20px;
+      font-size: 22px;
+      color: #cbd5e1;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    .player {
+      position: absolute;
+      bottom: 15px;
+      left: 50%;
+      width: 50px;
+      height: 50px;
+      transform: translateX(-50%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 32px;
+      user-select: none;
+    }
+
+    .bomb {
+      position: absolute;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 28px;
+      user-select: none;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 15px;
+    }
+
+    .control-button,
+    #startButton {
+      border: none;
+      border-radius: 12px;
+      background: #4f46e5;
+      color: white;
+      font-size: 22px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.1s, background 0.2s;
+    }
+
+    .control-button {
+      width: 100px;
+      height: 55px;
+    }
+
+    #startButton {
+      margin-top: 15px;
+      padding: 14px 30px;
+      font-size: 18px;
+    }
+
+    .control-button:hover,
+    #startButton:hover {
+      background: #6366f1;
+    }
+
+    .control-button:active,
+    #startButton:active {
+      transform: scale(0.95);
+    }
+
+    .help {
+      color: #94a3b8;
+      font-size: 13px;
+      margin-top: 12px;
+    }
+
+    @media (max-width: 500px) {
+      h1 {
+        font-size: 26px;
+      }
+
+      .game-area {
+        height: 400px;
+      }
+
+      .control-button {
+        width: 90px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="game-container">
+
+    <h1>💣 爆弾を避けろ！</h1>
+
+    <div class="description">
+      落ちてくる爆弾を避けて、ハイスコアを目指そう！
+    </div>
+
+    <div class="score-board">
+      <div>
+        スコア：<strong id="score">0</strong>
+      </div>
+
+      <div>
+        最高記録：<strong id="best">0</strong>
+      </div>
+    </div>
+
+    <div id="gameArea" class="game-area">
+
+      <div id="message" class="message">
+        「ゲーム開始」を押してスタート！
+      </div>
+
+      <div id="player" class="player">
+        😎
+      </div>
+
+    </div>
+
+    <div class="controls">
+
+      <button id="leftButton" class="control-button">
+        ◀
+      </button>
+
+      <button id="rightButton" class="control-button">
+        ▶
+      </button>
+
+    </div>
+
+    <button id="startButton">
+      ゲーム開始
+    </button>
+
+    <div class="help">
+      PCでは ← → キーでも操作できます
+    </div>
+
+  </div>
+
+  <script>
+
+    const gameArea = document.getElementById("gameArea");
+    const player = document.getElementById("player");
+    const message = document.getElementById("message");
+
+    const scoreDisplay = document.getElementById("score");
+    const bestDisplay = document.getElementById("best");
+
+    const startButton = document.getElementById("startButton");
+    const leftButton = document.getElementById("leftButton");
+    const rightButton = document.getElementById("rightButton");
+
+    let playerX = 0;
+
+    let score = 0;
+    let bestScore = 0;
+
+    let playing = false;
+
+    let bombs = [];
+
+    let animationId = null;
+
+    let lastTime = 0;
+
+    let spawnTimer = 0;
+
+    /*
+     * プレイヤーを初期位置へ
+     */
+
+    function resetPlayer() {
+
+      playerX =
+        (gameArea.clientWidth - player.clientWidth) / 2;
+
+      player.style.left = playerX + "px";
+
+    }
+
+    /*
+     * プレイヤーを左右に動かす
+     */
+
+    function movePlayer(direction) {
+
+      if (!playing) return;
+
+      playerX += direction * 30;
+
+      const minX = 5;
+
+      const maxX =
+        gameArea.clientWidth -
+        player.clientWidth -
+        5;
+
+      if (playerX < minX) {
+        playerX = minX;
+      }
+
+      if (playerX > maxX) {
+        playerX = maxX;
+      }
+
+      player.style.left = playerX + "px";
+
+    }
+
+    /*
+     * 爆弾を作る
+     */
+
+    function createBomb() {
+
+      const bomb = document.createElement("div");
+
+      bomb.className = "bomb";
+
+      bomb.textContent = "💣";
+
+      const x =
+        Math.random() *
+        (gameArea.clientWidth - 40);
+
+      bomb.style.left = x + "px";
+
+      bomb.style.top = "-40px";
+
+      gameArea.appendChild(bomb);
+
+      bombs.push({
+
+        element: bomb,
+
+        x: x,
+
+        y: -40,
+
+        speed:
+          2.5 +
+          Math.random() * 2
+
+      });
+
+    }
+
+    /*
+     * 爆弾とプレイヤーが
+     * ぶつかったか確認
+     */
+
+    function checkCollision(bomb) {
+
+      const playerY =
+        gameArea.clientHeight -
+        player.clientHeight -
+        15;
+
+      const playerWidth =
+        player.clientWidth;
+
+      const playerHeight =
+        player.clientHeight;
+
+      return (
+
+        bomb.x <
+        playerX + playerWidth - 5
+
+        &&
+
+        bomb.x + 36 >
+        playerX + 5
+
+        &&
+
+        bomb.y <
+        playerY + playerHeight
+
+        &&
+
+        bomb.y + 36 >
+        playerY
+
+      );
+
+    }
+
+    /*
+     * ゲームループ
+     */
+
+    function gameLoop(time) {
+
+      if (!playing) return;
+
+      const deltaTime =
+        Math.min(
+          32,
+          time - lastTime || 16
+        );
+
+      lastTime = time;
+
+      spawnTimer += deltaTime;
+
+      /*
+       * 時間が経つほど
+       * 爆弾が増える
+       */
+
+      const spawnInterval =
+        Math.max(
+          250,
+          750 - score * 8
+        );
+
+      if (spawnTimer >= spawnInterval) {
+
+        createBomb();
+
+        spawnTimer = 0;
+
+      }
+
+      /*
+       * 爆弾を動かす
+       */
+
+      bombs = bombs.filter(function(bomb) {
+
+        bomb.y +=
+          bomb.speed *
+          deltaTime /
+          16;
+
+        bomb.element.style.top =
+          bomb.y + "px";
+
+        /*
+         * 衝突判定
+         */
+
+        if (checkCollision(bomb)) {
+
+          gameOver();
+
+          return false;
+
+        }
+
+        /*
+         * 画面の下まで到達
+         */
+
+        if (
+          bomb.y >
+          gameArea.clientHeight
+        ) {
+
+          bomb.element.remove();
+
+          score++;
+
+          scoreDisplay.textContent =
+            score;
+
+          return false;
+
+        }
+
+        return true;
+
+      });
+
+      animationId =
+        requestAnimationFrame(gameLoop);
+
+    }
+
+    /*
+     * ゲーム開始
+     */
+
+    function startGame() {
+
+      /*
+       * 古い爆弾を削除
+       */
+
+      bombs.forEach(function(bomb) {
+
+        bomb.element.remove();
+
+      });
+
+      bombs = [];
+
+      if (animationId) {
+
+        cancelAnimationFrame(
+          animationId
+        );
+
+      }
+
+      score = 0;
+
+      scoreDisplay.textContent =
+        "0";
+
+      resetPlayer();
+
+      playing = true;
+
+      spawnTimer = 0;
+
+      lastTime =
+        performance.now();
+
+      message.style.display =
+        "none";
+
+      startButton.textContent =
+        "プレイ中…";
+
+      animationId =
+        requestAnimationFrame(
+          gameLoop
+        );
+
+    }
+
+    /*
+     * ゲームオーバー
+     */
+
+    function gameOver() {
+
+      playing = false;
+
+      if (animationId) {
+
+        cancelAnimationFrame(
+          animationId
+        );
+
+      }
+
+      if (score > bestScore) {
+
+        bestScore = score;
+
+        bestDisplay.textContent =
+          bestScore;
+
+      }
+
+      message.textContent =
+        "💥 ゲームオーバー！\nスコア：" +
+        score +
+        "\nもう一度挑戦しよう！";
+
+      message.style.whiteSpace =
+        "pre-line";
+
+      message.style.display =
+        "flex";
+
+      startButton.textContent =
+        "もう一度プレイ";
+
+    }
+
+    /*
+     * ボタン操作
+     */
+
+    leftButton.addEventListener(
+      "click",
+      function() {
+
+        movePlayer(-1);
+
+      }
+    );
+
+    rightButton.addEventListener(
+      "click",
+      function() {
+
+        movePlayer(1);
+
+      }
+    );
+
+    /*
+     * キーボード操作
+     */
+
+    document.addEventListener(
+      "keydown",
+      function(event) {
+
+        if (event.key === "ArrowLeft") {
+
+          event.preventDefault();
+
+          movePlayer(-1);
+
+        }
+
+        if (event.key === "ArrowRight") {
+
+          event.preventDefault();
+
+          movePlayer(1);
+
+        }
+
+      }
+    );
+
+    /*
+     * スタートボタン
+     */
+
+    startButton.addEventListener(
+      "click",
+      startGame
+    );
+
+    /*
+     * 画面サイズ変更時に
+     * プレイヤー位置を調整
+     */
+
+    window.addEventListener(
+      "resize",
+      function() {
+
+        if (!playing) {
+
+          resetPlayer();
+
+        }
+
+      }
+    );
+
+    /*
+     * 最初の位置
+     */
+
+    resetPlayer();
+
+  </script>
+
+</body>
+</html>
