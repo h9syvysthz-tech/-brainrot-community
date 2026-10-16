@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#080b22">
+<title>NEON BEAT - Cyber Rhythm</title>
+<style>
+:root{--bg:#080b22;--panel:#11183b;--cyan:#53efff;--violet:#a58bff;--pink:#ff68d4;--green:#74ffd0;--text:#f3f5ff}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:radial-gradient(ellipse at 50% 0%,#20245a 0%,#080b22 55%);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+body{display:flex;justify-content:center;padding:12px;touch-action:manipulation}
+button{font:inherit;cursor:pointer}
+.app{width:min(100%,760px);margin:auto}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:4px 0 12px}
+.logo{font-weight:950;letter-spacing:.12em;font-size:clamp(18px,4vw,28px);text-shadow:0 0 18px #53efff88}
+.logo span{color:var(--cyan)}
+.tag{font-size:11px;letter-spacing:.14em;color:#b7c4ff;border:1px solid #6672bd66;border-radius:99px;padding:6px 10px}
+.panel{background:linear-gradient(145deg,#171e49eF,#0b1030f2);border:1px solid #6678df66;border-radius:22px;box-shadow:0 15px 50px #0007,inset 0 0 28px #535aff0b;overflow:hidden}
+.screen{display:none}.screen.active{display:block}
+.start{padding:clamp(20px,5vw,38px);text-align:center}
+.orb{height:150px;display:grid;place-items:center;position:relative;margin:2px auto 12px}
+.orb:before,.orb:after{content:"";position:absolute;border:1px solid #53efff77;border-radius:50%;width:135px;height:135px;transform:rotateX(64deg);box-shadow:0 0 22px #53efff33}
+.orb:after{width:175px;height:175px;border-color:#a58bff66;transform:rotateY(62deg) rotateX(64deg)}
+.orb-icon{font-size:64px;color:var(--cyan);text-shadow:0 0 25px #53efff;z-index:1}
+h1{font-size:clamp(27px,7vw,42px);line-height:1.1;margin:8px 0}
+.sub{color:#b7c4ff;margin:10px auto 22px;max-width:440px;line-height:1.7;font-size:14px}
+.info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:20px 0}
+.info{padding:12px 6px;border-radius:13px;background:#080e2b;border:1px solid #6978d944}
+.info strong{display:block;color:var(--cyan);font-size:15px}.info small{font-size:11px;color:#aeb8ee}
+.difficulty-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:16px 0 20px}.difficulty-btn{padding:11px 5px;border-radius:13px;border:1px solid #6573c966;background:#0b1232;color:#cbd4ff;font-weight:850}.difficulty-btn small{display:block;font-size:10px;font-weight:600;margin-top:4px;color:#9ba9e4}.difficulty-btn.selected{border-color:var(--cyan);background:linear-gradient(145deg,#17395a,#28204f);color:#fff;box-shadow:0 0 18px #53efff33}.difficulty-btn.selected small{color:#8ff6ff}.difficulty-btn.locked{opacity:.48;filter:saturate(.45)}.difficulty-btn.master.selected{border-color:#ff68d4;background:linear-gradient(145deg,#54245d,#25204f);box-shadow:0 0 22px #ff68d444}.unlock-note{font-size:12px;color:#ffb5eb;min-height:18px;margin:-10px 0 14px}
+.primary,.secondary{border:0;border-radius:14px;padding:13px 22px;font-weight:800;letter-spacing:.06em}
+.primary{background:linear-gradient(100deg,#42dff5,#8d75ff);color:#08112b;box-shadow:0 0 24px #53efff38}
+.secondary{background:#202750;color:#dfe5ff;border:1px solid #6475ce88}
+.hint{font-size:12px;color:#9da9df;line-height:1.8;margin-top:15px}
+.game-top{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:13px 15px;background:#080e2b}
+.stat-label{font-size:10px;letter-spacing:.13em;color:#9eaddf}.stat-value{font-weight:900;font-variant-numeric:tabular-nums}
+.score{font-size:clamp(19px,5vw,27px);color:var(--cyan)}.combo{color:#d7cbff;text-align:center;font-size:20px;font-weight:900}
+.play-area{position:relative;margin:0 auto;width:min(100%,500px);height:clamp(380px,65vh,610px);min-height:380px;background:linear-gradient(180deg,#11183b,#090d27);overflow:hidden;touch-action:none}
+.play-area:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent 0 38px,#4d65c00b 39px 40px),radial-gradient(ellipse at 50% 50%,#3542a522,transparent 65%);pointer-events:none}
+.lanes{position:absolute;inset:0;display:grid;grid-template-columns:repeat(4,1fr)}
+.lane{position:relative;border-left:1px solid #7785db30;background:linear-gradient(180deg,#4d60b00a,#57e9ff05)}
+.lane:last-child{border-right:1px solid #7785db30}
+.lane-key{position:absolute;bottom:7px;left:0;right:0;text-align:center;font-size:11px;color:#7280bd}
+.hit-line{position:absolute;left:0;right:0;bottom:52px;height:3px;background:linear-gradient(90deg,transparent,var(--cyan),var(--violet),var(--pink),transparent);box-shadow:0 0 16px #53efff;z-index:2}
+.hit-line:after{content:"";position:absolute;inset:-8px 0;background:linear-gradient(90deg,transparent,#53efff18,#a58bff18,transparent)}
+.note{position:absolute;height:18px;border-radius:7px;z-index:3;box-shadow:0 0 12px currentColor;transform:translateY(50%);border:1px solid #ffffffaa}
+.note.normal{background:linear-gradient(90deg,#43e9ff,#9af7ff);color:#53efff}
+.note.hold{height:28px;border-radius:9px;background:linear-gradient(90deg,#43f6ba,#b7ffe4);color:#74ffd0}
+.note.hold .hold-body{position:absolute;top:10px;bottom:0;left:0;right:0;background:linear-gradient(180deg,#74ffd044,#74ffd099);border-radius:0 0 8px 8px;overflow:hidden}
+.note.hold .hold-fill{position:absolute;left:0;right:0;top:0;height:0%;background:linear-gradient(180deg,#ffffffee,#43ffc9);box-shadow:0 0 18px #74ffd0;transition:height .04s linear;z-index:1}
+.note.hold .hold-status{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:4;display:none;padding:5px 7px;border:1px solid #fff;border-radius:7px;background:#053b32;color:#fff;font-size:10px;font-weight:1000;letter-spacing:.03em;white-space:nowrap;text-shadow:0 1px 2px #00352b;box-shadow:0 0 10px #74ffd0}
+.note.hold.is-holding .hold-status{display:block;animation:statusPulse .45s ease-in-out infinite alternate}
+@keyframes statusPulse{from{filter:brightness(1)}to{filter:brightness(1.5)}}
+.note.hold .hold-end{position:absolute;left:-2px;right:-2px;bottom:-2px;height:9px;border-radius:0 0 8px 8px;background:#eafff7;border:2px solid #74ffd0;box-shadow:0 0 12px #74ffd0;z-index:2}
+.note.hold .hold-end:after{content:'RELEASE';position:absolute;right:2px;top:-17px;font-size:8px;letter-spacing:.08em;font-weight:1000;color:#d7fff0;text-shadow:0 0 6px #74ffd0}
+.note.hold.is-holding{background:linear-gradient(90deg,#baffea,#ffffff)!important;border:3px solid #fff!important;box-shadow:0 0 16px 5px #74ffd0,0 0 34px 10px #74ffd0,0 0 54px 14px #43f6ba!important;animation:holdGlow .42s ease-in-out infinite alternate;filter:brightness(1.65)}
+.note.hold.is-holding .hold-body{background:linear-gradient(180deg,#ffffffdd,#43f6ba)!important;box-shadow:inset 0 0 22px #fff,0 0 20px #74ffd0!important}
+.note.hold.is-holding .hold-end{background:#fff;box-shadow:0 0 18px #fff,0 0 30px #74ffd0}
+.note.hold.hold-complete{filter:brightness(1.8);box-shadow:0 0 28px #74ffd0}
+.note.hold.hold-broken{filter:brightness(.65);border-color:#ff6d9d;box-shadow:0 0 18px #ff6d9d}
+@keyframes holdGlow{from{filter:brightness(1);opacity:.9}to{filter:brightness(1.55);opacity:1}}
+.note.simul{background:linear-gradient(90deg,#b18aff,#ff76df);color:#ce8dff}
+.judge{position:absolute;z-index:8;top:47%;left:0;right:0;text-align:center;font-size:24px;font-weight:1000;letter-spacing:.1em;opacity:0;pointer-events:none;text-shadow:0 0 15px currentColor}
+.judge.show{animation:pop .48s ease-out}
+@keyframes pop{0%{opacity:0;transform:scale(.7)}25%{opacity:1;transform:scale(1.08)}70%{opacity:1}100%{opacity:0;transform:scale(1.1)}}
+.lane-flash{position:absolute;inset:0;background:#53efff1f;opacity:0;pointer-events:none}.lane-flash.on{opacity:1}
+.game-bottom{padding:12px 12px 14px;background:#080e2b}
+.controls{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.lane-btn{min-height:58px;border:1px solid #6677d977;border-radius:12px;background:linear-gradient(180deg,#1a2451,#101633);color:white;font-size:19px;font-weight:900;box-shadow:inset 0 0 15px #6775e50b;touch-action:none}
+.lane-btn:active,.lane-btn.pressed{background:linear-gradient(180deg,#49e9ff,#8d7cff);color:#08112b;box-shadow:0 0 18px #53efff77}
+.lane-btn.holding-active{background:linear-gradient(180deg,#baffea,#43f6ba)!important;color:#052b20!important;border:2px solid #fff!important;box-shadow:0 0 16px #74ffd0,0 0 30px #43f6ba!important;animation:holdGlow .42s ease-in-out infinite alternate}
+.control-caption{text-align:center;font-size:11px;color:#8898d4;margin-top:8px}
+.progress{height:4px;background:#242c5c}.progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--pink));transition:width .1s linear}
+.result{padding:28px 20px;text-align:center}
+.rank{font-size:68px;font-weight:1000;line-height:1.1;color:var(--cyan);text-shadow:0 0 28px #53efff88}
+.result-score{font-size:clamp(26px,7vw,42px);font-weight:950;margin:8px 0;color:#fff}
+.result-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:20px 0}
+.result-stat{padding:12px 4px;background:#090f2c;border:1px solid #5365b544;border-radius:12px}
+.result-stat b{display:block;font-size:21px}.result-stat small{font-size:11px;color:#aeb8ee}
+.result-actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+@media(max-width:430px){body{padding:7px}.difficulty-row{gap:5px}.difficulty-btn{font-size:11px;padding:10px 2px}.difficulty-btn small{font-size:9px}.game-top{padding:11px 9px}.play-area{height:58vh;min-height:360px}.controls{gap:5px}.lane-btn{min-height:55px}.tag{font-size:9px;padding:5px 7px}.info-grid{gap:5px}.info{padding:10px 3px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header><div class="logo">NEON <span>BEAT</span></div><div class="tag">CYBER RHYTHM // DEMO</div></header>
+<section id="startScreen" class="screen active panel start">
+  <div class="orb"><div class="orb-icon">✦</div></div>
+  <div class="tag">ORIGINAL RHYTHM GAME</div>
+  <h1>FEEL THE<br><span style="color:var(--cyan)">FREQUENCY</span></h1>
+  <p class="sub">光るノーツをタイミングよくタップ！<br>リズムに乗って、最高のコンボを目指そう。</p>
+  <div style="font-weight:850;letter-spacing:.08em;margin-top:8px">SELECT DIFFICULTY / 難易度選択</div>
+  <div class="difficulty-row" role="group" aria-label="難易度選択">
+    <button type="button" class="difficulty-btn" data-difficulty="EASY">EASY<small>ゆっくり・広め</small></button>
+    <button type="button" class="difficulty-btn selected" data-difficulty="NORMAL">NORMAL<small>標準バランス</small></button>
+    <button type="button" class="difficulty-btn" data-difficulty="HARD">HARD<small>高速・高密度</small></button>
+    <button type="button" class="difficulty-btn master locked" data-difficulty="MASTER" aria-label="MASTER、HARDでAランク以上が必要">MASTER<small id="masterButtonHint">🔒 HARD A以上</small></button>
+  </div>
+  <div id="unlockNote" class="unlock-note" aria-live="polite">MASTERはHARDでAランク以上を獲得すると解放！</div>
+  <div class="info-grid">
+    <div class="info"><strong>4 LANES</strong><small>4レーン</small></div>
+    <div class="info"><strong id="selectedDiffLabel">NORMAL</strong><small>選択中の難易度</small></div>
+    <div class="info"><strong>3 TYPES</strong><small>ノーツ種類</small></div>
+  </div>
+  <button type="button" id="startBtn" class="primary">▶ PLAY START</button>
+  <div class="hint">PC：D・F・J・K キー ／ スマホ：下の4つのボタン<br>ロングノーツは光っている間ずっと押し続けて、終点で離そう！<br>※オリジナルの簡易デモ譜面です</div>
+</section>
+<section id="gameScreen" class="screen panel">
+  <div class="game-top">
+    <div><div class="stat-label">SCORE</div><div id="score" class="stat-value score">0000000</div></div>
+    <div class="combo"><div id="combo">0</div><div class="stat-label">COMBO</div></div>
+    <div style="text-align:right"><div class="stat-label">ACCURACY</div><div id="accuracy" class="stat-value">100.0%</div><div id="gameDifficulty" class="stat-label">NORMAL</div></div>
+  </div>
+  <div class="progress"><span id="progressBar"></span></div>
+  <div id="playArea" class="play-area">
+    <div class="lanes" id="lanes">
+      <div class="lane"><div class="lane-flash"></div><div class="lane-key">D</div></div>
+      <div class="lane"><div class="lane-flash"></div><div class="lane-key">F</div></div>
+      <div class="lane"><div class="lane-flash"></div><div class="lane-key">J</div></div>
+      <div class="lane"><div class="lane-flash"></div><div class="lane-key">K</div></div>
+    </div>
+    <div class="hit-line"></div>
+    <div id="judge" class="judge">PERFECT</div>
+  </div>
+  <div class="game-bottom">
+    <div class="controls">
+      <button class="lane-btn" data-lane="0">D</button><button class="lane-btn" data-lane="1">F</button><button class="lane-btn" data-lane="2">J</button><button class="lane-btn" data-lane="3">K</button>
+    </div>
+    <div class="control-caption">タップ / キー入力でノーツを判定</div>
+  </div>
+</section>
+<section id="resultScreen" class="screen panel result">
+  <div class="tag">TRACK COMPLETE</div>
+  <h1 style="margin:16px 0 5px">RESULT</h1>
+  <div id="rank" class="rank">S</div>
+  <div id="finalScore" class="result-score">0000000</div>
+  <div class="stat-label">TOTAL SCORE</div>
+  <div class="result-grid">
+    <div class="result-stat"><b id="rPerfect">0</b><small>PERFECT</small></div>
+    <div class="result-stat"><b id="rGreat">0</b><small>GREAT</small></div>
+    <div class="result-stat"><b id="rGood">0</b><small>GOOD</small></div>
+    <div class="result-stat"><b id="rMiss">0</b><small>MISS</small></div>
+    <div class="result-stat"><b id="rCombo">0</b><small>MAX COMBO</small></div>
+    <div class="result-stat"><b id="rAcc">100%</b><small>ACCURACY</small></div>
+  </div>
+  <div class="result-actions"><button type="button" id="retryBtn" class="primary">↻ RETRY</button><button type="button" id="homeBtn" class="secondary">⌂ TITLE</button></div>
+</section>
+</div>
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+// Inline touch-safe handlers are registered immediately so the title screen remains usable on iOS.
+window.__neonSelectDifficulty=(choice)=>{
+  if(choice==='MASTER'&&!masterUnlocked){$('unlockNote').textContent='🔒 まずHARDでAランク以上を獲得しよう！';return;}
+  difficulty=choice;
+  document.querySelectorAll('.difficulty-btn').forEach(b=>b.classList.toggle('selected',b.dataset.difficulty===choice));
+  $('selectedDiffLabel').textContent=difficulty;
+  $('unlockNote').textContent=difficulty==='MASTER'?'MASTER：超高速・超高密度の最難関譜面！':'MASTERはHARDでAランク以上を獲得すると解放！';
+};
+window.__neonStartGame=()=>{try{startGame();}catch(err){console.error(err);alert('ゲームの開始に失敗しました。ページを再読み込みして、もう一度押してください。');}};
+const screens=[$('startScreen'),$('gameScreen'),$('resultScreen')];
+const area=$('playArea'), keys=['d','f','j','k'];
+let notes=[],active=false,startTime=0,lastFrame=0,raf=0,score=0,combo=0,maxCombo=0,counts={PERFECT:0,GREAT:0,GOOD:0,MISS:0},judged=0,totalNotes=0,held=new Set(),holdStart=new Map(),audioCtx=null,generated=false;
+let difficulty='NORMAL';
+const DIFFICULTIES={EASY:{travel:1.95,spacing:1.22,burst:false,complexity:.55},NORMAL:{travel:1.65,spacing:1,burst:true,complexity:1},HARD:{travel:1.28,spacing:.72,burst:true,complexity:1.6},MASTER:{travel:.88,spacing:.47,burst:true,complexity:2.8}};
+let masterUnlocked=false;
+try{masterUnlocked=localStorage.getItem('neonBeatMasterUnlocked')==='yes';}catch(e){}
+const cfg=()=>DIFFICULTIES[difficulty];
+const SONG_LENGTH= fortySeconds();
+function fortySeconds(){return 42;}
+function showScreen(which){screens.forEach(s=>s.classList.remove('active'));which.classList.add('active')}
+function makeChart(){
+  const chart=[]; const settings=cfg(); let t=settings.travel; let holdLaneUntil=[0,0,0,0];
+  // Vary lane patterns, note spacing, doubles and holds throughout the chart.
+  let step=0, lastLane=1;
+  const addSingle=(time,lane,type='normal',extra={})=>{
+    if(holdLaneUntil[lane]>time) lane=[0,1,2,3].find(l=>holdLaneUntil[l]<=time) ?? lane;
+    chart.push({t:time,lane,type,...extra}); lastLane=lane;
+  };
+  while(t<38.3){
+    const phase=Math.floor(t/6)%4;
+    // Four different lane motifs rotate, with occasional reversals and jumps instead of a repeating lane formula.
+    const motifs=[ [0,1,3,2,1,0,2,3], [3,2,0,1,2,3,1,0], [0,2,1,3,0,3,2,1], [2,3,1,0,3,1,0,2] ];
+    let lane=motifs[phase][step%8];
+    if(step%11===7) lane=(lastLane+2)%4;
+    if(step%13===9) lane=3-lane;
+    const pattern=step%16;
+    if(pattern===3 || pattern===11 || (difficulty==='HARD' && pattern===7) || (difficulty==='MASTER' && [1,5,9,13].includes(pattern))){
+      const candidates=[0,1,2,3].filter(l=>holdLaneUntil[l]<=t);
+      if(candidates.length){
+        lane=candidates[(step+phase*2)%candidates.length];
+        const dur=pattern===3?1.35:1.85;
+        chart.push({t,lane,type:'hold',dur}); holdLaneUntil[lane]=t+dur+.22; lastLane=lane;
+      } else addSingle(t,lane,'normal');
+    } else if(pattern===6 || pattern===14 || (difficulty==='MASTER' && [2,10].includes(pattern))){
+      const free=[0,1,2,3].filter(l=>l!==lane&&holdLaneUntil[l]<=t&&holdLaneUntil[lane]<=t);
+      if(free.length){
+        const other=free[(step+phase)%free.length];
+        chart.push({t,lane,type:'simul',group:t},{t,lane:other,type:'simul',group:t}); lastLane=other;
+      } else addSingle(t,lane,'normal');
+    } else {
+      addSingle(t,lane,'normal');
+      // Short two-note bursts appear occasionally; never put notes on a lane occupied by a hold.
+      if((difficulty!=='EASY' && (pattern===2 || pattern===10)) || (difficulty==='HARD' && [0,4,8,12].includes(pattern)) || (difficulty==='MASTER' && [0,2,4,6,8,10,12,14].includes(pattern))){
+        const nextLane=[0,1,2,3].filter(l=>l!==lane&&holdLaneUntil[l]<=t+.22);
+        if(nextLane.length) chart.push({t:t+.22,lane:nextLane[(step+phase)%nextLane.length],type:'normal'});
+      }
+    }
+    step++;
+    const rhythm=difficulty==='MASTER'?[.31,.22,.27,.18,.34,.20,.16,.29]:[.42,.48,.34,.58,.40,.52,.30,.62];
+    let interval=rhythm[(step+phase)%rhythm.length]*settings.spacing;
+    if(difficulty==='EASY' && pattern%4===0) interval*=1.12;
+    if(difficulty==='HARD' && (step%5===2||step%7===4)) interval*=.72;
+    if(difficulty==='MASTER' && (step%3===1||step%5===2)) interval*=.72;
+    t+=interval;
+  }
+  return chart.sort((a,b)=>a.t-b.t);
+}
+function startGame(){
+  cancelAnimationFrame(raf); area.querySelectorAll('.note').forEach(n=>n.remove());
+  notes=makeChart().map((n,i)=>({...n,id:i,spawned:false,done:false,hit:false,el:null,holding:false,holdPoints:0}));
+  totalNotes=notes.length;score=0;combo=0;maxCombo=0;judged=0;counts={PERFECT:0,GREAT:0,GOOD:0,MISS:0};held.clear();holdStart.clear();generated=false;
+  $('score').textContent='0000000';$('combo').textContent='0';$('accuracy').textContent='100.0%';$('progressBar').style.width='0%';$('gameDifficulty').textContent=difficulty;
+  showScreen($('gameScreen'));active=true;startTime=performance.now();lastFrame=startTime;raf=requestAnimationFrame(frame);
+  // Browser-generated tones only; no external music assets.
+  try{audioCtx=new (window.AudioContext||window.webkitAudioContext)();audioCtx.resume();}catch(e){}
+}
+function beep(freq=660,duration=.045,type='sine',volume=.035){
+  if(!audioCtx)return;
+  try{const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type=type;o.frequency.value=freq;g.gain.setValueAtTime(volume,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+duration);o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+duration);}catch(e){}
+}
+function spawn(n){
+  const el=document.createElement('div');el.className='note '+n.type;el.dataset.id=n.id;
+  el.style.left=(n.lane*25+3)+'%';el.style.width='19%';
+  if(n.type==='hold'){const body=document.createElement('div');body.className='hold-body';const fill=document.createElement('div');fill.className='hold-fill';body.appendChild(fill);const status=document.createElement('div');status.className='hold-status';status.textContent='✓ HOLDING';const end=document.createElement('div');end.className='hold-end';el.appendChild(body);el.appendChild(status);el.appendChild(end);el.style.height=Math.min(180,28+n.dur*105)+'px';n.fillEl=fill;}
+  area.appendChild(el);n.el=el;n.spawned=true;
+}
+const hitY=()=>area.clientHeight-52;
+function frame(now){
+  if(!active)return;
+  const elapsed=(now-startTime)/1000,dt=Math.min(.05,(now-lastFrame)/1000);lastFrame=now;
+  $('progressBar').style.width=Math.min(100,elapsed/SONG_LENGTH*100)+'%';
+  const y=hitY();
+  for(const n of notes){
+    if(n.done)continue;
+    const travel=cfg().travel;
+    if(!n.spawned && elapsed>=n.t-travel)spawn(n);
+    if(!n.spawned)continue;
+    const pos=(elapsed-(n.t-travel))/travel;
+    const top=pos*(y-20);
+    n.el.style.top=(top-10)+'px';
+    if(n.type==='hold'&&n.hit&&n.holding){
+      n.holdPoints=Math.max(0,elapsed-(n.holdStartedAt??elapsed));
+      const progress=Math.min(100,n.holdPoints/Math.max(.1,n.dur)*100);
+      if(n.fillEl){n.fillEl.style.height=progress+'%';n.fillEl.style.background='linear-gradient(180deg,#ffffff,#43ffc9)';n.fillEl.style.boxShadow='0 0 22px 8px #74ffd0';}
+      if(n.el)n.el.style.setProperty('--hold-progress',progress+'%');
+      score+=Math.round(65*dt);
+      if(n.holdPoints>=n.dur){
+        clearHold(n, true);
+      }
+      updateHud();
+    }
+    if(!n.hit && elapsed>n.t+.24){judgeNote(n,'MISS');}
+    if(n.hit&&n.type!=='hold'&&!n.done){n.done=true;if(n.el)n.el.remove();}
+    if(n.hit&&n.type==='hold'&&!n.holding&&n.releaseDone){n.done=true;if(n.el)n.el.remove();}
+  }
+  if(elapsed>=SONG_LENGTH+2){finishGame();return;}
+  raf=requestAnimationFrame(frame);
+}
+function nearestNote(lane,now){
+  return notes.filter(n=>!n.done&&!n.hit&&n.lane===lane&&n.spawned).sort((a,b)=>Math.abs(a.t-now)-Math.abs(b.t-now))[0];
+}
+function judgeNote(n,judgement){
+  if(n.done||n.hit)return;
+  n.hit=judgement!=='MISS';n.done=judgement==='MISS';
+  if(judgement==='MISS'){counts.MISS++;combo=0;judged++;if(n.el)n.el.remove();showJudge('MISS','#ff6d9d');}
+  else{
+    counts[judgement]++;combo++;maxCombo=Math.max(maxCombo,combo);judged++;
+    const base=judgement==='PERFECT'?1000:judgement==='GREAT'?700:400;
+    score+=base;
+    if(n.type==='hold'){n.holding=true;n.holdStartedAt=(performance.now()-startTime)/1000;n.holdPoints=0;held.add(n.lane);holdStart.set(n.lane,n);n.releaseDone=false;if(n.el){
+      n.el.classList.add('is-holding');
+      n.el.style.background='linear-gradient(90deg,#baffea,#ffffff)';
+      n.el.style.border='3px solid #ffffff';
+      n.el.style.boxShadow='0 0 16px 5px #74ffd0,0 0 34px 10px #74ffd0,0 0 54px 14px #43f6ba';
+      n.el.style.filter='brightness(1.7)';
+      const st=n.el.querySelector('.hold-status');if(st)st.textContent='● HOLDING!';
+    }
+    const holdBtn=document.querySelector('[data-lane="'+n.lane+'"]');if(holdBtn)holdBtn.classList.add('holding-active');}
+    else {n.done=true;if(n.el)n.el.remove();}
+    showJudge(judgement,judgement==='PERFECT'?'#53efff':judgement==='GREAT'?'#b59aff':'#ffd66f');
+    beep(judgement==='PERFECT'?880:judgement==='GREAT'?660:500,.04);
+  }
+  updateHud();
+}
+function pressLane(lane){
+  if(!active)return;
+  const now=(performance.now()-startTime)/1000;
+  const btn=document.querySelector('[data-lane="'+lane+'"]');if(btn)btn.classList.add('pressed');
+  const laneEl=$('lanes').children[lane]?.querySelector('.lane-flash');if(laneEl)laneEl.classList.add('on');
+  const n=nearestNote(lane,now);if(!n)return;
+  const delta=Math.abs(now-n.t);if(n.type==='simul'&&delta>.19)return;
+  if(delta<=.075)judgeNote(n,'PERFECT');else if(delta<=.13)judgeNote(n,'GREAT');else if(delta<=.19)judgeNote(n,'GOOD');
+}
+function clearHold(n, completed){
+  if(!n || !n.holding)return;
+  n.holding=false;n.releaseDone=true;held.delete(n.lane);holdStart.delete(n.lane);const holdBtn=document.querySelector('[data-lane="'+n.lane+'"]');if(holdBtn)holdBtn.classList.remove('holding-active');
+  if(n.el){n.el.classList.remove('is-holding');n.el.classList.add(completed?'hold-complete':'hold-broken');}
+  if(completed){
+    score+=500;counts.PERFECT++;combo++;maxCombo=Math.max(maxCombo,combo);
+    showJudge('HOLD COMPLETE!','#74ffd0');beep(1040,.08,'triangle',.045);
+  }else{
+    combo=0;showJudge('HOLD MISS — KEEP HOLDING LONGER','#ff6d9d');
+  }
+  updateHud();
+  if(n.el)n.el.remove();
+  n.done=true;
+}
+function releaseLane(lane){
+  const btn=document.querySelector('[data-lane="'+lane+'"]');if(btn)btn.classList.remove('pressed');
+  const laneEl=$('lanes').children[lane]?.querySelector('.lane-flash');if(laneEl)laneEl.classList.remove('on');
+  const n=holdStart.get(lane);
+  if(n&&n.holding){
+    const elapsed=(performance.now()-startTime)/1000;
+    const heldFor=elapsed-(n.holdStartedAt??elapsed);
+    if(heldFor>=n.dur){
+      clearHold(n,true);
+    }else{
+      clearHold(n,false);
+    }
+  }
+}
+function showJudge(text,color){const j=$('judge');j.textContent=text;j.style.color=color;j.classList.remove('show');void j.offsetWidth;j.classList.add('show');}
+function updateHud(){
+  $('score').textContent=String(Math.min(9999999,score)).padStart(7,'0');$('combo').textContent=combo;
+  const total=counts.PERFECT+counts.GREAT+counts.GOOD+counts.MISS;
+  const weighted=counts.PERFECT+counts.GREAT*.7+counts.GOOD*.4;
+  $('accuracy').textContent=(total?weighted/total*100:100).toFixed(1)+'%';
+}
+function finishGame(){
+  active=false;cancelAnimationFrame(raf);held.clear();holdStart.clear();
+  // Remaining notes are counted as misses if not already judged.
+  notes.forEach(n=>{if(!n.done&&!n.hit){n.done=true;counts.MISS++;}if(n.el)n.el.remove();});
+  const total=counts.PERFECT+counts.GREAT+counts.GOOD+counts.MISS;
+  const acc=total?(counts.PERFECT+counts.GREAT*.7+counts.GOOD*.4)/total*100:100;
+  const rank=acc>=90?'S':acc>=75?'A':acc>=55?'B':acc>=30?'C':'D';
+  $('rank').textContent=rank;$('finalScore').textContent=String(score).padStart(7,'0');$('resultScreen').querySelector('.tag').textContent='TRACK COMPLETE // '+difficulty;
+  $('rPerfect').textContent=counts.PERFECT;$('rGreat').textContent=counts.GREAT;$('rGood').textContent=counts.GOOD;$('rMiss').textContent=counts.MISS;$('rCombo').textContent=maxCombo;$('rAcc').textContent=acc.toFixed(1)+'%';
+  if(difficulty==='HARD'&&(rank==='A'||rank==='S')){masterUnlocked=true;try{localStorage.setItem('neonBeatMasterUnlocked','yes');}catch(e){} updateMasterButton(); $('unlockNote').textContent='🎉 HARDで'+rank+'ランク達成！ MASTERが解放されたよ！';}
+  showScreen($('resultScreen'));if(audioCtx){audioCtx.close().catch(()=>{});audioCtx=null;}
+}
+function updateMasterButton(){const b=document.querySelector('[data-difficulty="MASTER"]');if(!b)return;b.classList.toggle('locked',!masterUnlocked);b.querySelector('small').textContent=masterUnlocked?'★ UNLOCKED':'🔒 HARD A以上';b.setAttribute('aria-label',masterUnlocked?'MASTER unlocked':'MASTERはHARDでAランク以上が必要');}
+updateMasterButton();
+// Use registered listeners instead of inline onclick attributes (some mobile previews block inline handlers).
+document.querySelectorAll('.difficulty-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>window.__neonSelectDifficulty(btn.dataset.difficulty));
+});
+$('startBtn').addEventListener('click',()=>window.__neonStartGame());
+$('retryBtn').addEventListener('click',()=>window.__neonStartGame());
+$('homeBtn').addEventListener('click',()=>{active=false;cancelAnimationFrame(raf);if(audioCtx){audioCtx.close().catch(()=>{});audioCtx=null;}showScreen($('startScreen'));});
+document.querySelectorAll('.lane-btn').forEach(btn=>{
+  const lane=Number(btn.dataset.lane);
+  btn.addEventListener('pointerdown',e=>{e.preventDefault();pressLane(lane);});
+  btn.addEventListener('pointerup',e=>{e.preventDefault();releaseLane(lane);});
+  btn.addEventListener('pointercancel',()=>releaseLane(lane));
+});
+window.addEventListener('keydown',e=>{
+  if(e.repeat)return;const lane=keys.indexOf(e.key.toLowerCase());if(lane>=0){e.preventDefault();pressLane(lane);}
+});
+window.addEventListener('keyup',e=>{const lane=keys.indexOf(e.key.toLowerCase());if(lane>=0){e.preventDefault();releaseLane(lane);}});
+window.addEventListener('blur',()=>{[0,1,2,3].forEach(releaseLane);});
+})();
+</script>
+</body>
+</html>
