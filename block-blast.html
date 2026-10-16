@@ -1,0 +1,788 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>BLOCK BLAST</title>
+
+<style>
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: linear-gradient(160deg, #10172e, #080b18);
+  color: white;
+  font-family: system-ui, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 16px 10px;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.game {
+  width: 100%;
+  max-width: 480px;
+  text-align: center;
+}
+
+h1 {
+  margin: 0 0 5px;
+  font-size: 32px;
+  letter-spacing: 2px;
+  color: #75e6ff;
+  text-shadow: 0 0 18px #168aff66;
+}
+
+.subtitle {
+  color: #aab7d8;
+  font-size: 12px;
+  margin-bottom: 18px;
+}
+
+.stats {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.stat {
+  flex: 1;
+  background: #1a2442;
+  border: 1px solid #33466c;
+  border-radius: 12px;
+  padding: 10px 4px;
+}
+
+.stat-label {
+  color: #aab7d8;
+  font-size: 11px;
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: bold;
+  margin-top: 3px;
+}
+
+.board-wrap {
+  position: relative;
+  width: 100%;
+  padding: 7px;
+  border-radius: 14px;
+  background: #182442;
+  border: 1px solid #34496f;
+  box-shadow: 0 8px 30px #0005;
+}
+
+.board {
+  width: 100%;
+  aspect-ratio: 1;
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  grid-template-rows: repeat(8, minmax(0, 1fr));
+  gap: 3px;
+}
+
+.cell {
+  min-width: 0;
+  min-height: 0;
+  background: #283858;
+  border-radius: 4px;
+  position: relative;
+}
+
+.cell.filled {
+  background: var(--block-color);
+  box-shadow: inset 0 2px 0 #ffffff30,
+              inset 0 -3px 0 #0002;
+}
+
+.cell.preview {
+  background: #60f5b0 !important;
+  box-shadow: 0 0 8px #60f5b088;
+}
+
+.cell.preview.bad {
+  background: #ff6478 !important;
+  box-shadow: 0 0 8px #ff647888;
+}
+
+.pieces-title {
+  font-size: 14px;
+  color: #b9c8e8;
+  margin: 18px 0 10px;
+}
+
+.pieces {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  gap: 8px;
+  min-height: 115px;
+  padding: 10px 4px;
+  background: #151f39;
+  border: 1px solid #2c3c60;
+  border-radius: 14px;
+}
+
+.piece-slot {
+  width: 32%;
+  min-width: 0;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+}
+
+.piece-slot.empty {
+  opacity: 0.18;
+}
+
+.piece {
+  display: grid;
+  gap: 3px;
+  touch-action: none;
+  cursor: grab;
+  padding: 4px;
+  border-radius: 8px;
+  position: relative;
+}
+
+.piece:active {
+  cursor: grabbing;
+}
+
+.mini-cell {
+  width: clamp(15px, 4.3vw, 21px);
+  height: clamp(15px, 4.3vw, 21px);
+  max-width: 21px;
+  max-height: 21px;
+  border-radius: 4px;
+  background: var(--block-color);
+  box-shadow: inset 0 2px 0 #ffffff35,
+              inset 0 -2px 0 #0002;
+}
+
+.floating-piece {
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.92;
+  filter: drop-shadow(0 8px 10px #0008);
+  transform: scale(1.12);
+}
+
+.help {
+  margin-top: 12px;
+  font-size: 12px;
+  line-height: 1.8;
+  color: #aab7d8;
+}
+
+button {
+  margin-top: 15px;
+  border: 0;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #25c5ff, #5674ff);
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  padding: 12px 25px;
+  cursor: pointer;
+  box-shadow: 0 5px 18px #326bff40;
+}
+
+button:active {
+  transform: scale(0.97);
+}
+
+.overlay {
+  position: absolute;
+  inset: 7px;
+  border-radius: 10px;
+  background: #091126eF;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  z-index: 5;
+  padding: 20px;
+}
+
+.overlay.show {
+  display: flex;
+}
+
+.overlay h2 {
+  font-size: 30px;
+  margin: 0 0 8px;
+  color: #75e6ff;
+}
+
+.overlay p {
+  color: #c0cbe3;
+  margin: 5px 0;
+}
+
+@media (max-width: 360px) {
+  h1 { font-size: 27px; }
+  .board { gap: 2px; }
+  .board-wrap { padding: 5px; }
+  .pieces { min-height: 100px; }
+  .piece-slot { height: 88px; }
+}
+</style>
+</head>
+
+<body>
+<div class="game">
+  <h1>BLOCK BLAST</h1>
+  <div class="subtitle">DRAG • MATCH • CLEAR</div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-label">SCORE</div>
+      <div class="stat-value" id="score">0</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">BEST</div>
+      <div class="stat-value" id="best">0</div>
+    </div>
+  </div>
+
+  <div class="board-wrap" id="boardWrap">
+    <div class="board" id="board"></div>
+
+    <div class="overlay" id="overlay">
+      <h2>GAME OVER</h2>
+      <p>最終スコア：<span id="finalScore">0</span></p>
+      <p>もう一度チャレンジしよう！</p>
+      <button id="restartOverlay">もう一度遊ぶ</button>
+    </div>
+  </div>
+
+  <div class="pieces-title">ブロックをドラッグして配置！</div>
+  <div class="pieces" id="pieces"></div>
+
+  <div class="help">
+    縦または横の列をそろえて消そう！<br>
+    3つのブロックを使うと、新しいブロックが登場。
+  </div>
+
+  <button id="restart">↻ リスタート</button>
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  const SIZE = 8;
+
+  const COLORS = [
+    "#35c9ff",
+    "#ffb547",
+    "#a77bff",
+    "#ff668a",
+    "#52e6a2",
+    "#ffe45e",
+    "#ff8c50"
+  ];
+
+  // ブロックの形
+  const SHAPES = [
+    [[0,0]],
+    [[0,0],[0,1]],
+    [[0,0],[1,0]],
+    [[0,0],[0,1],[0,2]],
+    [[0,0],[1,0],[2,0]],
+    [[0,0],[0,1],[0,2],[0,3]],
+    [[0,0],[1,0],[2,0],[3,0]],
+    [[0,0],[0,1],[1,0],[1,1]],
+    [[0,0],[0,1],[0,2],[1,0],[1,1],[1,2]],
+    [[0,0],[1,0],[2,0],[0,1],[1,1],[2,1]],
+    [[0,0],[1,0],[1,1]],
+    [[0,0],[0,1],[1,1]],
+    [[0,0],[1,0],[2,0],[2,1]],
+    [[0,1],[1,1],[2,1],[2,0]],
+    [[0,0],[1,0],[1,1],[2,1]],
+    [[0,1],[1,1],[1,0],[2,0]],
+    [[0,0],[0,1],[1,1],[1,2]],
+    [[0,1],[0,2],[1,0],[1,1]],
+    [[0,0],[0,1],[0,2],[1,1]],
+    [[0,1],[1,0],[1,1],[1,2],[2,1]],
+    [[0,0],[1,0],[2,0],[1,1]],
+    [[0,1],[1,1],[2,1],[1,0]],
+    [[0,0],[1,0],[2,0],[2,1],[2,2]],
+    [[0,0],[0,1],[0,2],[1,0],[2,0]],
+    [[0,0],[0,1],[1,1],[1,2]]
+  ];
+
+  const boardEl = document.getElementById("board");
+  const boardWrap = document.getElementById("boardWrap");
+  const piecesEl = document.getElementById("pieces");
+  const scoreEl = document.getElementById("score");
+  const bestEl = document.getElementById("best");
+  const overlay = document.getElementById("overlay");
+  const finalScoreEl = document.getElementById("finalScore");
+
+  let grid = [];
+  let cells = [];
+  let pieces = [];
+  let score = 0;
+  let best = 0;
+  let gameOver = false;
+  let drag = null;
+  let floating = null;
+
+  try {
+    best = Number(localStorage.getItem("blockBlastBest")) || 0;
+  } catch (_) {}
+
+  bestEl.textContent = best;
+
+  function randomColor() {
+    return COLORS[Math.floor(Math.random() * COLORS.length)];
+  }
+
+  function randomShape() {
+    const shape = SHAPES[
+      Math.floor(Math.random() * SHAPES.length)
+    ];
+
+    return {
+      shape: shape.map(([r,c]) => [r,c]),
+      color: randomColor()
+    };
+  }
+
+  function resetGame() {
+    grid = Array.from(
+      { length: SIZE },
+      () => Array(SIZE).fill(null)
+    );
+
+    score = 0;
+    gameOver = false;
+    drag = null;
+
+    overlay.classList.remove("show");
+
+    scoreEl.textContent = score;
+    createBoard();
+
+    pieces = [randomShape(), randomShape(), randomShape()];
+    renderPieces();
+  }
+
+  function createBoard() {
+    boardEl.innerHTML = "";
+    cells = [];
+
+    for (let r = 0; r < SIZE; r++) {
+      cells[r] = [];
+
+      for (let c = 0; c < SIZE; c++) {
+        const cell = document.createElement("div");
+        cell.className = "cell";
+
+        cell.dataset.row = r;
+        cell.dataset.col = c;
+
+        boardEl.appendChild(cell);
+        cells[r][c] = cell;
+      }
+    }
+
+    renderBoard();
+  }
+
+  function renderBoard() {
+    for (let r = 0; r < SIZE; r++) {
+      for (let c = 0; c < SIZE; c++) {
+        const cell = cells[r][c];
+        const color = grid[r][c];
+
+        cell.classList.remove("filled", "preview", "bad");
+        cell.style.removeProperty("--block-color");
+
+        if (color) {
+          cell.classList.add("filled");
+          cell.style.setProperty("--block-color", color);
+        }
+      }
+    }
+  }
+
+  function renderPieces() {
+    piecesEl.innerHTML = "";
+
+    pieces.forEach((piece, index) => {
+      const slot = document.createElement("div");
+      slot.className = "piece-slot";
+
+      if (!piece) {
+        slot.classList.add("empty");
+        piecesEl.appendChild(slot);
+        return;
+      }
+
+      const element = document.createElement("div");
+      element.className = "piece";
+      element.dataset.index = index;
+      element.style.setProperty("--block-color", piece.color);
+
+      const rows = piece.shape.map(p => p[0]);
+      const cols = piece.shape.map(p => p[1]);
+
+      const height = Math.max(...rows) + 1;
+      const width = Math.max(...cols) + 1;
+
+      element.style.gridTemplateColumns =
+        `repeat(${width}, auto)`;
+
+      element.style.gridTemplateRows =
+        `repeat(${height}, auto)`;
+
+      for (let r = 0; r < height; r++) {
+        for (let c = 0; c < width; c++) {
+          const mini = document.createElement("div");
+          mini.className = "mini-cell";
+
+          if (!piece.shape.some(
+            ([pr,pc]) => pr === r && pc === c
+          )) {
+            mini.style.visibility = "hidden";
+          }
+
+          element.appendChild(mini);
+        }
+      }
+
+      element.addEventListener("pointerdown", event => {
+        startDrag(event, index, element);
+      });
+
+      slot.appendChild(element);
+      piecesEl.appendChild(slot);
+    });
+  }
+
+  function startDrag(event, index, element) {
+    if (gameOver || !pieces[index] || drag) return;
+
+    event.preventDefault();
+
+    const piece = pieces[index];
+    const shape = piece.shape;
+
+    const rows = shape.map(p => p[0]);
+    const cols = shape.map(p => p[1]);
+
+    const height = Math.max(...rows) + 1;
+    const width = Math.max(...cols) + 1;
+
+    floating = element.cloneNode(true);
+    floating.classList.add("floating-piece");
+    floating.style.gridTemplateColumns =
+      `repeat(${width}, auto)`;
+
+    document.body.appendChild(floating);
+
+    drag = {
+      index,
+      piece,
+      height,
+      width,
+      x: event.clientX,
+      y: event.clientY
+    };
+
+    element.style.visibility = "hidden";
+
+    moveFloating(event.clientX, event.clientY);
+    updatePreview(event.clientX, event.clientY);
+
+    document.addEventListener("pointermove", onPointerMove, {
+      passive: false
+    });
+
+    document.addEventListener("pointerup", onPointerUp);
+    document.addEventListener("pointercancel", cancelDrag);
+  }
+
+  function moveFloating(x, y) {
+    if (!floating || !drag) return;
+
+    // 指・マウスの位置をブロックの中央に合わせる
+    floating.style.left =
+      (x - floating.offsetWidth / 2) + "px";
+
+    floating.style.top =
+      (y - floating.offsetHeight / 2) + "px";
+  }
+
+  function getDropPosition(x, y) {
+    const rect = boardEl.getBoundingClientRect();
+
+    if (
+      x < rect.left || x > rect.right ||
+      y < rect.top || y > rect.bottom
+    ) {
+      return null;
+    }
+
+    const cellWidth = rect.width / SIZE;
+    const cellHeight = rect.height / SIZE;
+
+    const targetCol = Math.floor((x - rect.left) / cellWidth);
+    const targetRow = Math.floor((y - rect.top) / cellHeight);
+
+    return {
+      row: targetRow - Math.floor(drag.height / 2),
+      col: targetCol - Math.floor(drag.width / 2)
+    };
+  }
+
+  function canPlace(piece, row, col) {
+    for (const [dr, dc] of piece.shape) {
+      const r = row + dr;
+      const c = col + dc;
+
+      if (
+        r < 0 || r >= SIZE ||
+        c < 0 || c >= SIZE ||
+        grid[r][c] !== null
+      ) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  function updatePreview(x, y) {
+    renderBoard();
+
+    if (!drag) return;
+
+    const pos = getDropPosition(x, y);
+    if (!pos) return;
+
+    const valid = canPlace(
+      drag.piece,
+      pos.row,
+      pos.col
+    );
+
+    for (const [dr, dc] of drag.piece.shape) {
+      const r = pos.row + dr;
+      const c = pos.col + dc;
+
+      if (
+        r >= 0 && r < SIZE &&
+        c >= 0 && c < SIZE
+      ) {
+        cells[r][c].classList.add(
+          valid ? "preview" : "bad"
+        );
+      }
+    }
+  }
+
+  function onPointerMove(event) {
+    if (!drag) return;
+
+    event.preventDefault();
+
+    moveFloating(event.clientX, event.clientY);
+    updatePreview(event.clientX, event.clientY);
+  }
+
+  function onPointerUp(event) {
+    if (!drag) return;
+
+    const pos = getDropPosition(
+      event.clientX,
+      event.clientY
+    );
+
+    if (
+      pos &&
+      canPlace(drag.piece, pos.row, pos.col)
+    ) {
+      placePiece(
+        drag.piece,
+        pos.row,
+        pos.col
+      );
+
+      pieces[drag.index] = null;
+
+      finishDrag();
+
+      renderBoard();
+      renderPieces();
+
+      checkLines();
+
+      if (pieces.every(piece => piece === null)) {
+        pieces = [
+          randomShape(),
+          randomShape(),
+          randomShape()
+        ];
+
+        renderPieces();
+      }
+
+      checkGameOver();
+    } else {
+      finishDrag();
+      renderBoard();
+    }
+  }
+
+  function cancelDrag() {
+    if (!drag) return;
+
+    finishDrag();
+    renderBoard();
+  }
+
+  function finishDrag() {
+    if (floating) {
+      floating.remove();
+      floating = null;
+    }
+
+    drag = null;
+
+    document.removeEventListener("pointermove", onPointerMove);
+    document.removeEventListener("pointerup", onPointerUp);
+    document.removeEventListener("pointercancel", cancelDrag);
+
+    renderPieces();
+  }
+
+  function placePiece(piece, row, col) {
+    for (const [dr, dc] of piece.shape) {
+      grid[row + dr][col + dc] = piece.color;
+    }
+
+    score += piece.shape.length;
+    updateScore();
+  }
+
+  function checkLines() {
+    const fullRows = [];
+    const fullCols = [];
+
+    for (let r = 0; r < SIZE; r++) {
+      if (grid[r].every(cell => cell !== null)) {
+        fullRows.push(r);
+      }
+    }
+
+    for (let c = 0; c < SIZE; c++) {
+      let full = true;
+
+      for (let r = 0; r < SIZE; r++) {
+        if (grid[r][c] === null) {
+          full = false;
+          break;
+        }
+      }
+
+      if (full) fullCols.push(c);
+    }
+
+    const clearCount = fullRows.length + fullCols.length;
+
+    if (clearCount === 0) return;
+
+    // 行・列が重なっても、同じマスは1回だけ数える
+    const toClear = new Set();
+
+    for (const r of fullRows) {
+      for (let c = 0; c < SIZE; c++) {
+        toClear.add(`${r},${c}`);
+      }
+    }
+
+    for (const c of fullCols) {
+      for (let r = 0; r < SIZE; r++) {
+        toClear.add(`${r},${c}`);
+      }
+    }
+
+    toClear.forEach(key => {
+      const [r, c] = key.split(",").map(Number);
+      grid[r][c] = null;
+    });
+
+    // 消した列の数に応じてボーナス
+    score += toClear.size * 2 + clearCount * 10;
+
+    updateScore();
+    renderBoard();
+  }
+
+  function updateScore() {
+    scoreEl.textContent = score;
+
+    if (score > best) {
+      best = score;
+      bestEl.textContent = best;
+
+      try {
+        localStorage.setItem("blockBlastBest", best);
+      } catch (_) {}
+    }
+  }
+
+  function checkGameOver() {
+    const remaining = pieces.filter(Boolean);
+
+    if (remaining.length === 0) return;
+
+    // 残っているどのブロックも置けない場合は終了
+    const hasMove = remaining.some(piece => {
+      for (let r = 0; r < SIZE; r++) {
+        for (let c = 0; c < SIZE; c++) {
+          if (canPlace(piece, r, c)) return true;
+        }
+      }
+
+      return false;
+    });
+
+    if (!hasMove) {
+      gameOver = true;
+      finalScoreEl.textContent = score;
+      overlay.classList.add("show");
+    }
+  }
+
+  document.getElementById("restart").addEventListener(
+    "click",
+    resetGame
+  );
+
+  document.getElementById("restartOverlay").addEventListener(
+    "click",
+    resetGame
+  );
+
+  resetGame();
+})();
+</script>
+</body>
+</html>
