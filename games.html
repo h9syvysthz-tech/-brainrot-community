@@ -1,1 +1,194 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BRAINROT GAME CENTER</title>
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;
+  min-height:100vh;
+  background:#080b20;
+  color:white;
+  font-family:system-ui,sans-serif;
+  overflow-x:hidden;
+}
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:-1;
+  background:
+    radial-gradient(ellipse at 15% 10%,#5426a655,transparent 55%),
+    radial-gradient(ellipse at 85% 75%,#007bff44,transparent 55%);
+  pointer-events:none;
+}
+header{
+  text-align:center;
+  padding:55px 20px 35px;
+}
+.logo{
+  font-size:13px;
+  font-weight:900;
+  letter-spacing:4px;
+  color:#9b9cff;
+}
+h1{
+  font-size:clamp(30px,8vw,54px);
+  margin:12px 0;
+  background:linear-gradient(90deg,#64e8ff,#bd82ff,#ff74c8);
+  background-clip:text;
+  -webkit-background-clip:text;
+  color:transparent;
+}
+.subtitle{color:#b7c2dd;font-size:14px}
+.count{
+  display:inline-block;
+  margin-top:18px;
+  padding:9px 20px;
+  background:#ffffff12;
+  border:1px solid #ffffff28;
+  border-radius:30px;
+  font-weight:bold;
+}
+main{
+  max-width:1000px;
+  margin:auto;
+  padding:15px 18px 55px;
+}
+h2{font-size:21px;margin-bottom:20px}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:15px;
+}
+.game{
+  display:flex;
+  flex-direction:column;
+  text-decoration:none;
+  color:white;
+  padding:22px 13px;
+  border-radius:20px;
+  background:linear-gradient(145deg,#1e2749,#11162e);
+  border:1px solid #ffffff25;
+  text-align:center;
+  transition:transform .2s,border-color .2s;
+}
+.game:active{transform:scale(.96)}
+.game:hover{border-color:#a78bfa}
+.emoji{font-size:46px;margin-bottom:14px}
+.name{
+  font-size:16px;
+  font-weight:900;
+  min-height:44px;
+}
+.desc{
+  font-size:12px;
+  line-height:1.6;
+  color:#b7c2dd;
+  flex:1;
+  margin:9px 0 18px;
+}
+.play{
+  display:block;
+  background:linear-gradient(90deg,#5855eb,#a855f7);
+  padding:11px 5px;
+  border-radius:12px;
+  font-size:13px;
+  font-weight:900;
+}
+.back{
+  display:block;
+  max-width:420px;
+  margin:38px auto 0;
+  padding:16px;
+  border-radius:14px;
+  background:#ffffff12;
+  border:1px solid #ffffff35;
+  text-align:center;
+  color:white;
+  text-decoration:none;
+  font-weight:bold;
+}
+footer{
+  text-align:center;
+  padding:25px;
+  color:#7c89aa;
+  font-size:12px;
+}
+@media(min-width:700px){
+  .grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .game{padding:30px 20px}
+}
+</style>
+</head>
+<body>
 
+<header>
+  <div class="logo">BRAINROT COMMUNITY</div>
+  <h1>🎮 GAME CENTER</h1>
+  <p class="subtitle">好きなゲームを選んで、今すぐプレイ！</p>
+  <div class="count">✨ 全6種類のミニゲーム</div>
+</header>
+
+<main>
+  <h2>🔥 GAME SELECT</h2>
+
+  <div class="grid">
+
+    <a class="game" href="game.html">
+      <div class="emoji">🧠</div>
+      <div class="name">SCORE BATTLE</div>
+      <div class="desc">30秒で高得点を目指せ！オンラインランキング対応。</div>
+      <span class="play">▶ PLAY NOW</span>
+    </a>
+
+    <a class="game" href="bomb-game.html">
+      <div class="emoji">💣</div>
+      <div class="name">爆弾を避けろ！</div>
+      <div class="desc">左右に動いて落ちてくる爆弾を避けよう！</div>
+      <span class="play">▶ PLAY NOW</span>
+    </a>
+
+    <a class="game" href="shooting-game.html">
+      <div class="emoji">🚀</div>
+      <div class="name">SHOOTING GAME</div>
+      <div class="desc">敵を撃破して強力なボスに挑戦しよう！</div>
+      <span class="play">▶ PLAY NOW</span>
+    </a>
+
+    <a class="game" href="neon-beat.html">
+      <div class="emoji">🎵</div>
+      <div class="name">NEON BEAT</div>
+      <div class="desc">リズムに合わせてタイミングよくタップ！</div>
+      <span class="play">▶ PLAY NOW</span>
+    </a>
+
+    <a class="game" href="block-blast.html">
+      <div class="emoji">🧱</div>
+      <div class="name">BLOCK BLAST</div>
+      <div class="desc">ブロックをそろえてハイスコアを目指そう！</div>
+      <span class="play">▶ PLAY NOW</span>
+    </a>
+
+    <a class="game" href="neon-dash.html">
+      <div class="emoji">⚡</div>
+      <div class="name">NEON DASH</div>
+      <div class="desc">障害物を避けてどこまで進めるか挑戦！</div>
+      <span class="play">▶ PLAY NOW</span>
+    </a>
+
+  </div>
+
+  <a class="back" href="index.html">
+    🏠 コミュニティサイトに戻る →
+  </a>
+</main>
+
+<footer>
+  BRAINROT GAME CENTER © 2026
+</footer>
+
+</body>
+</html>
