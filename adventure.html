@@ -1,1 +1,986 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>勇者の冒険 - セーブ対応RPG</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#101626;color:#f5f3e8;font-family:system-ui,sans-serif}
+h1{text-align:center;color:#ffdf83;font-size:24px;margin:14px 0 3px}
+.subtitle{text-align:center;color:#aab5d2;font-size:12px;margin-bottom:12px}
+.game{width:min(96%,650px);margin:auto;padding-bottom:25px}
+.panel{background:#202942;border:1px solid #4b5e81;border-radius:10px;padding:10px;margin-bottom:10px}
+.status{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stat{font-size:13px;line-height:1.7}
+.stat strong{color:#ffdf83}
+.meter{height:9px;background:#111827;border-radius:8px;overflow:hidden}
+.meter div{height:100%;transition:width .2s}
+.hp{background:#52d78b}.mp{background:#59aaff}
+.gold{color:#ffdc68}
+#map{display:grid;grid-template-columns:repeat(11,1fr);gap:2px;background:#121a28;padding:5px;border:2px solid #63789c;border-radius:9px}
+.tile{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border:0;border-radius:3px;padding:0;font-size:clamp(15px,4.4vw,26px);background:#52774b;cursor:pointer}
+.tile.grass{background:#52774b}.tile.path{background:#b49a69}
+.tile.water{background:#3a719d}.tile.tree{background:#294d38}.tile.shop{background:#b49a69}
+.tile.hero{background:#e2c16a;box-shadow:inset 0 0 0 2px #fff4a0}
+.tile.boss-talkable{background:#8051a8;box-shadow:inset 0 0 0 2px #d6a6ff}
+.tile.hero.boss-talkable{background:#8051a8;box-shadow:inset 0 0 0 3px #ffe88a}
+.legend{font-size:11px;color:#bdc8df;margin-top:7px;line-height:1.7}
+h2{font-size:16px;color:#ffdf83;margin:0 0 8px}
+.log{font-size:13px;line-height:1.6;min-height:42px;white-space:pre-line}
+.controls{display:flex;gap:12px;justify-content:center;align-items:center;margin:10px 0}
+.pad{display:grid;grid-template-columns:48px 48px 48px;grid-template-rows:44px 44px 44px;gap:3px}
+button{font:inherit;color:white;background:#293c60;border:1px solid #7189b6;border-radius:8px;padding:10px;cursor:pointer}
+button:active{transform:scale(.96)}
+button:disabled{opacity:.4;cursor:default}
+.pad button{padding:0;font-size:20px;touch-action:none}
+.up{grid-column:2;grid-row:1}.left{grid-column:1;grid-row:2}.down{grid-column:2;grid-row:2}.right{grid-column:3;grid-row:2}
+.action-buttons{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.action-buttons button{font-size:13px}
+.primary{background:#76512b;border-color:#d9a75d}
+.green{background:#31553d;border-color:#7ab889}
+.blue{background:#283f70;border-color:#6c9bff}
+.purple{background:#49344c;border-color:#a77ab2}
+.small{font-size:11px;color:#aab5d2}
+.hidden{display:none!important}
+#battleScene{background:linear-gradient(#172b49,#2b3b45 75%,#334b3b);border:2px solid #63789c;border-radius:10px;padding:12px;text-align:center}
+.monster{font-size:65px;line-height:1.2}
+.battle-name{color:#ffdf83;font-weight:bold}
+.battle-bars{max-width:300px;margin:5px auto 10px;text-align:left;font-size:12px}
+.battle-commands{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px}
+.battle-commands button{min-height:44px}
+.shop-list{display:grid;gap:7px}
+.shop-item{display:flex;justify-content:space-between;align-items:center;gap:8px;background:#151e32;border:1px solid #3e5276;border-radius:8px;padding:8px;font-size:13px}
+.shop-item button{padding:8px 10px;white-space:nowrap}
+#overlay{position:fixed;inset:0;background:#0009;display:flex;align-items:center;justify-content:center;padding:15px;z-index:10}
+.dialog{width:min(100%,480px);max-height:85vh;overflow:auto;background:#202942;border:2px solid #8799c1;border-radius:12px;padding:14px}
+.dialog h2{margin-bottom:12px}
+.close{width:100%;margin-top:10px;background:#49344c}
+.savebar{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:10px}
+.savebar button{font-size:13px}
+#saveStatus{font-size:11px;color:#aab5d2;text-align:center;margin:5px}
+</style>
+</head>
+<body>
+<h1>⚔ 勇者の冒険 ⚔</h1>
+<div class="subtitle">探索・装備・町・宿屋・セーブ対応RPG</div>
 
+<div class="game">
+  <div class="panel status">
+    <div class="stat">
+      <strong>🧙 勇者 Lv.<span id="level">1</span></strong><br>
+      HP <span id="hpText"></span>
+      <div class="meter"><div class="hp" id="hpBar"></div></div>
+      MP <span id="mpText"></span>
+      <div class="meter"><div class="mp" id="mpBar"></div></div>
+      EXP <span id="expText"></span>
+    </div>
+    <div class="stat">
+      <strong>💰 <span class="gold" id="goldText">0</span> G</strong><br>
+      ⚔ 攻撃力 <span id="atkText"></span><br>
+      🛡 防御力 <span id="defText"></span><br>
+      🌿 薬草 <span id="herbText"></span><br>
+      🌱 上薬草 <span id="highHerbText"></span><br>
+      🔵 MP薬 <span id="manaText"></span>　
+      🔷 上MP薬 <span id="highManaText"></span>
+    </div>
+  </div>
+
+  <div class="savebar">
+    <button onclick="manualSave()">💾 セーブ</button>
+    <button onclick="loadGame()">📂 ロード</button>
+  </div>
+  <div id="saveStatus">セーブデータを確認中…</div>
+
+  <section id="exploration">
+    <div class="panel">
+      <h2>🌲 フィールド探索</h2>
+      <div id="map"></div>
+      <div class="legend">🧙 あなた　🏘️ 町（商人・宿屋）　🏰 魔王城　✨ 天界（魔王撃破後）　🌳 森／城壁　🟦 水　🌿 草原<br>
+      🏰の城門マスへ進むと魔王城へ。城の奥の👿に近づいて「話す・調べる」を押すとボス戦！</div>
+    </div>
+
+    <div class="controls">
+      <div class="pad">
+        <button class="up" data-move="0,-1">▲</button>
+        <button class="left" data-move="-1,0">◀</button>
+        <button class="down" data-move="0,1">▼</button>
+        <button class="right" data-move="1,0">▶</button>
+      </div>
+      <div style="display:grid;gap:7px">
+        <button onclick="openInventory()">🎒 持ち物・装備</button>
+        <button class="purple" onclick="talkOrInspect()">💬 話す・調べる</button>
+        <button onclick="newGameConfirm()">🆕 新しい冒険</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="battleSection" class="hidden">
+    <div class="panel">
+      <h2>⚔ モンスターとの戦闘</h2>
+      <div id="battleScene">
+        <div class="battle-name" id="enemyName"></div>
+        <div class="monster" id="enemyFace"></div>
+        <div class="battle-bars">
+          HP <span id="enemyHPText"></span>
+          <div class="meter"><div class="hp" id="enemyHPBar"></div></div>
+        </div>
+      </div>
+      <div class="log" id="battleLog"></div>
+      <div class="battle-commands" id="battleCommands"></div>
+    </div>
+  </section>
+
+  <div class="panel log" id="worldLog">冒険の始まりだ！ フィールドを歩いてみよう。</div>
+  <div class="small" style="text-align:center">PC：矢印キー / WASD　スマホ：方向ボタン<br>
+  呪文：Lv.3 ヒャド、Lv.4 ギラ、Lv.6 バギ、Lv.7 ベホイミ、Lv.10 イオ、Lv.12 ライデイン、Lv.15 ベホマ</div>
+</div>
+
+<div id="overlay" class="hidden">
+  <div class="dialog"><div id="dialogContent"></div></div>
+</div>
+
+<script>
+"use strict";
+
+const SAVE_KEY = "heroAdventureSave_v2";
+
+const heroDefaults = {
+  x:1,y:1,level:1,
+  hp:40,maxHP:40,mp:12,maxMP:12,
+  baseAtk:8,baseDef:2,exp:0,gold:35,
+  herbs:2,highHerbs:0,
+  manaPotions:1,highManaPotions:0,
+  weapon:null,armor:null
+};
+
+let hero = structuredClone(heroDefaults);
+
+const weapons=[
+  {name:"木の剣",atk:3,price:20},
+  {name:"鉄の剣",atk:7,price:65},
+  {name:"鋼の剣",atk:12,price:150},
+  {name:"勇者の剣",atk:20,price:350}
+];
+const armors=[
+  {name:"布の服",def:2,price:20},
+  {name:"革の鎧",def:5,price:60},
+  {name:"鉄の鎧",def:9,price:140},
+  {name:"勇者の鎧",def:15,price:320}
+];
+
+const goods=[
+  {id:"herb",name:"薬草",desc:"HPを25回復",price:12},
+  {id:"highHerb",name:"上薬草",desc:"HPを50回復",price:35},
+  {id:"mana",name:"魔力の薬",desc:"MPを8回復",price:18},
+  {id:"highMana",name:"上魔力の薬",desc:"MPを18回復",price:42}
+];
+
+const fieldMap=[
+  "###########",
+  "#...#.....#",
+  "#...#..S..#",
+  "#.........C",
+  "#.##...##.#",
+  "#.......K.#",
+  "#...~.....#",
+  "#...~.....#",
+  "###########"
+];
+
+// 魔王城：入口から奥へ進むと魔王がいる。#は壁、Eは出口、Bは魔王。
+const castleMap=[
+  "###########",
+  "#EH.......#",
+  "#.###.###.#",
+  "#...#.....#",
+  "###.#.###.#",
+  "#.........#",
+  "#.#####..B#",
+  "#.........#",
+  "###########"
+];
+// 魔王を倒すと城の「天界への門 H」が使える。天界のGが最終ボスGOD。
+const heavenMap=[
+  "###########",
+  "#E........#",
+  "#.###.###.#",
+  "#.........#",
+  "#.###.###.#",
+  "#.........#",
+  "#.#######G#",
+  "#.........#",
+  "###########"
+];
+let area="field";
+let demonKingDefeated=false;
+let cerberusDefeated=false;
+let godDefeated=false;
+function activeMap(){return area==="castle"?castleMap:area==="heaven"?heavenMap:fieldMap;}
+
+const monsterTypes=[
+  {name:"スライム",face:"🟢",maxHP:22,atk:6,def:1,exp:8,gold:6},
+  {name:"ゴブリン",face:"👺",maxHP:38,atk:10,def:2,exp:16,gold:13},
+  {name:"オオカミ",face:"🐺",maxHP:45,atk:12,def:3,exp:22,gold:18},
+  {name:"ドラゴン",face:"🐉",maxHP:78,atk:16,def:5,exp:42,gold:35}
+];
+
+let mode="explore";
+let enemy=null;
+let battleBusy=false;
+let encounterCount=0;
+let battleToken=0;
+
+const mapEl=document.getElementById("map");
+const worldLog=document.getElementById("worldLog");
+const overlay=document.getElementById("overlay");
+const dialogContent=document.getElementById("dialogContent");
+
+function rand(min,max){
+  return Math.floor(Math.random()*(max-min+1))+min;
+}
+function say(text){worldLog.textContent=text;}
+function totalAtk(){return hero.baseAtk+(hero.weapon?hero.weapon.atk:0);}
+function totalDef(){return hero.baseDef+(hero.armor?hero.armor.def:0);}
+function currentTile(){return activeMap()[hero.y][hero.x];}
+
+function updateStatus(){
+  document.getElementById("level").textContent=hero.level;
+  document.getElementById("hpText").textContent=`${hero.hp}/${hero.maxHP}`;
+  document.getElementById("mpText").textContent=`${hero.mp}/${hero.maxMP}`;
+  document.getElementById("hpBar").style.width=(hero.hp/hero.maxHP*100)+"%";
+  document.getElementById("mpBar").style.width=(hero.mp/hero.maxMP*100)+"%";
+  document.getElementById("expText").textContent=hero.exp;
+  document.getElementById("goldText").textContent=hero.gold;
+  document.getElementById("atkText").textContent=totalAtk();
+  document.getElementById("defText").textContent=totalDef();
+  document.getElementById("herbText").textContent=hero.herbs;
+  document.getElementById("highHerbText").textContent=hero.highHerbs;
+  document.getElementById("manaText").textContent=hero.manaPotions;
+  document.getElementById("highManaText").textContent=hero.highManaPotions;
+}
+
+function showDialog(html){
+  dialogContent.innerHTML=html;
+  overlay.classList.remove("hidden");
+}
+function closeDialog(){overlay.classList.add("hidden");}
+
+function renderMap(){
+  mapEl.innerHTML="";
+  const grid=activeMap();
+  for(let y=0;y<grid.length;y++){
+    for(let x=0;x<grid[y].length;x++){
+      const tile=grid[y][x];
+      const b=document.createElement("button");
+      b.className="tile";
+      let icon="";
+      if(tile==="#"){b.classList.add("tree");icon=area==="castle"?"🧱":"🌳";}
+      else if(tile==="~"){b.classList.add("water");icon="🟦";}
+      else if(tile==="S"){b.classList.add("shop");icon="🏘️";}
+      else if(tile==="C"){b.classList.add("shop");icon="🏰";}
+      else if(tile==="E"){b.classList.add("path");icon="🚪";}
+      else if(tile==="H"){b.classList.add("path");icon=demonKingDefeated?"✨":"🔒";}
+      else if(tile==="B"){b.classList.add("path");icon=demonKingDefeated?"👑":"👿";}
+      else if(tile==="K"){b.classList.add("path");icon=cerberusDefeated?"☠️":"🐺🐺🐺";}
+      else if(tile==="G"){b.classList.add("path");icon=godDefeated?"🌟":"🌌";}
+      else{b.classList.add("grass");icon=area==="castle"?"⬛":"🌿";}
+      const bossNear = area==="castle"
+        ? (!demonKingDefeated && Math.abs(x-9)+Math.abs(y-6)===1)
+        : area==="heaven"
+          ? (!godDefeated && Math.abs(x-9)+Math.abs(y-6)===1)
+          : (!cerberusDefeated && Math.abs(x-8)+Math.abs(y-5)===1);
+      if(bossNear)b.classList.add("boss-talkable");
+      if(hero.x===x&&hero.y===y){b.classList.add("hero");icon="🧙";}
+      b.textContent=icon;
+      b.addEventListener("click",()=>{
+        const dx=x-hero.x,dy=y-hero.y;
+        if(Math.abs(dx)+Math.abs(dy)===1)move(dx,dy);
+      });
+      mapEl.appendChild(b);
+    }
+  }
+  const title=document.querySelector("#exploration h2");
+  title.textContent=area==="castle"?"🏰 魔王城":area==="heaven"?"☁️ 天界":"🌲 フィールド探索";
+}
+
+// ===== セーブ・ロード =====
+function saveGame(showMessage=true){
+  // 戦闘中は戦闘状態を保存せず、探索地点とキャラクター情報を保存
+  const data={
+    version:6,
+    hero:hero,
+    area:area,
+    demonKingDefeated:demonKingDefeated,
+    cerberusDefeated:cerberusDefeated,
+    godDefeated:godDefeated,
+    encounterCount:encounterCount,
+    savedAt:new Date().toISOString()
+  };
+  try{
+    localStorage.setItem(SAVE_KEY,JSON.stringify(data));
+    document.getElementById("saveStatus").textContent=
+      "💾 セーブ済み："+new Date().toLocaleTimeString();
+    if(showMessage)say("冒険の進行状況をセーブした！");
+    return true;
+  }catch(e){
+    document.getElementById("saveStatus").textContent="セーブできませんでした";
+    if(showMessage)say("保存に失敗した。ブラウザの保存設定を確認してね。");
+    return false;
+  }
+}
+function manualSave(){
+  saveGame(true);
+}
+function loadGame(){
+  try{
+    const raw=localStorage.getItem(SAVE_KEY);
+    if(!raw){
+      say("セーブデータが見つからないよ。");
+      return;
+    }
+    const data=JSON.parse(raw);
+    if(!data.hero||![2,3,4,5,6].includes(data.version))throw new Error("invalid save");
+
+    hero={...heroDefaults,...data.hero};
+    encounterCount=data.encounterCount||0;
+    area=data.version>=3&&["castle","heaven"].includes(data.area)?data.area:"field";
+    demonKingDefeated=!!data.demonKingDefeated;
+    cerberusDefeated=!!data.cerberusDefeated;
+    godDefeated=!!data.godDefeated;
+    if(area==="heaven"&&!demonKingDefeated)area="field";
+
+    // ロード時は探索状態から再開
+    mode="explore";
+    enemy=null;
+    battleBusy=false;
+    battleToken++;
+    document.getElementById("battleSection").classList.add("hidden");
+    document.getElementById("exploration").classList.remove("hidden");
+    closeDialog();
+    updateStatus();
+    renderMap();
+    say("セーブデータをロードした！ 冒険を再開しよう。");
+    document.getElementById("saveStatus").textContent="📂 ロード済み";
+  }catch(e){
+    say("セーブデータを読み込めなかった。");
+  }
+}
+function autoSave(){
+  saveGame(false);
+}
+function newGameConfirm(){
+  showDialog(`<h2>🆕 新しい冒険</h2>
+    <p>今の進行状況をリセットして、最初から始める？</p>
+    <button onclick="startNewGame()">新しい冒険を始める</button>
+    <button class="close" onclick="closeDialog()">キャンセル</button>`);
+}
+function startNewGame(){
+  hero=structuredClone(heroDefaults);
+  area="field";
+  demonKingDefeated=false;
+  cerberusDefeated=false;
+  godDefeated=false;
+  hero.weapon={...weapons[0]};
+  hero.armor={...armors[0]};
+  encounterCount=0;
+  mode="explore";
+  enemy=null;
+  battleBusy=false;
+  battleToken++;
+  document.getElementById("battleSection").classList.add("hidden");
+  document.getElementById("exploration").classList.remove("hidden");
+  closeDialog();
+  updateStatus();
+  renderMap();
+  say("新しい冒険が始まった！");
+  autoSave();
+}
+
+// ===== 探索 =====
+function move(dx,dy){
+  if(mode!=="explore"||!overlay.classList.contains("hidden"))return;
+  const grid=activeMap();
+  const nx=hero.x+dx,ny=hero.y+dy;
+  if(ny<0||ny>=grid.length||nx<0||nx>=grid[0].length)return;
+  const tile=grid[ny][nx];
+  if(tile==="B"||tile==="K"||tile==="G"){
+    const msg=tile==="K"
+      ?(cerberusDefeated?"ケルベロスを倒した場所だ。":"ケルベロスが立ちはだかっている！ 隣で「話す・調べる」を押そう。")
+      :tile==="B"
+        ?(demonKingDefeated?"魔王を倒した場所だ。":"魔王が立ちはだかっている！ 隣で「話す・調べる」を押そう。")
+        :(godDefeated?"GODを倒した場所だ。":"GODの前にたどり着いた！ 隣で「話す・調べる」を押そう。");
+    say(msg);return;
+  }
+  if(tile==="#"||tile==="~"){
+    say(tile==="#"?(area==="castle"?"城壁が道をふさいでいる。":"森が道をふさいでいる。"):"水の中には入れない。");
+    return;
+  }
+
+  // フィールドの城門から魔王城へ。城の入口からフィールドへ戻れる。
+  if(area==="field"&&tile==="C"){
+    if(!cerberusDefeated){
+      say("魔王城の門は閉ざされている。まずフィールドのケルベロスを倒そう！");
+      return;
+    }
+    area="castle";hero.x=1;hero.y=1;
+    renderMap();say("魔王城に足を踏み入れた……！ 奥から強い魔力を感じる。");
+    autoSave();return;
+  }
+  if(area==="castle"&&tile==="H"){
+    if(!demonKingDefeated){
+      say("天界への門は閉ざされている。まず魔王を倒そう！");
+      return;
+    }
+    area="heaven";hero.x=1;hero.y=1;
+    renderMap();say("天界への門が開いた！ 雲上の世界へ進もう。");
+    autoSave();return;
+  }
+  if(area==="castle"&&tile==="E"){
+    area="field";hero.x=9;hero.y=3;
+    renderMap();say("魔王城を出てフィールドに戻った。");
+    autoSave();return;
+  }
+  if(area==="heaven"&&tile==="E"){
+    area="castle";hero.x=1;hero.y=1;
+    renderMap();say("天界から魔王城へ戻った。");
+    autoSave();return;
+  }
+
+  hero.x=nx;hero.y=ny;
+  renderMap();autoSave();
+
+  if(tile==="S"){say("町に着いた！「話す・調べる」で商人や宿屋を利用できる。");return;}
+  if(area==="castle"){
+    say("魔王城を探索中……強敵が潜んでいる！");
+    if(Math.random()<0.38)startEncounter();
+  }else if(area==="heaven"){
+    say("天界を探索中……強大な敵の気配がする！");
+    if(Math.random()<0.42)startEncounter();
+  }else{
+    say("フィールドを探索中……");
+    if(Math.random()<0.23)startEncounter();
+  }
+}
+
+function talkOrInspect(){
+  if(mode!=="explore"||!overlay.classList.contains("hidden"))return;
+  if(area==="field"&&currentTile()==="S"){
+    renderTown();
+    return;
+  }
+  if(area==="field"){
+    const bossX=8,bossY=5;
+    const nearBoss=Math.abs(hero.x-bossX)+Math.abs(hero.y-bossY)<=1;
+    if(nearBoss&&!cerberusDefeated){
+      showDialog(`<h2>🐺🐺🐺 ケルベロス</h2>
+        <p>三つの頭を持つ魔獣が道をふさいでいる！</p>
+        <p>ケルベロス「ここから先へは行かせぬ！」</p>
+        <button class="primary" onclick="closeDialog();startCerberusBattle()">ケルベロスに挑む</button>
+        <button class="close" onclick="closeDialog()">準備する</button>`);
+    }else if(cerberusDefeated){
+      say("ケルベロスは倒れ、魔王城への道が開かれている。");
+    }else if(currentTile()==="C"){
+      say("魔王城の門は閉ざされている。ケルベロスを倒す必要がある！");
+    }else{
+      say("周囲を調べた。特に変わったものはない。");
+    }
+  }else if(area==="castle"){
+    if(!cerberusDefeated){
+      say("魔王に挑むには、まずフィールドのケルベロスを倒す必要がある！");
+      return;
+    }
+    const bossX=9,bossY=6;
+    const nearBoss=Math.abs(hero.x-bossX)+Math.abs(hero.y-bossY)<=1;
+    if(nearBoss&&!demonKingDefeated){
+      showDialog(`<h2>👿 魔王</h2>
+        <p>魔王「よくここまで来たな、勇者よ……。この世界を支配するのは私だ！」</p>
+        <p>魔王との決戦が始まる。準備はいいか？</p>
+        <button class="primary" onclick="closeDialog();startDemonKingBattle()">魔王に挑む</button>
+        <button class="close" onclick="closeDialog()">まだ挑まない</button>`);
+    }else if(demonKingDefeated){
+      showDialog(`<h2>👑 魔王城</h2><p>魔王は倒れ、城には静けさが戻った。</p><button class="close" onclick="closeDialog()">閉じる</button>`);
+    }else{
+      say("城の奥から魔王の気配がする。さらに奥へ進もう。");
+    }
+  }else if(area==="heaven"){
+    const bossX=9,bossY=6;
+    const nearBoss=Math.abs(hero.x-bossX)+Math.abs(hero.y-bossY)<=1;
+    if(nearBoss&&!godDefeated){
+      showDialog(`<h2>🌌 GOD</h2>
+        <p>天界を支配する存在が姿を現した……。</p>
+        <p>GOD：HP 10000／攻撃力 777</p>
+        <button class="primary" onclick="closeDialog();startGodBattle()">GODに挑む</button>
+        <button class="close" onclick="closeDialog()">準備する</button>`);
+    }else if(godDefeated){
+      showDialog(`<h2>🌟 天界</h2><p>GODを倒した。天界に静けさが戻った。</p><button class="close" onclick="closeDialog()">閉じる</button>`);
+    }else{
+      say("天界の奥に、圧倒的な存在の気配がする。");
+    }
+  }else if(currentTile()==="C"){
+    say("🏰 魔王城の入口だ。隣の城門マスへ進むと入れる。");
+  }else{
+    say("周囲を調べた。特に変わったものはない。");
+  }
+}
+document.querySelectorAll("[data-move]").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    const [dx,dy]=btn.dataset.move.split(",").map(Number);
+    move(dx,dy);
+  });
+});
+document.addEventListener("keydown",e=>{
+  if(!overlay.classList.contains("hidden"))return;
+  if(mode!=="explore")return;
+  const k=e.key.toLowerCase();
+  if(k==="arrowup"||k==="w")move(0,-1);
+  if(k==="arrowdown"||k==="s")move(0,1);
+  if(k==="arrowleft"||k==="a")move(-1,0);
+  if(k==="arrowright"||k==="d")move(1,0);
+});
+
+// ===== 町（商人・宿屋） =====
+function renderTown(message="町へようこそ。どこを利用する？"){
+  showDialog(`<h2>🏘️ 町</h2>
+    <p>${message}</p>
+    <p class="gold">所持金：${hero.gold} G</p>
+    <button class="primary" onclick="renderShop()">🛒 商人で買い物</button>
+    <button class="green" onclick="restAtInn()">🛏️ 宿屋で休む（10 G）</button>
+    <button class="close" onclick="closeDialog()">町を出る</button>`);
+}
+function restAtInn(){
+  if(hero.gold<10){
+    renderTown("宿屋「休むには10 G必要だよ。」所持金が足りない！");
+    return;
+  }
+  hero.gold-=10;
+  hero.hp=hero.maxHP;
+  hero.mp=hero.maxMP;
+  updateStatus();
+  autoSave();
+  renderTown("宿屋でゆっくり休んだ。HPとMPが全回復した！");
+}
+function renderShop(){
+  let html=`<h2>🛒 商人の店</h2>
+  <p>商人「いらっしゃい！ 装備も道具もそろってるよ。」</p>
+  <p class="gold">所持金：${hero.gold} G</p>
+  <h3>⚔ 武器</h3><div class="shop-list">`;
+  weapons.forEach((item,i)=>{
+    const equipped=hero.weapon?.name===item.name;
+    html+=`<div class="shop-item"><span>${item.name}<br>攻撃 +${item.atk}　${item.price}G</span>
+      <button ${hero.gold<item.price||equipped?"disabled":""} onclick="buyEquipment('weapon',${i})">${equipped?"装備中":"購入"}</button></div>`;
+  });
+  html+=`</div><h3>🛡 防具</h3><div class="shop-list">`;
+  armors.forEach((item,i)=>{
+    const equipped=hero.armor?.name===item.name;
+    html+=`<div class="shop-item"><span>${item.name}<br>防御 +${item.def}　${item.price}G</span>
+      <button ${hero.gold<item.price||equipped?"disabled":""} onclick="buyEquipment('armor',${i})">${equipped?"装備中":"購入"}</button></div>`;
+  });
+  html+=`</div><h3>🎒 道具</h3><div class="shop-list">`;
+  goods.forEach(item=>{
+    html+=`<div class="shop-item"><span>${item.name}<br>${item.desc}　${item.price}G</span>
+      <button ${hero.gold<item.price?"disabled":""} onclick="buyGood('${item.id}')">購入</button></div>`;
+  });
+  html+=`</div><button class="close" onclick="renderTown()">町に戻る</button>`;
+  showDialog(html);
+}
+function buyEquipment(type,index){
+  const item=type==="weapon"?weapons[index]:armors[index];
+  if(hero.gold<item.price)return;
+  hero.gold-=item.price;
+  if(type==="weapon")hero.weapon={...item};
+  else hero.armor={...item};
+  updateStatus();
+  autoSave();
+  renderShop();
+  say(`${item.name}を購入して装備した！`);
+}
+function buyGood(id){
+  const item=goods.find(g=>g.id===id);
+  if(!item||hero.gold<item.price)return;
+  hero.gold-=item.price;
+  if(id==="herb")hero.herbs++;
+  if(id==="highHerb")hero.highHerbs++;
+  if(id==="mana")hero.manaPotions++;
+  if(id==="highMana")hero.highManaPotions++;
+  updateStatus();
+  autoSave();
+  renderShop();
+  say(`${item.name}を購入した！`);
+}
+
+// ===== 持ち物 =====
+function openInventory(){
+  if(mode!=="explore")return;
+  showDialog(`<h2>🎒 持ち物・装備</h2>
+    <p>⚔ 武器：${hero.weapon?hero.weapon.name:"なし"}　🛡 防具：${hero.armor?hero.armor.name:"なし"}</p>
+    <p>攻撃力 ${totalAtk()} / 防御力 ${totalDef()}</p>
+    <hr>
+    <p>🌿 薬草 ×${hero.herbs}（HP25回復）</p>
+    <button onclick="useItemOutside('herb')">薬草を使う</button>
+    <p>🌱 上薬草 ×${hero.highHerbs}（HP50回復）</p>
+    <button onclick="useItemOutside('highHerb')">上薬草を使う</button>
+    <p>🔵 魔力の薬 ×${hero.manaPotions}（MP8回復）</p>
+    <button onclick="useItemOutside('mana')">魔力の薬を使う</button>
+    <p>🔷 上魔力の薬 ×${hero.highManaPotions}（MP18回復）</p>
+    <button onclick="useItemOutside('highMana')">上魔力の薬を使う</button>
+    <button class="close" onclick="closeDialog()">閉じる</button>`);
+}
+function useItemOutside(id){
+  const hpItems={herb:25,highHerb:50};
+  const mpItems={mana:8,highMana:18};
+  const counts={herb:"herbs",highHerb:"highHerbs",mana:"manaPotions",highMana:"highManaPotions"};
+  const countKey=counts[id];
+  if(hero[countKey]<=0){say("その道具を持っていない！");return;}
+  if(hpItems[id]){
+    if(hero.hp===hero.maxHP){say("HPは満タンだ！");return;}
+    hero[countKey]--;
+    const n=Math.min(hpItems[id],hero.maxHP-hero.hp);
+    hero.hp+=n;
+    say(`道具を使った！ HPが${n}回復した。`);
+  }else{
+    if(hero.mp===hero.maxMP){say("MPは満タンだ！");return;}
+    hero[countKey]--;
+    const n=Math.min(mpItems[id],hero.maxMP-hero.mp);
+    hero.mp+=n;
+    say(`道具を使った！ MPが${n}回復した。`);
+  }
+  updateStatus();
+  autoSave();
+  openInventory();
+}
+
+// ===== エンカウント・戦闘 =====
+const metalSlimeType={name:"メタルスライム",face:"🩶",maxHP:3,atk:8,def:0,exp:500,gold:0,isMetalSlime:true};
+const metalKingType={name:"メタルキング",face:"👑",maxHP:15,atk:100,def:0,exp:10000,gold:0,isMetalKing:true,isMetal:true};
+const heavenMonsterTypes=[
+  {name:"天界の守護者",face:"🪽",maxHP:600,atk:60,def:20,exp:300,gold:250},
+  {name:"神域の騎士",face:"⚔️",maxHP:800,atk:78,def:26,exp:450,gold:350}
+];
+
+const castleMonsterTypes=[
+  {name:"魔城のガーゴイル",face:"🗿",maxHP:145,atk:36,def:12,exp:95,gold:75},
+  {name:"闇騎士",face:"🛡️",maxHP:190,atk:45,def:17,exp:135,gold:105},
+  {name:"地獄の竜",face:"🐲",maxHP:275,atk:55,def:21,exp:210,gold:170}
+];
+
+function startEncounter(){
+  mode="battle";
+  encounterCount++;
+  let type;
+  if(area==="heaven"){
+    type=Math.random()<0.10
+      ?metalKingType
+      :heavenMonsterTypes[rand(0,heavenMonsterTypes.length-1)];
+  }else if(Math.random()<0.10){
+    type=metalSlimeType;
+  }else if(area==="castle"){
+    type=castleMonsterTypes[rand(0,castleMonsterTypes.length-1)];
+  }else{
+    const maxIndex=Math.min(2+Math.floor(encounterCount/5),monsterTypes.length-1);
+    type=monsterTypes[rand(0,maxIndex)];
+  }
+  enemy={...type,hp:type.maxHP,isDemonKing:false};
+  document.getElementById("exploration").classList.add("hidden");
+  document.getElementById("battleSection").classList.remove("hidden");
+  document.getElementById("enemyName").textContent=enemy.name+"が現れた！";
+  document.getElementById("enemyFace").textContent=enemy.face;
+  updateEnemy();
+  battleMessage(`${enemy.name}が現れた！ どうする？`);
+  battleCommands();
+}
+function startCerberusBattle(){
+  if(cerberusDefeated){say("ケルベロスはすでに倒されている。");return;}
+  mode="battle";battleBusy=false;battleToken++;
+  enemy={name:"ケルベロス",face:"🐺🐺🐺",maxHP:350,hp:350,atk:32,def:12,exp:350,gold:250,isCerberus:true};
+  document.getElementById("exploration").classList.add("hidden");
+  document.getElementById("battleSection").classList.remove("hidden");
+  document.getElementById("enemyName").textContent="ケルベロスが立ちはだかった！";
+  document.getElementById("enemyFace").textContent=enemy.face;
+  updateEnemy();
+  battleMessage("ケルベロス「三つの牙で勇者を引き裂いてくれる！」");
+  battleCommands();
+}
+
+function startDemonKingBattle(){
+  if(demonKingDefeated){say("魔王はすでに倒されている。");return;}
+  mode="battle";battleBusy=false;battleToken++;
+  enemy={name:"魔王",face:"👿",maxHP:600,hp:600,atk:58,def:20,exp:0,gold:0,isDemonKing:true,demonKingPhase:1};
+  document.getElementById("exploration").classList.add("hidden");
+  document.getElementById("battleSection").classList.remove("hidden");
+  document.getElementById("enemyName").textContent="魔王が立ちはだかった！";
+  document.getElementById("enemyFace").textContent=enemy.face;
+  updateEnemy();
+  battleMessage("魔王「勇者よ、ここで終わりだ！」 魔王との最終決戦！");
+  battleCommands();
+}
+
+function startGodBattle(){
+  if(godDefeated){say("GODはすでに倒されている。");return;}
+  if(!demonKingDefeated){say("天界の門はまだ開かない。先に魔王を倒そう！");return;}
+  mode="battle";battleBusy=false;battleToken++;
+  enemy={name:"GOD",face:"🌌",maxHP:10000,hp:10000,atk:777,def:35,exp:5000,gold:5000,isGod:true};
+  document.getElementById("exploration").classList.add("hidden");
+  document.getElementById("battleSection").classList.remove("hidden");
+  document.getElementById("enemyName").textContent="GODが降臨した！";
+  document.getElementById("enemyFace").textContent=enemy.face;
+  updateEnemy();
+  battleMessage("GOD「人の子よ、我に挑むというのか……」 最終決戦！");
+  battleCommands();
+}
+
+function updateEnemy(){
+  document.getElementById("enemyHPText").textContent=`${enemy.hp}/${enemy.maxHP}`;
+  document.getElementById("enemyHPBar").style.width=(enemy.hp/enemy.maxHP*100)+"%";
+}
+function battleMessage(text){document.getElementById("battleLog").textContent=text;}
+function battleCommands(){
+  document.getElementById("battleCommands").innerHTML=`
+    <button onclick="heroAttack()">⚔ たたかう</button>
+    <button class="blue" onclick="battleMagicMenu()">✨ じゅもん</button>
+    <button class="green" onclick="battleItemMenu()">🎒 どうぐ</button>
+    <button class="purple" onclick="escapeBattle()">🏃 にげる</button>`;
+  battleBusy=false;
+}
+function disableBattleCommands(){
+  battleBusy=true;
+  document.querySelectorAll("#battleCommands button").forEach(b=>b.disabled=true);
+}
+function waitEnemyTurn(){
+  disableBattleCommands();
+  const token=++battleToken;
+  setTimeout(()=>{
+    if(token!==battleToken||mode!=="battle")return;
+    if(enemy.hp<=0){handleEnemyDefeated();return;}
+    const fleeChance=enemy.isMetalSlime?0.30:enemy.isMetalKing?0.05:0;
+    if(fleeChance>0&&Math.random()<fleeChance){
+      battleToken++;
+      mode="explore";
+      document.getElementById("battleSection").classList.add("hidden");
+      document.getElementById("exploration").classList.remove("hidden");
+      renderMap();
+      say(enemy.isMetalKing?"メタルキングは逃げ出した！":"メタルスライムは逃げ出した！");
+      updateStatus();
+      autoSave();
+      return;
+    }
+    const dmg=Math.max(1,enemy.atk+rand(-2,2)-totalDef());
+    hero.hp=Math.max(0,hero.hp-dmg);
+    updateStatus();
+    battleMessage(`${enemy.name}の攻撃！ 勇者は${dmg}ダメージを受けた！`);
+    if(hero.hp<=0){finishDefeat();return;}
+    setTimeout(()=>{
+      if(token!==battleToken||mode!=="battle")return;
+      battleCommands();
+    },450);
+  },650);
+}
+function heroAttack(){
+  if(mode!=="battle"||battleBusy)return;
+  const dmg=enemy.isMetal?1:enemy.isMetalSlime?1:Math.max(1,totalAtk()+rand(-2,3)-enemy.def);
+  enemy.hp=Math.max(0,enemy.hp-dmg);
+  updateEnemy();
+  battleMessage(`勇者の攻撃！ ${enemy.name}に${dmg}ダメージ！`);
+  if(enemy.hp<=0){handleEnemyDefeated();return;}
+  waitEnemyTurn();
+}
+const spellBook=[
+  {id:"mera",name:"メラ",level:1,mp:3,kind:"damage",min:13,max:19,desc:"小さな火の玉"},
+  {id:"hoimi",name:"ホイミ",level:1,mp:4,kind:"heal",min:15,max:22,desc:"HPを回復"},
+  {id:"gira",name:"ギラ",level:4,mp:6,kind:"damage",min:30,max:40,desc:"炎の帯で攻撃"},
+  {id:"behoimi",name:"ベホイミ",level:7,mp:8,kind:"heal",min:45,max:60,desc:"HPを大きく回復"},
+  {id:"io",name:"イオ",level:10,mp:10,kind:"damage",min:58,max:76,desc:"爆発で攻撃"},
+  {id:"behoma",name:"ベホマ",level:15,mp:16,kind:"fullheal",desc:"HPを全回復"},
+  {id:"hyado",name:"ヒャド",level:3,mp:4,kind:"damage",min:20,max:29,desc:"氷のつぶてで攻撃"},
+  {id:"bagi",name:"バギ",level:6,mp:7,kind:"damage",min:36,max:48,desc:"風の刃で攻撃"},
+  {id:"raidein",name:"ライデイン",level:12,mp:14,kind:"damage",min:78,max:100,desc:"雷で強力に攻撃"}
+];
+
+function battleMagicMenu(){
+  if(battleBusy)return;
+  const learned=spellBook.filter(s=>hero.level>=s.level);
+  let html=learned.map(s=>
+    `<button class="blue" onclick="castSpell('${s.id}')">✨ ${s.name} (MP${s.mp})<br><span class="small">${s.desc}</span></button>`
+  ).join("");
+  html+=`<button onclick="battleCommands()">↩ 戻る</button>`;
+  document.getElementById("battleCommands").innerHTML=html;
+}
+function castSpell(id){
+  if(battleBusy)return;
+  const spell=spellBook.find(s=>s.id===id&&hero.level>=s.level);
+  if(!spell)return;
+  if(hero.mp<spell.mp){battleMessage("MPが足りない！");return;}
+  if((spell.kind==="heal"||spell.kind==="fullheal")&&hero.hp===hero.maxHP){
+    battleMessage("HPは満タンだ！");return;
+  }
+  hero.mp-=spell.mp;
+  if(spell.kind==="damage"){
+    const dmg=(enemy.isMetal||enemy.isMetalSlime)?1:rand(spell.min,spell.max)+Math.floor(hero.level/2);
+    enemy.hp=Math.max(0,enemy.hp-dmg);
+    updateEnemy();
+    battleMessage(`${spell.name}！ ${enemy.name}に${dmg}ダメージ！`);
+    updateStatus();
+    if(enemy.hp<=0){handleEnemyDefeated();return;}
+  }else{
+    const n=spell.kind==="fullheal"?hero.maxHP-hero.hp:
+      Math.min(hero.maxHP-hero.hp,rand(spell.min,spell.max)+hero.level);
+    hero.hp+=n;
+    updateStatus();
+    battleMessage(`${spell.name}！ HPが${n}回復！`);
+  }
+  waitEnemyTurn();
+}
+function battleItemMenu(){
+  if(battleBusy)return;
+  document.getElementById("battleCommands").innerHTML=`
+    <button class="green" onclick="useBattleItem('herb')">🌿 薬草 ×${hero.herbs}</button>
+    <button class="green" onclick="useBattleItem('highHerb')">🌱 上薬草 ×${hero.highHerbs}</button>
+    <button class="green" onclick="useBattleItem('mana')">🔵 MP薬 ×${hero.manaPotions}</button>
+    <button class="green" onclick="useBattleItem('highMana')">🔷 上MP薬 ×${hero.highManaPotions}</button>
+    <button onclick="battleCommands()">↩ 戻る</button>`;
+}
+function useBattleItem(id){
+  if(battleBusy)return;
+  const hpItems={herb:25,highHerb:50};
+  const mpItems={mana:8,highMana:18};
+  const counts={herb:"herbs",highHerb:"highHerbs",mana:"manaPotions",highMana:"highManaPotions"};
+  const countKey=counts[id];
+  if(hero[countKey]<=0){battleMessage("その道具を持っていない！");return;}
+  if(hpItems[id]){
+    if(hero.hp===hero.maxHP){battleMessage("HPは満タンだ！");return;}
+    hero[countKey]--;
+    const n=Math.min(hpItems[id],hero.maxHP-hero.hp);
+    hero.hp+=n;
+    battleMessage(`道具を使った！ HPが${n}回復！`);
+  }else{
+    if(hero.mp===hero.maxMP){battleMessage("MPは満タンだ！");return;}
+    hero[countKey]--;
+    const n=Math.min(mpItems[id],hero.maxMP-hero.mp);
+    hero.mp+=n;
+    battleMessage(`道具を使った！ MPが${n}回復！`);
+  }
+  updateStatus();
+  waitEnemyTurn();
+}
+function escapeBattle(){
+  if(battleBusy)return;
+  if(enemy?.isDemonKing){battleMessage("魔王の力に阻まれ、逃げられない！");return;}
+  disableBattleCommands();
+  if(Math.random()<0.7){
+    battleToken++;
+    mode="explore";
+    document.getElementById("battleSection").classList.add("hidden");
+    document.getElementById("exploration").classList.remove("hidden");
+    say("勇者は戦闘から逃げた。");
+    renderMap();
+    autoSave();
+  }else{
+    battleMessage("逃げられなかった！");
+    waitEnemyTurn();
+  }
+}
+
+// ===== 勝利・敗北 =====
+function handleEnemyDefeated(){
+  if(enemy.isDemonKing&&enemy.demonKingPhase===1){
+    enemy={name:"魔王・第二形態",face:"🐉",maxHP:800,hp:800,atk:76,def:26,exp:900,gold:1200,isDemonKing:true,demonKingPhase:2};
+    updateEnemy();
+    document.getElementById("enemyName").textContent="魔王が真の姿を現した！";
+    battleMessage("魔王「これが我が真の力だ！」 魔王が第二形態へ変身した！");
+    battleCommands();
+    return;
+  }
+  finishVictory();
+}
+
+function finishVictory(){
+  battleToken++;
+  mode="explore";
+  const earnedExp=enemy.exp,earnedGold=enemy.gold;
+  const defeated=enemy.name;
+  const wasDemonKing=!!enemy.isDemonKing;
+  const wasCerberus=!!enemy.isCerberus;
+  const wasGod=!!enemy.isGod;
+  if(wasDemonKing)demonKingDefeated=true;
+  if(wasCerberus)cerberusDefeated=true;
+  if(wasGod)godDefeated=true;
+  hero.exp+=earnedExp;
+  hero.gold+=earnedGold;
+  document.getElementById("battleSection").classList.add("hidden");
+  document.getElementById("exploration").classList.remove("hidden");
+  renderMap();
+  say(wasGod
+    ? `GODを打ち倒した！ 天界に平和が戻った！ EXP ${earnedExp}、${earnedGold}Gを獲得！`
+    : wasDemonKing
+      ? `魔王の第二形態を打ち破った！ 天界への門が開いた！ EXP ${earnedExp}、${earnedGold}Gを獲得！`
+      : wasCerberus
+        ? `ケルベロスを倒した！ 魔王城への道が開かれた！ EXP ${earnedExp}、${earnedGold}Gを獲得！`
+        : `${defeated}を倒した！ EXP ${earnedExp}、${earnedGold}Gを獲得！`);
+  checkLevelUp();
+  updateStatus();
+  autoSave();
+}
+function checkLevelUp(){
+  while(hero.exp>=hero.level*25){
+    hero.exp-=hero.level*25;
+    hero.level++;
+    hero.maxHP+=10;
+    hero.maxMP+=3;
+    hero.baseAtk+=2;
+    hero.baseDef+=1;
+    hero.hp=hero.maxHP;
+    hero.mp=hero.maxMP;
+    const newlyLearned=spellBook.filter(s=>s.level===hero.level);
+    const learnedText=newlyLearned.length
+      ? ` 新しい呪文「${newlyLearned.map(s=>s.name).join("」「")}」を覚えた！`
+      : "";
+    say(`レベルアップ！ Lv.${hero.level}になった！ HP・MP全回復！${learnedText}`);
+  }
+}
+function finishDefeat(){
+  battleToken++;
+  mode="explore";
+  hero.hp=1;
+  hero.gold=Math.floor(hero.gold*0.8);
+  document.getElementById("battleSection").classList.add("hidden");
+  document.getElementById("exploration").classList.remove("hidden");
+  renderMap();
+  say("勇者は倒れてしまった……。所持金の一部を失い、HP1で戻った。");
+  updateStatus();
+  autoSave();
+}
+
+// ===== 起動時：セーブデータがあればロード =====
+function init(){
+  hero.weapon={...weapons[0]};
+  hero.armor={...armors[0]};
+  try{
+    const raw=localStorage.getItem(SAVE_KEY);
+    if(raw){
+      const data=JSON.parse(raw);
+      if([2,3,4,5,6].includes(data.version)&&data.hero){
+        hero={...heroDefaults,...data.hero};
+        encounterCount=data.encounterCount||0;
+        area=data.version>=3&&["castle","heaven"].includes(data.area)?data.area:"field";
+        demonKingDefeated=!!data.demonKingDefeated;
+        cerberusDefeated=!!data.cerberusDefeated;
+        godDefeated=!!data.godDefeated;
+        if(area==="heaven"&&!demonKingDefeated)area="field";
+        document.getElementById("saveStatus").textContent="📂 セーブデータあり：ロード済み";
+        say("前回の冒険をロードした！");
+      }else{
+        document.getElementById("saveStatus").textContent="セーブデータなし";
+      }
+    }else{
+      document.getElementById("saveStatus").textContent="新しい冒険";
+    }
+  }catch(e){
+    document.getElementById("saveStatus").textContent="セーブデータを読み込めませんでした";
+  }
+  updateStatus();
+  renderMap();
+}
+init();
+</script>
+</body>
+</html>
