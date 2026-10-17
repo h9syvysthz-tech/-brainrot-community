@@ -59,6 +59,32 @@ button:disabled{opacity:.4;cursor:default}
 .savebar{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:10px}
 .savebar button{font-size:13px}
 #saveStatus{font-size:11px;color:#aab5d2;text-align:center;margin:5px}
+/* スマホ画面でマップが横にはみ出すのを防ぐ */
+#map {
+  width: 100%;
+  max-width: 100%;
+  grid-template-columns: repeat(11, minmax(0, 1fr));
+  overflow: hidden;
+}
+
+#map .tile {
+  min-width: 0;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  font-size: clamp(10px, 4vw, 24px);
+}
+
+/* ページ全体の横はみ出しを防止 */
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.game,
+.panel {
+  max-width: 100%;
+}
 </style>
 </head>
 <body>
