@@ -18,8 +18,8 @@ h1{text-align:center;color:#ffdf83;font-size:24px;margin:14px 0 3px}
 .meter div{height:100%;transition:width .2s}
 .hp{background:#52d78b}.mp{background:#59aaff}
 .gold{color:#ffdc68}
-#map{display:grid;grid-template-columns:repeat(11,minmax(0,1fr));gap:2px;width:100%;min-width:0;overflow:hidden;background:#121a28;padding:4px;border:2px solid #63789c;border-radius:9px}
-.tile{min-width:0;width:100%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;padding:0;overflow:hidden;border:0;border-radius:3px;font-size:clamp(9px,2.5vw,18px);line-height:1;white-space:nowrap;background:#52774b;cursor:pointer}
+#map{display:grid;grid-template-columns:repeat(11,1fr);gap:2px;background:#121a28;padding:5px;border:2px solid #63789c;border-radius:9px}
+.tile{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border:0;border-radius:3px;padding:0;font-size:clamp(15px,4.4vw,26px);background:#52774b;cursor:pointer}
 .tile.grass{background:#52774b}.tile.path{background:#b49a69}
 .tile.water{background:#3a719d}.tile.tree{background:#294d38}.tile.shop{background:#b49a69}
 .tile.hero{background:#e2c16a;box-shadow:inset 0 0 0 2px #fff4a0}
@@ -80,9 +80,15 @@ button:disabled{opacity:.4;cursor:default}
       ⚔ 攻撃力 <span id="atkText"></span><br>
       🛡 防御力 <span id="defText"></span><br>
       🌿 薬草 <span id="herbText"></span><br>
-      🌱 上薬草 <span id="highHerbText"></span><br>
+      🌱 上薬草 <span id="highHerbText"></span>　
+      ✨ 特上薬草 <span id="megaHerbText"></span>　
+      🌟 神秘の薬草 <span id="fullHerbText"></span><br>
+      🧪 エリクサー <span id="elixirText"></span><br>
       🔵 MP薬 <span id="manaText"></span>　
-      🔷 上MP薬 <span id="highManaText"></span>
+      🔷 上MP薬 <span id="highManaText"></span>　
+      💠 特上MP薬 <span id="megaManaText"></span>　
+      📘 賢者の秘薬 <span id="fullManaText"></span>　
+      💧 世界樹のしずく <span id="reviveText"></span>
     </div>
   </div>
 
@@ -133,7 +139,7 @@ button:disabled{opacity:.4;cursor:default}
 
   <div class="panel log" id="worldLog">冒険の始まりだ！ フィールドを歩いてみよう。</div>
   <div class="small" style="text-align:center">PC：矢印キー / WASD　スマホ：方向ボタン<br>
-  呪文：Lv.3 ヒャド、Lv.4 ギラ、Lv.6 バギ、Lv.7 ベホイミ、Lv.10 イオ、Lv.12 ライデイン、Lv.15 ベホマ</div>
+  呪文はレベルアップで習得！ メラLv.2〜ベホマズンLv.50まで、強力な呪文が順次解放される。</div>
 </div>
 
 <div id="overlay" class="hidden">
@@ -149,8 +155,8 @@ const heroDefaults = {
   x:1,y:1,level:1,
   hp:40,maxHP:40,mp:12,maxMP:12,
   baseAtk:8,baseDef:2,exp:0,gold:35,
-  herbs:2,highHerbs:0,
-  manaPotions:1,highManaPotions:0,
+  herbs:2,highHerbs:0,megaHerbs:0,fullHerbs:0,elixirs:0,
+  manaPotions:1,highManaPotions:0,megaManaPotions:0,fullManaPotions:0,reviveDrops:0,
   weapon:null,armor:null
 };
 
@@ -159,8 +165,9 @@ let hero = structuredClone(heroDefaults);
 const weapons=[
   {name:"木の剣",atk:3,price:20},
   {name:"鉄の剣",atk:7,price:65},
-  {name:"鋼の剣",atk:12,price:150},
-  {name:"勇者の剣",atk:20,price:350}
+  {name:"鋼の剣",atk:12,price:500},
+  {name:"勇者の剣",atk:20,price:1500},
+  {name:"ディバインソード",atk:120,price:10000}
 ];
 const armors=[
   {name:"布の服",def:2,price:20},
@@ -172,8 +179,14 @@ const armors=[
 const goods=[
   {id:"herb",name:"薬草",desc:"HPを25回復",price:12},
   {id:"highHerb",name:"上薬草",desc:"HPを50回復",price:35},
+  {id:"megaHerb",name:"特上薬草",desc:"HPを120回復",price:100},
+  {id:"fullHerb",name:"神秘の薬草",desc:"HPを300回復",price:350},
+  {id:"elixir",name:"エリクサー",desc:"HPとMPを全回復",price:1200},
   {id:"mana",name:"魔力の薬",desc:"MPを8回復",price:18},
-  {id:"highMana",name:"上魔力の薬",desc:"MPを18回復",price:42}
+  {id:"highMana",name:"上魔力の薬",desc:"MPを18回復",price:42},
+  {id:"megaMana",name:"特上魔力の薬",desc:"MPを50回復",price:180},
+  {id:"fullMana",name:"賢者の秘薬",desc:"MPを全回復",price:700},
+  {id:"revive",name:"世界樹のしずく",desc:"戦闘中にHPを全回復（HP0では使用不可）",price:1800}
 ];
 
 const fieldMap=[
@@ -216,6 +229,7 @@ let area="field";
 let demonKingDefeated=false;
 let cerberusDefeated=false;
 let godDefeated=false;
+let divineDragonDefeated=false;
 function activeMap(){return area==="castle"?castleMap:area==="heaven"?heavenMap:fieldMap;}
 
 const monsterTypes=[
@@ -256,8 +270,14 @@ function updateStatus(){
   document.getElementById("defText").textContent=totalDef();
   document.getElementById("herbText").textContent=hero.herbs;
   document.getElementById("highHerbText").textContent=hero.highHerbs;
+  document.getElementById("megaHerbText").textContent=hero.megaHerbs||0;
+  document.getElementById("fullHerbText").textContent=hero.fullHerbs||0;
+  document.getElementById("elixirText").textContent=hero.elixirs||0;
   document.getElementById("manaText").textContent=hero.manaPotions;
   document.getElementById("highManaText").textContent=hero.highManaPotions;
+  document.getElementById("megaManaText").textContent=hero.megaManaPotions||0;
+  document.getElementById("fullManaText").textContent=hero.fullManaPotions||0;
+  document.getElementById("reviveText").textContent=hero.reviveDrops||0;
 }
 
 function showDialog(html){
@@ -284,6 +304,7 @@ function renderMap(){
       else if(tile==="B"){b.classList.add("path");icon=demonKingDefeated?"👑":"👿";}
       else if(tile==="K"){b.classList.add("path");icon=cerberusDefeated?"☠️":"🐺🐺🐺";}
       else if(tile==="G"){b.classList.add("path");icon=godDefeated?"🌟":"🌌";}
+      else if(area==="heaven"&&x===5&&y===3){b.classList.add("path");icon=divineDragonDefeated?"🐉":"🐲";}
       else{b.classList.add("grass");icon=area==="castle"?"⬛":"🌿";}
       const bossNear = area==="castle"
         ? (!demonKingDefeated && Math.abs(x-9)+Math.abs(y-6)===1)
@@ -506,7 +527,15 @@ function talkOrInspect(){
   }else if(area==="heaven"){
     const bossX=9,bossY=6;
     const nearBoss=Math.abs(hero.x-bossX)+Math.abs(hero.y-bossY)<=1;
-    if(nearBoss&&!godDefeated){
+    const dragonX=5,dragonY=3;
+    const nearDragon=Math.abs(hero.x-dragonX)+Math.abs(hero.y-dragonY)<=1;
+    if(nearDragon&&!divineDragonDefeated){
+      showDialog(`<h2>🐲 ディバインドラゴン</h2>
+        <p>天界の中ボス。GODの約半分の力を持つ神聖な竜だ。</p>
+        <p>HP 5000／攻撃力 388／防御力 18</p>
+        <button class="primary" onclick="closeDialog();startDivineDragonBattle()">ディバインドラゴンに挑む</button>
+        <button class="close" onclick="closeDialog()">準備する</button>`);
+    }else if(nearBoss&&!godDefeated){
       showDialog(`<h2>🌌 GOD</h2>
         <p>天界を支配する存在が姿を現した……。</p>
         <p>GOD：HP 10000／攻撃力 777</p>
@@ -601,8 +630,14 @@ function buyGood(id){
   hero.gold-=item.price;
   if(id==="herb")hero.herbs++;
   if(id==="highHerb")hero.highHerbs++;
+  if(id==="megaHerb")hero.megaHerbs=(hero.megaHerbs||0)+1;
+  if(id==="fullHerb")hero.fullHerbs=(hero.fullHerbs||0)+1;
+  if(id==="elixir")hero.elixirs=(hero.elixirs||0)+1;
   if(id==="mana")hero.manaPotions++;
   if(id==="highMana")hero.highManaPotions++;
+  if(id==="megaMana")hero.megaManaPotions=(hero.megaManaPotions||0)+1;
+  if(id==="fullMana")hero.fullManaPotions=(hero.fullManaPotions||0)+1;
+  if(id==="revive")hero.reviveDrops=(hero.reviveDrops||0)+1;
   updateStatus();
   autoSave();
   renderShop();
@@ -620,42 +655,53 @@ function openInventory(){
     <button onclick="useItemOutside('herb')">薬草を使う</button>
     <p>🌱 上薬草 ×${hero.highHerbs}（HP50回復）</p>
     <button onclick="useItemOutside('highHerb')">上薬草を使う</button>
+    <p>✨ 特上薬草 ×${hero.megaHerbs||0}（HP120回復）</p>
+    <button onclick="useItemOutside('megaHerb')">特上薬草を使う</button>
+    <p>🌟 神秘の薬草 ×${hero.fullHerbs||0}（HP300回復）</p>
+    <button onclick="useItemOutside('fullHerb')">神秘の薬草を使う</button>
+    <p>🧪 エリクサー ×${hero.elixirs||0}（HP・MP全回復）</p>
+    <button onclick="useItemOutside('elixir')">エリクサーを使う</button>
     <p>🔵 魔力の薬 ×${hero.manaPotions}（MP8回復）</p>
     <button onclick="useItemOutside('mana')">魔力の薬を使う</button>
     <p>🔷 上魔力の薬 ×${hero.highManaPotions}（MP18回復）</p>
     <button onclick="useItemOutside('highMana')">上魔力の薬を使う</button>
+    <p>💠 特上魔力の薬 ×${hero.megaManaPotions||0}（MP50回復）</p>
+    <button onclick="useItemOutside('megaMana')">特上魔力の薬を使う</button>
+    <p>📘 賢者の秘薬 ×${hero.fullManaPotions||0}（MP全回復）</p>
+    <button onclick="useItemOutside('fullMana')">賢者の秘薬を使う</button>
     <button class="close" onclick="closeDialog()">閉じる</button>`);
 }
 function useItemOutside(id){
-  const hpItems={herb:25,highHerb:50};
-  const mpItems={mana:8,highMana:18};
-  const counts={herb:"herbs",highHerb:"highHerbs",mana:"manaPotions",highMana:"highManaPotions"};
-  const countKey=counts[id];
-  if(hero[countKey]<=0){say("その道具を持っていない！");return;}
-  if(hpItems[id]){
-    if(hero.hp===hero.maxHP){say("HPは満タンだ！");return;}
-    hero[countKey]--;
-    const n=Math.min(hpItems[id],hero.maxHP-hero.hp);
-    hero.hp+=n;
-    say(`道具を使った！ HPが${n}回復した。`);
-  }else{
-    if(hero.mp===hero.maxMP){say("MPは満タンだ！");return;}
-    hero[countKey]--;
-    const n=Math.min(mpItems[id],hero.maxMP-hero.mp);
-    hero.mp+=n;
-    say(`道具を使った！ MPが${n}回復した。`);
-  }
-  updateStatus();
-  autoSave();
-  openInventory();
+  const items={
+    herb:{key:"herbs",hp:25}, highHerb:{key:"highHerbs",hp:50},
+    megaHerb:{key:"megaHerbs",hp:120}, fullHerb:{key:"fullHerbs",hp:300},
+    elixir:{key:"elixirs",all:true},
+    mana:{key:"manaPotions",mp:8}, highMana:{key:"highManaPotions",mp:18},
+    megaMana:{key:"megaManaPotions",mp:50}, fullMana:{key:"fullManaPotions",fullMP:true}
+  };
+  const item=items[id];
+  if(!item){say("この道具はここでは使えない。");return;}
+  if((hero[item.key]||0)<=0){say("その道具を持っていない！");return;}
+  if(item.hp&&hero.hp===hero.maxHP){say("HPは満タンだ！");return;}
+  if((item.mp||item.fullMP)&&hero.mp===hero.maxMP){say("MPは満タンだ！");return;}
+  if(item.all&&hero.hp===hero.maxHP&&hero.mp===hero.maxMP){say("HPもMPも満タンだ！");return;}
+  hero[item.key]--;
+  let msg=[];
+  if(item.all){hero.hp=hero.maxHP;hero.mp=hero.maxMP;msg.push("HPとMPが全回復！");}
+  else if(item.hp){const n=Math.min(item.hp,hero.maxHP-hero.hp);hero.hp+=n;msg.push(`HPが${n}回復！`);}
+  else if(item.fullMP){hero.mp=hero.maxMP;msg.push("MPが全回復！");}
+  else if(item.mp){const n=Math.min(item.mp,hero.maxMP-hero.mp);hero.mp+=n;msg.push(`MPが${n}回復！`);}
+  say("道具を使った！ "+msg.join(" "));
+  updateStatus();autoSave();openInventory();
 }
 
 // ===== エンカウント・戦闘 =====
 const metalSlimeType={name:"メタルスライム",face:"🩶",maxHP:3,atk:8,def:0,exp:500,gold:0,isMetalSlime:true};
 const metalKingType={name:"メタルキング",face:"👑",maxHP:15,atk:100,def:0,exp:10000,gold:0,isMetalKing:true,isMetal:true};
 const heavenMonsterTypes=[
-  {name:"天界の守護者",face:"🪽",maxHP:600,atk:60,def:20,exp:300,gold:250},
-  {name:"神域の騎士",face:"⚔️",maxHP:800,atk:78,def:26,exp:450,gold:350}
+  // 天界の通常敵を魔王の二形態に匹敵する強さへ強化（メタルキングとGODは別設定）
+  {name:"天界の守護者",face:"🪽",maxHP:900,atk:88,def:30,exp:700,gold:650},
+  {name:"神域の騎士",face:"⚔️",maxHP:1200,atk:108,def:38,exp:1000,gold:900}
 ];
 
 const castleMonsterTypes=[
@@ -712,6 +758,19 @@ function startDemonKingBattle(){
   document.getElementById("enemyFace").textContent=enemy.face;
   updateEnemy();
   battleMessage("魔王「勇者よ、ここで終わりだ！」 魔王との最終決戦！");
+  battleCommands();
+}
+
+function startDivineDragonBattle(){
+  if(divineDragonDefeated){say("ディバインドラゴンはすでに倒されている。");return;}
+  mode="battle";battleBusy=false;battleToken++;
+  enemy={name:"ディバインドラゴン",face:"🐲",maxHP:5000,hp:5000,atk:388,def:18,exp:2500,gold:2500,isDivineDragon:true};
+  document.getElementById("exploration").classList.add("hidden");
+  document.getElementById("battleSection").classList.remove("hidden");
+  document.getElementById("enemyName").textContent="ディバインドラゴンが立ちはだかった！";
+  document.getElementById("enemyFace").textContent=enemy.face;
+  updateEnemy();
+  battleMessage("ディバインドラゴン「天界の試練を越えられるか！」 中ボス戦！");
   battleCommands();
 }
 
@@ -785,15 +844,27 @@ function heroAttack(){
   waitEnemyTurn();
 }
 const spellBook=[
-  {id:"mera",name:"メラ",level:1,mp:3,kind:"damage",min:13,max:19,desc:"小さな火の玉"},
-  {id:"hoimi",name:"ホイミ",level:1,mp:4,kind:"heal",min:15,max:22,desc:"HPを回復"},
-  {id:"gira",name:"ギラ",level:4,mp:6,kind:"damage",min:30,max:40,desc:"炎の帯で攻撃"},
-  {id:"behoimi",name:"ベホイミ",level:7,mp:8,kind:"heal",min:45,max:60,desc:"HPを大きく回復"},
-  {id:"io",name:"イオ",level:10,mp:10,kind:"damage",min:58,max:76,desc:"爆発で攻撃"},
-  {id:"behoma",name:"ベホマ",level:15,mp:16,kind:"fullheal",desc:"HPを全回復"},
-  {id:"hyado",name:"ヒャド",level:3,mp:4,kind:"damage",min:20,max:29,desc:"氷のつぶてで攻撃"},
-  {id:"bagi",name:"バギ",level:6,mp:7,kind:"damage",min:36,max:48,desc:"風の刃で攻撃"},
-  {id:"raidein",name:"ライデイン",level:12,mp:14,kind:"damage",min:78,max:100,desc:"雷で強力に攻撃"}
+  // 既存呪文も習得レベルを引き上げ、後半に強力な呪文を追加
+  {id:"mera",name:"メラ",level:2,mp:3,kind:"damage",min:13,max:19,desc:"小さな火の玉"},
+  {id:"hoimi",name:"ホイミ",level:3,mp:4,kind:"heal",min:15,max:22,desc:"HPを回復"},
+  {id:"hyado",name:"ヒャド",level:8,mp:5,kind:"damage",min:25,max:36,desc:"氷のつぶて"},
+  {id:"gira",name:"ギラ",level:12,mp:7,kind:"damage",min:38,max:52,desc:"炎の帯で攻撃"},
+  {id:"bagi",name:"バギ",level:16,mp:8,kind:"damage",min:45,max:62,desc:"風の刃で攻撃"},
+  {id:"behoimi",name:"ベホイミ",level:20,mp:10,kind:"heal",min:65,max:90,desc:"HPを大きく回復"},
+  {id:"merami",name:"メラミ",level:18,mp:9,kind:"damage",min:75,max:100,desc:"強力な火炎"},
+  {id:"hyadarko",name:"ヒャダルコ",level:22,mp:11,kind:"damage",min:85,max:115,desc:"氷の嵐"},
+  {id:"iora",name:"イオラ",level:24,mp:13,kind:"damage",min:100,max:135,desc:"大爆発"},
+  {id:"begirama",name:"ベギラマ",level:26,mp:14,kind:"damage",min:115,max:150,desc:"灼熱の閃光"},
+  {id:"io",name:"イオ",level:28,mp:12,kind:"damage",min:95,max:125,desc:"爆発で攻撃"},
+  {id:"behoma",name:"ベホマ",level:32,mp:20,kind:"percentheal",desc:"最大HPの75%ぶん回復"},
+  {id:"bagima",name:"バギマ",level:34,mp:16,kind:"damage",min:145,max:190,desc:"猛烈な風の刃"},
+  {id:"merazoma",name:"メラゾーマ",level:36,mp:20,kind:"damage",min:200,max:270,desc:"極大の火炎"},
+  {id:"mahyado",name:"マヒャド",level:38,mp:22,kind:"damage",min:220,max:290,desc:"極寒の吹雪"},
+  {id:"begiragon",name:"ベギラゴン",level:40,mp:24,kind:"damage",min:250,max:330,desc:"極大の閃熱"},
+  {id:"ionazun",name:"イオナズン",level:42,mp:28,kind:"damage",min:300,max:400,desc:"超巨大な爆発"},
+  {id:"raidein",name:"ライデイン",level:45,mp:25,kind:"damage",min:280,max:360,desc:"雷で強力に攻撃"},
+  {id:"gigadein",name:"ギガデイン",level:48,mp:35,kind:"damage",min:450,max:600,desc:"究極の雷撃"},
+  {id:"behomasun",name:"ベホマズン",level:50,mp:45,kind:"fullheal",desc:"HPを全回復する究極呪文"}
 ];
 
 function battleMagicMenu(){
@@ -810,7 +881,7 @@ function castSpell(id){
   const spell=spellBook.find(s=>s.id===id&&hero.level>=s.level);
   if(!spell)return;
   if(hero.mp<spell.mp){battleMessage("MPが足りない！");return;}
-  if((spell.kind==="heal"||spell.kind==="fullheal")&&hero.hp===hero.maxHP){
+  if((spell.kind==="heal"||spell.kind==="fullheal"||spell.kind==="percentheal")&&hero.hp===hero.maxHP){
     battleMessage("HPは満タンだ！");return;
   }
   hero.mp-=spell.mp;
@@ -823,6 +894,7 @@ function castSpell(id){
     if(enemy.hp<=0){handleEnemyDefeated();return;}
   }else{
     const n=spell.kind==="fullheal"?hero.maxHP-hero.hp:
+      spell.kind==="percentheal"?Math.min(hero.maxHP-hero.hp,Math.floor(hero.maxHP*0.75)):
       Math.min(hero.maxHP-hero.hp,rand(spell.min,spell.max)+hero.level);
     hero.hp+=n;
     updateStatus();
@@ -835,32 +907,39 @@ function battleItemMenu(){
   document.getElementById("battleCommands").innerHTML=`
     <button class="green" onclick="useBattleItem('herb')">🌿 薬草 ×${hero.herbs}</button>
     <button class="green" onclick="useBattleItem('highHerb')">🌱 上薬草 ×${hero.highHerbs}</button>
+    <button class="green" onclick="useBattleItem('megaHerb')">✨ 特上薬草 ×${hero.megaHerbs||0}</button>
+    <button class="green" onclick="useBattleItem('fullHerb')">🌟 神秘の薬草 ×${hero.fullHerbs||0}</button>
+    <button class="green" onclick="useBattleItem('elixir')">🧪 エリクサー ×${hero.elixirs||0}</button>
     <button class="green" onclick="useBattleItem('mana')">🔵 MP薬 ×${hero.manaPotions}</button>
     <button class="green" onclick="useBattleItem('highMana')">🔷 上MP薬 ×${hero.highManaPotions}</button>
+    <button class="green" onclick="useBattleItem('megaMana')">💠 特上MP薬 ×${hero.megaManaPotions||0}</button>
+    <button class="green" onclick="useBattleItem('fullMana')">📘 賢者の秘薬 ×${hero.fullManaPotions||0}</button>
+    <button class="green" onclick="useBattleItem('revive')">💧 世界樹のしずく ×${hero.reviveDrops||0}</button>
     <button onclick="battleCommands()">↩ 戻る</button>`;
 }
 function useBattleItem(id){
   if(battleBusy)return;
-  const hpItems={herb:25,highHerb:50};
-  const mpItems={mana:8,highMana:18};
-  const counts={herb:"herbs",highHerb:"highHerbs",mana:"manaPotions",highMana:"highManaPotions"};
-  const countKey=counts[id];
-  if(hero[countKey]<=0){battleMessage("その道具を持っていない！");return;}
-  if(hpItems[id]){
-    if(hero.hp===hero.maxHP){battleMessage("HPは満タンだ！");return;}
-    hero[countKey]--;
-    const n=Math.min(hpItems[id],hero.maxHP-hero.hp);
-    hero.hp+=n;
-    battleMessage(`道具を使った！ HPが${n}回復！`);
-  }else{
-    if(hero.mp===hero.maxMP){battleMessage("MPは満タンだ！");return;}
-    hero[countKey]--;
-    const n=Math.min(mpItems[id],hero.maxMP-hero.mp);
-    hero.mp+=n;
-    battleMessage(`道具を使った！ MPが${n}回復！`);
-  }
-  updateStatus();
-  waitEnemyTurn();
+  const items={
+    herb:{key:"herbs",hp:25}, highHerb:{key:"highHerbs",hp:50},
+    megaHerb:{key:"megaHerbs",hp:120}, fullHerb:{key:"fullHerbs",hp:300},
+    elixir:{key:"elixirs",all:true},
+    mana:{key:"manaPotions",mp:8}, highMana:{key:"highManaPotions",mp:18},
+    megaMana:{key:"megaManaPotions",mp:50}, fullMana:{key:"fullManaPotions",fullMP:true},
+    revive:{key:"reviveDrops",all:true}
+  };
+  const item=items[id];
+  if(!item){battleMessage("その道具は使えない！");return;}
+  if((hero[item.key]||0)<=0){battleMessage("その道具を持っていない！");return;}
+  if(id==="revive"&&hero.hp<=0){battleMessage("HPが0の状態では使えない！");return;}
+  if(item.hp&&hero.hp===hero.maxHP){battleMessage("HPは満タンだ！");return;}
+  if((item.mp||item.fullMP)&&hero.mp===hero.maxMP){battleMessage("MPは満タンだ！");return;}
+  if(item.all&&id!=="revive"&&hero.hp===hero.maxHP&&hero.mp===hero.maxMP){battleMessage("HPもMPも満タンだ！");return;}
+  hero[item.key]--;
+  if(item.all){hero.hp=hero.maxHP;hero.mp=hero.maxMP; battleMessage(`${id==="revive"?"世界樹のしずく":"エリクサー"}を使った！ HPとMPが全回復！`);}
+  else if(item.hp){const n=Math.min(item.hp,hero.maxHP-hero.hp);hero.hp+=n;battleMessage(`道具を使った！ HPが${n}回復！`);}
+  else if(item.fullMP){hero.mp=hero.maxMP;battleMessage("賢者の秘薬を使った！ MPが全回復！");}
+  else if(item.mp){const n=Math.min(item.mp,hero.maxMP-hero.mp);hero.mp+=n;battleMessage(`道具を使った！ MPが${n}回復！`);}
+  updateStatus();waitEnemyTurn();
 }
 function escapeBattle(){
   if(battleBusy)return;
@@ -901,9 +980,11 @@ function finishVictory(){
   const wasDemonKing=!!enemy.isDemonKing;
   const wasCerberus=!!enemy.isCerberus;
   const wasGod=!!enemy.isGod;
+  const wasDivineDragon=!!enemy.isDivineDragon;
   if(wasDemonKing)demonKingDefeated=true;
   if(wasCerberus)cerberusDefeated=true;
   if(wasGod)godDefeated=true;
+  if(wasDivineDragon)divineDragonDefeated=true;
   hero.exp+=earnedExp;
   hero.gold+=earnedGold;
   document.getElementById("battleSection").classList.add("hidden");
