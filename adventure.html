@@ -18,8 +18,8 @@ h1{text-align:center;color:#ffdf83;font-size:24px;margin:14px 0 3px}
 .meter div{height:100%;transition:width .2s}
 .hp{background:#52d78b}.mp{background:#59aaff}
 .gold{color:#ffdc68}
-#map{display:grid;grid-template-columns:repeat(11,1fr);gap:2px;background:#121a28;padding:5px;border:2px solid #63789c;border-radius:9px}
-.tile{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border:0;border-radius:3px;padding:0;font-size:clamp(15px,4.4vw,26px);background:#52774b;cursor:pointer}
+#map{display:grid;grid-template-columns:repeat(11,minmax(0,1fr));gap:2px;width:100%;min-width:0;overflow:hidden;background:#121a28;padding:4px;border:2px solid #63789c;border-radius:9px}
+.tile{min-width:0;width:100%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;padding:0;overflow:hidden;border:0;border-radius:3px;font-size:clamp(9px,2.5vw,18px);line-height:1;white-space:nowrap;background:#52774b;cursor:pointer}
 .tile.grass{background:#52774b}.tile.path{background:#b49a69}
 .tile.water{background:#3a719d}.tile.tree{background:#294d38}.tile.shop{background:#b49a69}
 .tile.hero{background:#e2c16a;box-shadow:inset 0 0 0 2px #fff4a0}
