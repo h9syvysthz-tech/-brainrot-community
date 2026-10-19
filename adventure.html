@@ -9,7 +9,7 @@
 body{margin:0;background:#101626;color:#f5f3e8;font-family:system-ui,sans-serif}
 h1{text-align:center;color:#ffdf83;font-size:24px;margin:14px 0 3px}
 .subtitle{text-align:center;color:#aab5d2;font-size:12px;margin-bottom:12px}
-.game{width:min(96%,650px);margin:auto;padding-bottom:25px}
+.game{width:min(96%,650px);min-width:0;margin:0 auto;padding-bottom:25px;overflow-wrap:anywhere}
 .panel{background:#202942;border:1px solid #4b5e81;border-radius:10px;padding:10px;margin-bottom:10px}
 .status{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .stat{font-size:13px;line-height:1.7}
@@ -18,8 +18,8 @@ h1{text-align:center;color:#ffdf83;font-size:24px;margin:14px 0 3px}
 .meter div{height:100%;transition:width .2s}
 .hp{background:#52d78b}.mp{background:#59aaff}
 .gold{color:#ffdc68}
-#map{display:grid;grid-template-columns:repeat(11,1fr);gap:2px;background:#121a28;padding:5px;border:2px solid #63789c;border-radius:9px}
-.tile{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border:0;border-radius:3px;padding:0;font-size:clamp(15px,4.4vw,26px);background:#52774b;cursor:pointer}
+#map{display:grid;width:100%;min-width:0;grid-template-columns:repeat(11,minmax(0,1fr));gap:2px;background:#121a28;padding:4px;border:2px solid #63789c;border-radius:9px;overflow:hidden}
+.tile{min-width:0;width:100%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;border:0;border-radius:3px;padding:0;overflow:hidden;font-size:clamp(9px,2.5vw,22px);line-height:1;white-space:nowrap;background:#52774b;cursor:pointer}
 .tile.grass{background:#52774b}.tile.path{background:#b49a69}
 .tile.water{background:#3a719d}.tile.tree{background:#294d38}.tile.shop{background:#b49a69}
 .tile.hero{background:#e2c16a;box-shadow:inset 0 0 0 2px #fff4a0}
@@ -59,33 +59,14 @@ button:disabled{opacity:.4;cursor:default}
 .savebar{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:10px}
 .savebar button{font-size:13px}
 #saveStatus{font-size:11px;color:#aab5d2;text-align:center;margin:5px}
-/* スマホ画面でマップが横にはみ出すのを防ぐ */
-#map {
-  width: 100%;
-  max-width: 100%;
-  grid-template-columns: repeat(11, minmax(0, 1fr));
-  overflow: hidden;
-}
-
-#map .tile {
-  min-width: 0;
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  font-size: clamp(10px, 4vw, 24px);
-white-space: nowrap;
-overflow: hidden;  
-}
-
-/* ページ全体の横はみ出しを防止 */
-html,
-body {
-  max-width: 100%;
-  overflow-x: hidden;
-}
-
-.game,
-.panel {
-  max-width: 100%;
+@media(max-width:520px){
+  .game{width:calc(100% - 12px)}
+  .panel{padding:7px}
+  #map{gap:1px;padding:3px}
+  .legend{font-size:10px;line-height:1.45;overflow-wrap:anywhere}
+  .controls{gap:8px;flex-wrap:wrap}
+  .pad{grid-template-columns:42px 42px 42px;grid-template-rows:40px 40px 40px}
+  .action-buttons{width:min(100%,260px)}
 }
 </style>
 </head>
@@ -182,10 +163,10 @@ const SAVE_KEY = "heroAdventureSave_v2";
 const heroDefaults = {
   x:1,y:1,level:1,
   hp:40,maxHP:40,mp:12,maxMP:12,
-  baseAtk:8,baseDef:2,exp:0,gold:35,
+  baseAtk:8,baseDef:1,exp:0,gold:35,
   herbs:2,highHerbs:0,megaHerbs:0,fullHerbs:0,elixirs:0,
   manaPotions:1,highManaPotions:0,megaManaPotions:0,fullManaPotions:0,reviveDrops:0,
-  weapon:null,armor:null
+  weapon:null,armor:null,resurrectionReady:false
 };
 
 let hero = structuredClone(heroDefaults);
@@ -195,13 +176,16 @@ const weapons=[
   {name:"鉄の剣",atk:7,price:65},
   {name:"鋼の剣",atk:12,price:500},
   {name:"勇者の剣",atk:20,price:1500},
-  {name:"ディバインソード",atk:120,price:10000}
+  {name:"ディバインソード",atk:120,price:10000},
+  {name:"アドミンソード",atk:1500,price:75000}
 ];
 const armors=[
-  {name:"布の服",def:2,price:20},
-  {name:"革の鎧",def:5,price:60},
-  {name:"鉄の鎧",def:9,price:140},
-  {name:"勇者の鎧",def:15,price:320}
+  {name:"布の服",def:2,price:50},
+  {name:"革の鎧",def:5,price:250},
+  {name:"鉄の鎧",def:9,price:800},
+  {name:"勇者の鎧",def:15,price:2500},
+  {name:"ディバインアーマー",def:120,price:10000},
+  {name:"アドミンアーマー",def:1500,price:75000}
 ];
 
 const goods=[
@@ -392,6 +376,8 @@ function loadGame(){
     if(!data.hero||![2,3,4,5,6].includes(data.version))throw new Error("invalid save");
 
     hero={...heroDefaults,...data.hero};
+    // 既存セーブも新しい成長式に合わせて基礎防御を調整
+    hero.baseDef=1+Math.floor((Math.max(1,hero.level)-1)/3);
     encounterCount=data.encounterCount||0;
     area=data.version>=3&&["castle","heaven"].includes(data.area)?data.area:"field";
     demonKingDefeated=!!data.demonKingDefeated;
@@ -738,11 +724,21 @@ const castleMonsterTypes=[
   {name:"地獄の竜",face:"🐲",maxHP:275,atk:55,def:21,exp:210,gold:170}
 ];
 
+// 各エリアで3%の確率で出現する、エリアボスのおよそ1/3の強敵
+const areaStrongEnemies={
+  field:{name:"ケルベロスの眷属",face:"🐺🔥",maxHP:117,atk:11,def:4,exp:120,gold:90,isAreaStrong:true},
+  castle:{name:"魔王の近衛兵",face:"🛡️👿",maxHP:200,atk:19,def:7,exp:300,gold:220,isAreaStrong:true},
+  heaven:{name:"神罰の使徒",face:"✨👁️",maxHP:3333,atk:259,def:12,exp:1800,gold:1600,isAreaStrong:true}
+};
+
 function startEncounter(){
   mode="battle";
   encounterCount++;
   let type;
-  if(area==="heaven"){
+  // まず3%抽選。外れた場合は、そのエリアの通常敵・メタル系を抽選
+  if(Math.random()<0.03){
+    type=areaStrongEnemies[area]||areaStrongEnemies.field;
+  }else if(area==="heaven"){
     type=Math.random()<0.10
       ?metalKingType
       :heavenMonsterTypes[rand(0,heavenMonsterTypes.length-1)];
@@ -760,7 +756,7 @@ function startEncounter(){
   document.getElementById("enemyName").textContent=enemy.name+"が現れた！";
   document.getElementById("enemyFace").textContent=enemy.face;
   updateEnemy();
-  battleMessage(`${enemy.name}が現れた！ どうする？`);
+  battleMessage(enemy.isAreaStrong?`⚠️ 強敵 ${enemy.name}が現れた！ 気をつけろ！`:`${enemy.name}が現れた！ どうする？`);
   battleCommands();
 }
 function startCerberusBattle(){
@@ -855,7 +851,17 @@ function waitEnemyTurn(){
     hero.hp=Math.max(0,hero.hp-dmg);
     updateStatus();
     battleMessage(`${enemy.name}の攻撃！ 勇者は${dmg}ダメージを受けた！`);
-    if(hero.hp<=0){finishDefeat();return;}
+    if(hero.hp<=0){
+      if(hero.resurrectionReady){
+        hero.resurrectionReady=false;
+        hero.hp=Math.max(1,Math.floor(hero.maxHP*0.5));
+        updateStatus();
+        battleMessage("リザオリクが発動！ 勇者はHP50%で復活した！");
+        setTimeout(()=>{if(token===battleToken&&mode==="battle")battleCommands();},500);
+        return;
+      }
+      finishDefeat();return;
+    }
     setTimeout(()=>{
       if(token!==battleToken||mode!=="battle")return;
       battleCommands();
@@ -872,27 +878,33 @@ function heroAttack(){
   waitEnemyTurn();
 }
 const spellBook=[
-  // 既存呪文も習得レベルを引き上げ、後半に強力な呪文を追加
-  {id:"mera",name:"メラ",level:2,mp:3,kind:"damage",min:13,max:19,desc:"小さな火の玉"},
-  {id:"hoimi",name:"ホイミ",level:3,mp:4,kind:"heal",min:15,max:22,desc:"HPを回復"},
-  {id:"hyado",name:"ヒャド",level:8,mp:5,kind:"damage",min:25,max:36,desc:"氷のつぶて"},
-  {id:"gira",name:"ギラ",level:12,mp:7,kind:"damage",min:38,max:52,desc:"炎の帯で攻撃"},
-  {id:"bagi",name:"バギ",level:16,mp:8,kind:"damage",min:45,max:62,desc:"風の刃で攻撃"},
-  {id:"behoimi",name:"ベホイミ",level:20,mp:10,kind:"heal",min:65,max:90,desc:"HPを大きく回復"},
-  {id:"merami",name:"メラミ",level:18,mp:9,kind:"damage",min:75,max:100,desc:"強力な火炎"},
-  {id:"hyadarko",name:"ヒャダルコ",level:22,mp:11,kind:"damage",min:85,max:115,desc:"氷の嵐"},
-  {id:"iora",name:"イオラ",level:24,mp:13,kind:"damage",min:100,max:135,desc:"大爆発"},
-  {id:"begirama",name:"ベギラマ",level:26,mp:14,kind:"damage",min:115,max:150,desc:"灼熱の閃光"},
-  {id:"io",name:"イオ",level:28,mp:12,kind:"damage",min:95,max:125,desc:"爆発で攻撃"},
-  {id:"behoma",name:"ベホマ",level:32,mp:20,kind:"percentheal",desc:"最大HPの75%ぶん回復"},
-  {id:"bagima",name:"バギマ",level:34,mp:16,kind:"damage",min:145,max:190,desc:"猛烈な風の刃"},
-  {id:"merazoma",name:"メラゾーマ",level:36,mp:20,kind:"damage",min:200,max:270,desc:"極大の火炎"},
-  {id:"mahyado",name:"マヒャド",level:38,mp:22,kind:"damage",min:220,max:290,desc:"極寒の吹雪"},
-  {id:"begiragon",name:"ベギラゴン",level:40,mp:24,kind:"damage",min:250,max:330,desc:"極大の閃熱"},
-  {id:"ionazun",name:"イオナズン",level:42,mp:28,kind:"damage",min:300,max:400,desc:"超巨大な爆発"},
-  {id:"raidein",name:"ライデイン",level:45,mp:25,kind:"damage",min:280,max:360,desc:"雷で強力に攻撃"},
-  {id:"gigadein",name:"ギガデイン",level:48,mp:35,kind:"damage",min:450,max:600,desc:"究極の雷撃"},
-  {id:"behomasun",name:"ベホマズン",level:50,mp:45,kind:"fullheal",desc:"HPを全回復する究極呪文"}
+  // 習得条件をさらに高く設定。イオ→イオラ→イオナズンの順に習得
+  {id:"mera",name:"メラ",level:5,mp:3,kind:"damage",min:13,max:19,desc:"小さな火の玉"},
+  {id:"hoimi",name:"ホイミ",level:6,mp:4,kind:"heal",min:15,max:22,desc:"HPを回復"},
+  {id:"hyado",name:"ヒャド",level:12,mp:5,kind:"damage",min:25,max:36,desc:"氷のつぶて"},
+  {id:"gira",name:"ギラ",level:18,mp:7,kind:"damage",min:38,max:52,desc:"炎の帯で攻撃"},
+  {id:"bagi",name:"バギ",level:22,mp:8,kind:"damage",min:45,max:62,desc:"風の刃で攻撃"},
+  {id:"merami",name:"メラミ",level:25,mp:9,kind:"damage",min:75,max:100,desc:"強力な火炎"},
+  {id:"behoimi",name:"ベホイミ",level:27,mp:10,kind:"heal",min:65,max:90,desc:"HPを大きく回復"},
+  {id:"hyadarko",name:"ヒャダルコ",level:30,mp:11,kind:"damage",min:85,max:115,desc:"氷の嵐"},
+  {id:"io",name:"イオ",level:32,mp:12,kind:"damage",min:95,max:125,desc:"爆発で攻撃"},
+  {id:"begirama",name:"ベギラマ",level:34,mp:14,kind:"damage",min:115,max:150,desc:"灼熱の閃光"},
+  {id:"iora",name:"イオラ",level:37,mp:16,kind:"damage",min:150,max:200,desc:"強力な大爆発"},
+  {id:"behoma",name:"ベホマ",level:40,mp:20,kind:"percentheal",desc:"最大HPの75%ぶん回復"},
+  {id:"bagima",name:"バギマ",level:42,mp:18,kind:"damage",min:145,max:190,desc:"猛烈な風の刃"},
+  {id:"merazoma",name:"メラゾーマ",level:45,mp:22,kind:"damage",min:200,max:270,desc:"極大の火炎"},
+  {id:"mahyado",name:"マヒャド",level:48,mp:24,kind:"damage",min:220,max:290,desc:"極寒の吹雪"},
+  {id:"begiragon",name:"ベギラゴン",level:51,mp:26,kind:"damage",min:250,max:330,desc:"極大の閃熱"},
+  {id:"ionazun",name:"イオナズン",level:54,mp:30,kind:"damage",min:330,max:440,desc:"超巨大な爆発"},
+  {id:"raidein",name:"ライデイン",level:57,mp:27,kind:"damage",min:280,max:360,desc:"雷で強力に攻撃"},
+  {id:"merazomaX",name:"メラガイアー",level:60,mp:38,kind:"damage",min:520,max:680,desc:"究極の火炎"},
+  {id:"mahamun",name:"マヒャデドス",level:63,mp:40,kind:"damage",min:560,max:720,desc:"極限の氷嵐"},
+  {id:"gigadein",name:"ギガデイン",level:66,mp:40,kind:"damage",min:450,max:600,desc:"究極の雷撃"},
+  {id:"bagiクロス",name:"バギクロス",level:69,mp:42,kind:"damage",min:600,max:780,desc:"暴風で切り裂く"},
+  {id:"ionazunX",name:"イオグランデ",level:72,mp:48,kind:"damage",min:750,max:950,desc:"最大級の爆発"},
+  {id:"zoma",name:"マダンテ",level:76,mp:0,kind:"madante",desc:"残りMPをすべて消費し、MPが多いほど大ダメージ"},
+  {id:"behomasun",name:"ベホマズン",level:80,mp:55,kind:"fullheal",desc:"HPを全回復する究極呪文"},
+  {id:"megazaru",name:"リザオリク",level:85,mp:60,kind:"revive",desc:"生存中に使う。50%の確率で、倒れた時にHP50%で復活"}
 ];
 
 function battleMagicMenu(){
@@ -909,11 +921,25 @@ function castSpell(id){
   const spell=spellBook.find(s=>s.id===id&&hero.level>=s.level);
   if(!spell)return;
   if(hero.mp<spell.mp){battleMessage("MPが足りない！");return;}
+  if(spell.kind==="madante"&&hero.mp<=0){battleMessage("MPが残っていない！");return;}
+  if(spell.kind==="revive"&&hero.resurrectionReady){battleMessage("リザオリクの効果はすでに準備されている！");return;}
   if((spell.kind==="heal"||spell.kind==="fullheal"||spell.kind==="percentheal")&&hero.hp===hero.maxHP){
     battleMessage("HPは満タンだ！");return;
   }
+  const mpBefore=hero.mp;
   hero.mp-=spell.mp;
-  if(spell.kind==="damage"){
+  if(spell.kind==="madante"){
+    const dmg=(enemy.isMetal||enemy.isMetalSlime)?1:Math.max(1,mpBefore*25+hero.level*10);
+    enemy.hp=Math.max(0,enemy.hp-dmg);
+    updateEnemy();
+    battleMessage(`マダンテ！ MPを${mpBefore}すべて消費し、${enemy.name}に${dmg}ダメージ！`);
+    updateStatus();
+    if(enemy.hp<=0){handleEnemyDefeated();return;}
+  }else if(spell.kind==="revive"){
+    hero.resurrectionReady=Math.random()<0.5;
+    updateStatus();
+    battleMessage(hero.resurrectionReady?"リザオリク成功！ 倒れた時にHP50%で復活できる！":"リザオリク失敗……復活の加護は得られなかった。");
+  }else if(spell.kind==="damage"){
     const dmg=(enemy.isMetal||enemy.isMetalSlime)?1:rand(spell.min,spell.max)+Math.floor(hero.level/2);
     enemy.hp=Math.max(0,enemy.hp-dmg);
     updateEnemy();
@@ -1036,7 +1062,8 @@ function checkLevelUp(){
     hero.maxHP+=10;
     hero.maxMP+=3;
     hero.baseAtk+=2;
-    hero.baseDef+=1;
+    // 防御力は3レベルごとに+1。レベルだけで被ダメージが極端に減らないようにする。
+    if(hero.level%3===0)hero.baseDef+=1;
     hero.hp=hero.maxHP;
     hero.mp=hero.maxMP;
     const newlyLearned=spellBook.filter(s=>s.level===hero.level);
