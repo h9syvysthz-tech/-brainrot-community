@@ -392,7 +392,7 @@ function loadGame(){
       return;
     }
     const data=JSON.parse(raw);
-    if(!data.hero||![2,3,4,5,6].includes(data.version))throw new Error("invalid save");
+    if(!data.hero||![2,3,4,5,6,7].includes(data.version))throw new Error("invalid save");
 
     hero={...heroDefaults,...data.hero};
     // 既存セーブも新しい成長式に合わせて基礎防御を調整
@@ -1164,7 +1164,7 @@ function init(){
     const raw=localStorage.getItem(SAVE_KEY);
     if(raw){
       const data=JSON.parse(raw);
-      if([2,3,4,5,6].includes(data.version)&&data.hero){
+      if([2,3,4,5,6,7].includes(data.version)&&data.hero){
         hero={...heroDefaults,...data.hero};
         encounterCount=data.encounterCount||0;
         area=data.version>=3&&["castle","heaven","adminDimension"].includes(data.area)?data.area:"field";
