@@ -177,7 +177,8 @@ const weapons=[
   {name:"鋼の剣",atk:12,price:500},
   {name:"勇者の剣",atk:20,price:1500},
   {name:"ディバインソード",atk:120,price:10000},
-  {name:"アドミンソード",atk:1500,price:75000}
+  {name:"アドミンソード",atk:1500,price:75000},
+  {name:"インフィニティソード",atk:Infinity,price:1000000}
 ];
 const armors=[
   {name:"布の服",def:2,price:50},
@@ -185,7 +186,8 @@ const armors=[
   {name:"鉄の鎧",def:9,price:800},
   {name:"勇者の鎧",def:15,price:2500},
   {name:"ディバインアーマー",def:120,price:10000},
-  {name:"アドミンアーマー",def:1500,price:75000}
+  {name:"アドミンアーマー",def:1500,price:75000},
+  {name:"インフィニティアーマー",def:Infinity,price:1000000}
 ];
 
 const goods=[
@@ -237,12 +239,25 @@ const heavenMap=[
   "#.........#",
   "###########"
 ];
+// GOD撃破後に解放される第4エリア
+const adminDimensionMap=[
+  "###########",
+  "#E........#",
+  "#.###.###.#",
+  "#.........#",
+  "#.###.###.#",
+  "#.........#",
+  "#.........#",
+  "#........B#",
+  "###########"
+];
 let area="field";
 let demonKingDefeated=false;
 let cerberusDefeated=false;
 let godDefeated=false;
+let admin67Defeated=false;
 let divineDragonDefeated=false;
-function activeMap(){return area==="castle"?castleMap:area==="heaven"?heavenMap:fieldMap;}
+function activeMap(){return area==="castle"?castleMap:area==="heaven"?heavenMap:area==="adminDimension"?adminDimensionMap:fieldMap;}
 
 const monsterTypes=[
   {name:"スライム",face:"🟢",maxHP:22,atk:6,def:1,exp:8,gold:6},
@@ -313,16 +328,19 @@ function renderMap(){
       else if(tile==="C"){b.classList.add("shop");icon="🏰";}
       else if(tile==="E"){b.classList.add("path");icon="🚪";}
       else if(tile==="H"){b.classList.add("path");icon=demonKingDefeated?"✨":"🔒";}
-      else if(tile==="B"){b.classList.add("path");icon=demonKingDefeated?"👑":"👿";}
+      else if(tile==="B"){b.classList.add("path");icon=area==="adminDimension"?(admin67Defeated?"☠️":"6️⃣7️⃣"):(demonKingDefeated?"👑":"👿");}
       else if(tile==="K"){b.classList.add("path");icon=cerberusDefeated?"☠️":"🐺🐺🐺";}
       else if(tile==="G"){b.classList.add("path");icon=godDefeated?"🌟":"🌌";}
+      else if(area==="heaven"&&x===9&&y===1){b.classList.add("path");icon=godDefeated?"🌀":"🔒";}
       else if(area==="heaven"&&x===5&&y===3){b.classList.add("path");icon=divineDragonDefeated?"🐉":"🐲";}
       else{b.classList.add("grass");icon=area==="castle"?"⬛":"🌿";}
       const bossNear = area==="castle"
         ? (!demonKingDefeated && Math.abs(x-9)+Math.abs(y-6)===1)
         : area==="heaven"
           ? (!godDefeated && Math.abs(x-9)+Math.abs(y-6)===1)
-          : (!cerberusDefeated && Math.abs(x-8)+Math.abs(y-5)===1);
+          : area==="adminDimension"
+            ? (!admin67Defeated && Math.abs(x-9)+Math.abs(y-7)===1)
+            : (!cerberusDefeated && Math.abs(x-8)+Math.abs(y-5)===1);
       if(bossNear)b.classList.add("boss-talkable");
       if(hero.x===x&&hero.y===y){b.classList.add("hero");icon="🧙";}
       b.textContent=icon;
@@ -334,19 +352,20 @@ function renderMap(){
     }
   }
   const title=document.querySelector("#exploration h2");
-  title.textContent=area==="castle"?"🏰 魔王城":area==="heaven"?"☁️ 天界":"🌲 フィールド探索";
+  title.textContent=area==="castle"?"🏰 魔王城":area==="heaven"?"☁️ 天界":area==="adminDimension"?"♾️ アドミンディメンション":"🌲 フィールド探索";
 }
 
 // ===== セーブ・ロード =====
 function saveGame(showMessage=true){
   // 戦闘中は戦闘状態を保存せず、探索地点とキャラクター情報を保存
   const data={
-    version:6,
+    version:7,
     hero:hero,
     area:area,
     demonKingDefeated:demonKingDefeated,
     cerberusDefeated:cerberusDefeated,
     godDefeated:godDefeated,
+    admin67Defeated:admin67Defeated,
     encounterCount:encounterCount,
     savedAt:new Date().toISOString()
   };
@@ -379,10 +398,11 @@ function loadGame(){
     // 既存セーブも新しい成長式に合わせて基礎防御を調整
     hero.baseDef=1+Math.floor((Math.max(1,hero.level)-1)/3);
     encounterCount=data.encounterCount||0;
-    area=data.version>=3&&["castle","heaven"].includes(data.area)?data.area:"field";
+    area=data.version>=3&&["castle","heaven","adminDimension"].includes(data.area)?data.area:"field";
     demonKingDefeated=!!data.demonKingDefeated;
     cerberusDefeated=!!data.cerberusDefeated;
     godDefeated=!!data.godDefeated;
+    admin67Defeated=!!data.admin67Defeated;
     if(area==="heaven"&&!demonKingDefeated)area="field";
 
     // ロード時は探索状態から再開
@@ -481,6 +501,17 @@ function move(dx,dy){
     renderMap();say("天界から魔王城へ戻った。");
     autoSave();return;
   }
+  if(area==="heaven"&&nx===9&&ny===1){
+    if(!godDefeated){say("アドミンディメンションへの門は閉ざされている。先にGODを倒そう！");return;}
+    area="adminDimension";hero.x=1;hero.y=1;
+    renderMap();say("♾️ アドミンディメンションへ足を踏み入れた！異次元の強敵が待ち受けている。");
+    autoSave();return;
+  }
+  if(area==="adminDimension"&&tile==="E"){
+    area="heaven";hero.x=9;hero.y=1;
+    renderMap();say("アドミンディメンションから天界へ戻った。");
+    autoSave();return;
+  }
 
   hero.x=nx;hero.y=ny;
   renderMap();autoSave();
@@ -492,6 +523,9 @@ function move(dx,dy){
   }else if(area==="heaven"){
     say("天界を探索中……強大な敵の気配がする！");
     if(Math.random()<0.42)startEncounter();
+  }else if(area==="adminDimension"){
+    say("アドミンディメンションを探索中……異次元の敵が現れそうだ！");
+    if(Math.random()<0.48)startEncounter();
   }else{
     say("フィールドを探索中……");
     if(Math.random()<0.23)startEncounter();
@@ -538,6 +572,14 @@ function talkOrInspect(){
     }else{
       say("城の奥から魔王の気配がする。さらに奥へ進もう。");
     }
+  }else if(area==="adminDimension"){
+    const bossX=9,bossY=7;
+    const nearBoss=Math.abs(hero.x-bossX)+Math.abs(hero.y-bossY)<=1;
+    if(nearBoss&&!admin67Defeated){
+      showDialog(`<h2>♾️ ボス「67」</h2><p>アドミンディメンションの支配者が現れた！</p><p>HP 676767／攻撃力 1500</p><button class="primary" onclick="closeDialog();startAdmin67Battle()">67に挑む</button><button class="close" onclick="closeDialog()">準備する</button>`);
+    }else if(admin67Defeated){
+      showDialog(`<h2>☠️ 67</h2><p>67はすでに倒されている。</p><button class="close" onclick="closeDialog()">閉じる</button>`);
+    }else{say("次元の奥から強大な気配がする……");}
   }else if(area==="heaven"){
     const bossX=9,bossY=6;
     const nearBoss=Math.abs(hero.x-bossX)+Math.abs(hero.y-bossY)<=1;
@@ -552,7 +594,7 @@ function talkOrInspect(){
     }else if(nearBoss&&!godDefeated){
       showDialog(`<h2>🌌 GOD</h2>
         <p>天界を支配する存在が姿を現した……。</p>
-        <p>GOD：HP 10000／攻撃力 777</p>
+        <p>GOD：HP 7777／攻撃力 500</p>
         <button class="primary" onclick="closeDialog();startGodBattle()">GODに挑む</button>
         <button class="close" onclick="closeDialog()">準備する</button>`);
     }else if(godDefeated){
@@ -712,6 +754,12 @@ function useItemOutside(id){
 // ===== エンカウント・戦闘 =====
 const metalSlimeType={name:"メタルスライム",face:"🩶",maxHP:3,atk:8,def:0,exp:500,gold:0,isMetalSlime:true};
 const metalKingType={name:"メタルキング",face:"👑",maxHP:15,atk:100,def:0,exp:10000,gold:0,isMetalKing:true,isMetal:true};
+const adminMetalKingType={name:"メタルキング",face:"👑",maxHP:25,atk:480,def:0,exp:35000,gold:0,isMetalKing:true,isMetal:true};
+const adminDimensionMonsterTypes=[
+  {name:"次元の守護竜",face:"🐉",maxHP:4800,atk:360,def:18,exp:4200,gold:3000},
+  {name:"アドミン・ナイト",face:"⚔️♾️",maxHP:5200,atk:390,def:22,exp:4800,gold:3500},
+  {name:"虚空の魔神",face:"👾",maxHP:6000,atk:420,def:25,exp:5500,gold:4200}
+];
 const heavenMonsterTypes=[
   // 天界の通常敵を魔王の二形態に匹敵する強さへ強化（メタルキングとGODは別設定）
   {name:"天界の守護者",face:"🪽",maxHP:900,atk:88,def:30,exp:700,gold:650},
@@ -726,9 +774,10 @@ const castleMonsterTypes=[
 
 // 各エリアで3%の確率で出現する、エリアボスのおよそ1/3の強敵
 const areaStrongEnemies={
-  field:{name:"ケルベロスの眷属",face:"🐺🔥",maxHP:117,atk:11,def:4,exp:120,gold:90,isAreaStrong:true},
-  castle:{name:"魔王の近衛兵",face:"🛡️👿",maxHP:200,atk:19,def:7,exp:300,gold:220,isAreaStrong:true},
-  heaven:{name:"神罰の使徒",face:"✨👁️",maxHP:3333,atk:259,def:12,exp:1800,gold:1600,isAreaStrong:true}
+  field:{name:"ケルベロスの眷属",face:"🐺🔥",maxHP:150,atk:25,def:4,exp:120,gold:90,isAreaStrong:true},
+  castle:{name:"魔王の近衛兵",face:"🛡️👿",maxHP:400,atk:40,def:7,exp:300,gold:220,isAreaStrong:true},
+  heaven:{name:"神罰の使徒",face:"✨👁️",maxHP:3333,atk:259,def:12,exp:1800,gold:1600,isAreaStrong:true},
+  adminDimension:{name:"25",face:"🌀👹",maxHP:252525,atk:750,def:30,exp:25000,gold:20000,isAreaStrong:true}
 };
 
 function startEncounter(){
@@ -738,6 +787,10 @@ function startEncounter(){
   // まず3%抽選。外れた場合は、そのエリアの通常敵・メタル系を抽選
   if(Math.random()<0.03){
     type=areaStrongEnemies[area]||areaStrongEnemies.field;
+  }else if(area==="adminDimension"){
+    type=Math.random()<0.10
+      ?adminMetalKingType
+      :adminDimensionMonsterTypes[rand(0,adminDimensionMonsterTypes.length-1)];
   }else if(area==="heaven"){
     type=Math.random()<0.10
       ?metalKingType
@@ -802,13 +855,26 @@ function startGodBattle(){
   if(godDefeated){say("GODはすでに倒されている。");return;}
   if(!demonKingDefeated){say("天界の門はまだ開かない。先に魔王を倒そう！");return;}
   mode="battle";battleBusy=false;battleToken++;
-  enemy={name:"GOD",face:"🌌",maxHP:10000,hp:10000,atk:777,def:35,exp:5000,gold:5000,isGod:true};
+  enemy={name:"GOD",face:"🌌",maxHP:7777,hp:7777,atk:500,def:35,exp:5000,gold:5000,isGod:true};
   document.getElementById("exploration").classList.add("hidden");
   document.getElementById("battleSection").classList.remove("hidden");
   document.getElementById("enemyName").textContent="GODが降臨した！";
   document.getElementById("enemyFace").textContent=enemy.face;
   updateEnemy();
   battleMessage("GOD「人の子よ、我に挑むというのか……」 最終決戦！");
+  battleCommands();
+}
+
+function startAdmin67Battle(){
+  if(admin67Defeated){say("67はすでに倒されている。");return;}
+  mode="battle";battleBusy=false;battleToken++;
+  enemy={name:"67",face:"6️⃣7️⃣",maxHP:676767,hp:676767,atk:1500,def:0,exp:0,gold:0,isAdmin67:true};
+  document.getElementById("exploration").classList.add("hidden");
+  document.getElementById("battleSection").classList.remove("hidden");
+  document.getElementById("enemyName").textContent="67が立ちはだかった！";
+  document.getElementById("enemyFace").textContent=enemy.face;
+  updateEnemy();
+  battleMessage("67「この次元を支配するのは私だ！」 ボス戦開始！");
   battleCommands();
 }
 
@@ -835,7 +901,7 @@ function waitEnemyTurn(){
   setTimeout(()=>{
     if(token!==battleToken||mode!=="battle")return;
     if(enemy.hp<=0){handleEnemyDefeated();return;}
-    const fleeChance=enemy.isMetalSlime?0.30:enemy.isMetalKing?0.05:0;
+    const fleeChance=enemy.isMetalSlime?0.30:enemy.isMetalKing?(enemy===adminMetalKingType||enemy.maxHP===25?0.02:0.05):0;
     if(fleeChance>0&&Math.random()<fleeChance){
       battleToken++;
       mode="explore";
@@ -847,7 +913,7 @@ function waitEnemyTurn(){
       autoSave();
       return;
     }
-    const dmg=Math.max(1,enemy.atk+rand(-2,2)-totalDef());
+    const dmg=hero.armor?.name==="インフィニティアーマー"?0:Math.max(1,enemy.atk+rand(-2,2)-totalDef());
     hero.hp=Math.max(0,hero.hp-dmg);
     updateStatus();
     battleMessage(`${enemy.name}の攻撃！ 勇者は${dmg}ダメージを受けた！`);
@@ -870,7 +936,7 @@ function waitEnemyTurn(){
 }
 function heroAttack(){
   if(mode!=="battle"||battleBusy)return;
-  const dmg=enemy.isMetal?1:enemy.isMetalSlime?1:Math.max(1,totalAtk()+rand(-2,3)-enemy.def);
+  const dmg=hero.weapon?.name==="インフィニティソード"?enemy.hp:(enemy.isMetal?1:enemy.isMetalSlime?1:Math.max(1,totalAtk()+rand(-2,3)-enemy.def));
   enemy.hp=Math.max(0,enemy.hp-dmg);
   updateEnemy();
   battleMessage(`勇者の攻撃！ ${enemy.name}に${dmg}ダメージ！`);
@@ -997,7 +1063,7 @@ function useBattleItem(id){
 }
 function escapeBattle(){
   if(battleBusy)return;
-  if(enemy?.isDemonKing){battleMessage("魔王の力に阻まれ、逃げられない！");return;}
+  if(enemy?.isDemonKing||enemy?.isAdmin67){battleMessage("ボスの圧倒的な力に阻まれ、逃げられない！");return;}
   disableBattleCommands();
   if(Math.random()<0.7){
     battleToken++;
@@ -1035,16 +1101,20 @@ function finishVictory(){
   const wasCerberus=!!enemy.isCerberus;
   const wasGod=!!enemy.isGod;
   const wasDivineDragon=!!enemy.isDivineDragon;
+  const wasAdmin67=!!enemy.isAdmin67;
   if(wasDemonKing)demonKingDefeated=true;
   if(wasCerberus)cerberusDefeated=true;
   if(wasGod)godDefeated=true;
   if(wasDivineDragon)divineDragonDefeated=true;
+  if(wasAdmin67)admin67Defeated=true;
   hero.exp+=earnedExp;
   hero.gold+=earnedGold;
   document.getElementById("battleSection").classList.add("hidden");
   document.getElementById("exploration").classList.remove("hidden");
   renderMap();
-  say(wasGod
+  say(wasAdmin67
+    ? `ボス「67」を撃破した！ アドミンディメンションに平和が戻った！`
+    : wasGod
     ? `GODを打ち倒した！ 天界に平和が戻った！ EXP ${earnedExp}、${earnedGold}Gを獲得！`
     : wasDemonKing
       ? `魔王の第二形態を打ち破った！ 天界への門が開いた！ EXP ${earnedExp}、${earnedGold}Gを獲得！`
@@ -1097,7 +1167,7 @@ function init(){
       if([2,3,4,5,6].includes(data.version)&&data.hero){
         hero={...heroDefaults,...data.hero};
         encounterCount=data.encounterCount||0;
-        area=data.version>=3&&["castle","heaven"].includes(data.area)?data.area:"field";
+        area=data.version>=3&&["castle","heaven","adminDimension"].includes(data.area)?data.area:"field";
         demonKingDefeated=!!data.demonKingDefeated;
         cerberusDefeated=!!data.cerberusDefeated;
         godDefeated=!!data.godDefeated;
