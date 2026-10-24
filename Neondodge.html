@@ -1,0 +1,98 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>NEON DODGE PLUS</title><style>
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top,#263366,#080b1b 70%);color:#f5f8ff;font-family:system-ui,sans-serif;text-align:center;padding:8px}h1{color:#6ffff2;text-shadow:0 0 15px #00e8ff;margin:7px}.sub,.note{color:#bac6e8;font-size:12px}.stats{display:flex;justify-content:space-around;gap:5px;flex-wrap:wrap;max-width:440px;margin:9px auto;font-size:14px}.wrap{position:relative;width:min(96vw,420px);margin:auto}canvas{display:block;width:100%;height:auto;border:2px solid #54edfa;border-radius:14px;box-shadow:0 0 23px #00d9ff55;touch-action:none}.overlay{position:absolute;inset:0;background:#080e25ec;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:15px;overflow:auto}.overlay h2{margin:0;font-size:26px}.overlay p{line-height:1.7;font-size:14px;margin:4px}button{border:0;border-radius:12px;background:linear-gradient(120deg,#48f6eb,#8c75ff);color:#0b1030;font-weight:800;font-size:16px;padding:11px 17px;cursor:pointer;touch-action:none}.buttons{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}.controls{max-width:420px;margin:10px auto;display:flex;gap:9px}.controls button{flex:1}.panel{max-width:420px;margin:10px auto;background:#141e3d;border:1px solid #50659b;border-radius:14px;padding:12px}.shopgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.shopitem{background:#202c51;border:1px solid #4d6caa;border-radius:10px;padding:9px;font-size:12px}.shopitem b{font-size:14px}.shopitem button{font-size:12px;padding:8px;margin-top:7px;width:100%}.shopitem button:disabled{opacity:.48;cursor:not-allowed}.hidden{display:none!important}.bossbar{max-width:420px;margin:4px auto;color:#ff91b3;font-weight:bold}.bar{height:9px;background:#3a2943;border-radius:9px;overflow:hidden}.fill{height:100%;width:100%;background:#ff416a;transition:width .1s}.notice{color:#ffdf77;min-height:18px;font-size:12px;margin:6px}
+</style></head><body><h1>⚡ NEON DODGE PLUS</h1><div class="sub">避ける・集める・強化する・ボスを倒す！</div><div class="stats"><span>⭐ <b id="score">0</b></span><span>❤️ <b id="hp">3</b></span><span>🪙 <b id="money">0</b></span><span>🏆 <b id="best">0</b></span></div><div id="bossbar" class="bossbar hidden">👾 BOSS HP <span id="bossHp"></span><div class="bar"><div id="bossFill" class="fill"></div></div></div><div class="wrap"><canvas id="game" width="400" height="560"></canvas><div id="overlay" class="overlay"><h2 id="title">NEON DODGE PLUS</h2><p id="message">🔴 障害物を避けて 🟡 コインを集めよう！<br>👾 30秒ごとにボス出現！<br>💥 ボス中は自動攻撃！<br>PC：← → / A D　スマホ：ドラッグ</p><div class="buttons"><button id="start">ゲームスタート ▶</button><button id="shopOpen">🛒 ショップ</button></div></div></div><div class="controls"><button id="left">◀ 左</button><button id="right">右 ▶</button><button id="pause">⏸ 一時停止</button></div><div class="notice" id="notice"></div><div class="buttons"><button id="gachaOpen">🎰 キャラガチャ</button><button id="weaponOpen">⚔️ 武器</button></div><section id="shop" class="panel hidden"><h2>🛒 強化ショップ</h2><p>所持コイン：🪙 <b id="shopMoney">0</b></p><div class="shopgrid" id="shopgrid"></div><p class="note">購入した強化はこのブラウザに保存されます。</p><button id="shopClose">閉じる</button></section><section id="collection" class="panel hidden"><h2 id="collectionTitle">コレクション</h2><div id="collectionContent"></div><button id="collectionClose">閉じる</button></section><div class="note">コイン・強化・キャラ・武器・最高記録は端末内に自動保存されます</div>
+<script>
+'use strict';
+const $=id=>document.getElementById(id),c=$('game'),g=c.getContext('2d');
+const get=(k,d)=>{try{let v=localStorage.getItem(k);return v===null?d:JSON.parse(v)}catch{return d}};
+const save=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}};
+let best=Number(get('neonDodgeBest',0))||0,money=Math.max(0,Number(get('neonDodgeMoney',0))||0),up=get('neonDodgeUpgrades',{});
+const chars=[
+{id:'cyan',name:'ネオン戦士',icon:'🔷',rarity:'N',color:'#4af9f4',hp:0,power:0,speed:0},
+{id:'fox',name:'スピードフォックス',icon:'🦊',rarity:'R',color:'#ffb34a',hp:0,power:0,speed:2},
+{id:'knight',name:'鋼鉄ナイト',icon:'🛡️',rarity:'R',color:'#9fc2ff',hp:2,power:0,speed:0},
+{id:'mage',name:'プラズマ魔導士',icon:'🪄',rarity:'SR',color:'#ba8cff',hp:0,power:3,speed:0},
+{id:'dragon',name:'ドラゴンライダー',icon:'🐉',rarity:'SSR',color:'#ff6c86',hp:2,power:6,speed:1},
+{id:'star',name:'ギャラクシー',icon:'🌟',rarity:'UR',color:'#ffe273',hp:3,power:10,speed:2}
+];
+const weapons=[
+{id:'blaster',name:'ネオンブラスター',icon:'🔫',price:0,power:0,interval:250,projectiles:1},
+{id:'rapid',name:'連射レーザー',icon:'⚡',price:100,power:0,interval:130,projectiles:1},
+{id:'twin',name:'ツインキャノン',icon:'🔱',price:220,power:2,interval:270,projectiles:2},
+{id:'nova',name:'ノヴァ砲',icon:'💫',price:450,power:7,interval:360,projectiles:1},
+{id:'storm',name:'ストームバースト',icon:'🌌',price:850,power:5,interval:220,projectiles:3}
+];
+const bossTypes=[
+{name:'シャドウスライム',icon:'👾',color:'#b63bd1',hp:1,rate:1,pattern:0},
+{name:'インフェルノドラゴン',icon:'🐲',color:'#ff673d',hp:1.4,rate:.8,pattern:1},
+{name:'サンダーロボ',icon:'🤖',color:'#55dfff',hp:1.8,rate:.7,pattern:2},
+{name:'ダークキング',icon:'👑',color:'#ff4d99',hp:2.3,rate:.55,pattern:3}
+];
+let ownedChars=get('neonDodgeChars',['cyan']);if(!Array.isArray(ownedChars))ownedChars=['cyan'];if(!ownedChars.includes('cyan'))ownedChars.push('cyan');
+let selectedChar=get('neonDodgeSelectedChar','cyan');if(!ownedChars.includes(selectedChar)||!chars.some(x=>x.id===selectedChar))selectedChar='cyan';
+let ownedWeapons=get('neonDodgeWeapons',['blaster']);if(!Array.isArray(ownedWeapons))ownedWeapons=['blaster'];if(!ownedWeapons.includes('blaster'))ownedWeapons.push('blaster');
+let selectedWeapon=get('neonDodgeSelectedWeapon','blaster');if(!ownedWeapons.includes(selectedWeapon)||!weapons.some(x=>x.id===selectedWeapon))selectedWeapon='blaster';
+const activeChar=()=>chars.find(x=>x.id===selectedChar)||chars[0],activeWeapon=()=>weapons.find(x=>x.id===selectedWeapon)||weapons[0];
+function persistCollection(){save('neonDodgeChars',ownedChars);save('neonDodgeSelectedChar',selectedChar);save('neonDodgeWeapons',ownedWeapons);save('neonDodgeSelectedWeapon',selectedWeapon)}
+function collection(type){
+$('collection').classList.remove('hidden');$('collectionTitle').textContent=type==='gacha'?'🎰 キャラクターガチャ':'⚔️ 武器ショップ';
+let el=$('collectionContent');el.replaceChildren();
+const para=(s)=>{let p=document.createElement('p');p.textContent=s;el.append(p)};
+const btn=(s,fn,disabled=false)=>{let b=document.createElement('button');b.textContent=s;b.disabled=disabled;b.style.margin='4px';b.onclick=fn;el.append(b)};
+para('🪙 所持コイン：'+money+(running?'　※プレイ中は購入できません':''));
+if(type==='gacha'){
+para('1回 50コイン。排出率：N 45% / R 32% / SR 15% / SSR 7% / UR 1%');
+btn('🎲 50コインでガチャを回す',()=>{
+if(running||money<50)return;money-=50;let n=Math.random()*100,rarity=n<1?'UR':n<8?'SSR':n<23?'SR':n<55?'R':'N';let pool=chars.filter(x=>x.rarity===rarity),ch=pool[Math.floor(Math.random()*pool.length)];let duplicate=ownedChars.includes(ch.id);if(duplicate){money+=20;notify('重複ボーナス：20コイン返却！')}else ownedChars.push(ch.id);
+persistCollection();save('neonDodgeMoney',money);hud();collection('gacha');$('collectionTitle').textContent='🎉 '+ch.rarity+' '+ch.icon+' '+ch.name+(duplicate?'（重複）':' GET！')
+},running||money<50);
+para('所持キャラクター（選択すると次回のプレイから有効）');
+for(let ch of chars){para(ch.icon+' '+ch.name+' ['+ch.rarity+']'+(ownedChars.includes(ch.id)?' ✅':' 🔒')+'　HP+'+ch.hp+' 攻撃+'+ch.power+' 速度+'+ch.speed);if(ownedChars.includes(ch.id))btn(selectedChar===ch.id?'選択中 ✓':'このキャラを使う',()=>{selectedChar=ch.id;persistCollection();collection('gacha')},running||selectedChar===ch.id)}
+}else{
+para('武器はボス戦で自動発射！購入するとずっと使えます。');
+for(let w of weapons){para(w.icon+' '+w.name+'：攻撃+'+w.power+' / '+(1000/w.interval).toFixed(1)+'発/秒 ×'+w.projectiles);if(ownedWeapons.includes(w.id))btn(selectedWeapon===w.id?'装備中 ✓':'装備する',()=>{selectedWeapon=w.id;persistCollection();collection('weapon')},running||selectedWeapon===w.id);else btn('🪙 '+w.price+' で購入',()=>{if(running||money<w.price)return;money-=w.price;ownedWeapons.push(w.id);selectedWeapon=w.id;persistCollection();save('neonDodgeMoney',money);hud();collection('weapon')},running||money<w.price)}
+}
+}
+$('gachaOpen').onclick=()=>collection('gacha');$('weaponOpen').onclick=()=>collection('weapon');$('collectionClose').onclick=()=>$('collection').classList.add('hidden');
+const upgrades=[
+{id:'hp',name:'❤️ 最大HP',desc:'開始HP +1',max:5,base:30},
+{id:'speed',name:'⚡ 移動速度',desc:'左右移動が速くなる',max:5,base:25},
+{id:'magnet',name:'🧲 コイン磁石',desc:'コインを引き寄せる',max:5,base:35},
+{id:'power',name:'💥 攻撃力',desc:'ボスへのダメージUP',max:7,base:40},
+{id:'shield',name:'🛡️ バリア',desc:'開始時にバリア +1',max:3,base:55},
+{id:'income',name:'💰 コイン増加',desc:'獲得コイン +1',max:5,base:45}
+];
+for(const u of upgrades)up[u.id]=Math.max(0,Math.min(u.max,Number(up[u.id])||0));
+let score=0,hp=3,shield=0,player={x:200,y:505,r:17},items=[],shots=[],boss=null,keys={},running=false,paused=false,last=0,elapsed=0,spawn=0,inv=0,raf=0,bossIndex=0,shotTimer=0,toastTime=0;
+function hud(){$('score').textContent=Math.floor(score);$('hp').textContent=hp+(shield?' 🛡️'+shield:'');$('money').textContent=money;$('best').textContent=best;$('shopMoney').textContent=money;$('bossbar').classList.toggle('hidden',!boss);if(boss){$('bossHp').textContent=Math.ceil(boss.hp)+' / '+boss.max;$('bossFill').style.width=Math.max(0,boss.hp/boss.max*100)+'%'}}
+function notify(s){$('notice').textContent=s;clearTimeout(toastTime);toastTime=setTimeout(()=>$('notice').textContent='',2400)}
+function renderShop(){let grid=$('shopgrid');grid.replaceChildren();for(let u of upgrades){let lv=up[u.id],cost=Math.floor(u.base*Math.pow(1.65,lv)),maxed=lv>=u.max;let box=document.createElement('div');box.className='shopitem';let title=document.createElement('b');title.textContent=u.name;let desc=document.createElement('div');desc.textContent=u.desc;let level=document.createElement('div');level.textContent='Lv '+lv+' / '+u.max;let btn=document.createElement('button');btn.textContent=maxed?'最大レベル':'🪙 '+cost+' で強化';btn.disabled=maxed||money<cost||running;btn.onclick=()=>{if(running||up[u.id]>=u.max||money<cost)return;money-=cost;up[u.id]++;save('neonDodgeMoney',money);save('neonDodgeUpgrades',up);hud();renderShop();notify(u.name+' を強化した！')};box.append(title,desc,level,btn);grid.append(box)}}
+function showShop(){$('shop').classList.remove('hidden');renderShop();$('shop').scrollIntoView({behavior:'smooth',block:'nearest'})}
+$('shopOpen').onclick=showShop;$('shopClose').onclick=()=>$('shop').classList.add('hidden');
+function start(){cancelAnimationFrame(raf);score=0;hp=3+up.hp+activeChar().hp;shield=up.shield;player.x=200;items=[];shots=[];boss=null;bossIndex=0;shotTimer=0;spawn=0;elapsed=0;inv=0;last=0;paused=false;running=true;$('pause').textContent='⏸ 一時停止';$('overlay').classList.add('hidden');$('shop').classList.add('hidden');$('collection').classList.add('hidden');hud();raf=requestAnimationFrame(loop)}
+function finish(){running=false;cancelAnimationFrame(raf);if(Math.floor(score)>best){best=Math.floor(score);save('neonDodgeBest',best)}hud();$('title').textContent='ゲームオーバー！';$('message').innerHTML='⭐ スコア：<b>'+Math.floor(score)+'</b><br>🏆 最高記録：'+best+'<br>🪙 所持コイン：'+money+'<br>ショップで強化して再挑戦！';$('start').textContent='もう一度遊ぶ ↻';$('overlay').classList.remove('hidden');renderShop()}
+$('start').onclick=start;
+function togglePause(){if(!running)return;paused=!paused;$('pause').textContent=paused?'▶ 再開':'⏸ 一時停止';if(paused){$('title').textContent='一時停止';$('message').textContent='再開ボタンで続きから遊べます';$('start').textContent='▶ 再開';$('overlay').classList.remove('hidden')}else{$('overlay').classList.add('hidden');last=0;raf=requestAnimationFrame(loop)}}
+$('pause').onclick=togglePause;$('start').addEventListener('click',()=>{});$('start').onclick=()=>{if(running&&paused)togglePause();else start()};
+window.addEventListener('keydown',e=>{let k=e.key.toLowerCase();if(['arrowleft','arrowright','a','d',' '].includes(k))e.preventDefault();keys[k]=true;if(k===' '&&!e.repeat)togglePause()});window.addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);window.addEventListener('blur',()=>{keys={};if(running&&!paused)togglePause()});
+for(const [id,key] of [['left','arrowleft'],['right','arrowright']]){let b=$(id);b.addEventListener('pointerdown',e=>{e.preventDefault();keys[key]=true;b.setPointerCapture(e.pointerId)});for(let ev of ['pointerup','pointercancel','lostpointercapture'])b.addEventListener(ev,()=>keys[key]=false)}
+function move(e){let r=c.getBoundingClientRect();player.x=Math.max(20,Math.min(380,(e.clientX-r.left)*400/r.width))}
+let dragging=false;c.addEventListener('pointerdown',e=>{if(running&&!paused){dragging=true;c.setPointerCapture(e.pointerId);move(e)}});c.addEventListener('pointermove',e=>{if(dragging&&running&&!paused)move(e)});for(let ev of ['pointerup','pointercancel','lostpointercapture'])c.addEventListener(ev,()=>dragging=false);
+function addMoney(n){money+=n;save('neonDodgeMoney',money)}
+function spawnBoss(){bossIndex++;let type=bossTypes[(bossIndex-1)%bossTypes.length],max=Math.floor((60+bossIndex*45)*type.hp);boss={x:200,y:75,hp:max,max,t:0,fire:800,type};shots=[];notify(type.icon+' '+type.name+' 出現！')}
+function draw(){g.fillStyle='#0b1128';g.fillRect(0,0,400,560);g.strokeStyle='#243359';g.lineWidth=1;for(let x=0;x<=400;x+=40){g.beginPath();g.moveTo(x,0);g.lineTo(x,560);g.stroke()}for(let y=(elapsed*.055)%40;y<560;y+=40){g.beginPath();g.moveTo(0,y);g.lineTo(400,y);g.stroke()}
+for(let it of items){g.beginPath();g.arc(it.x,it.y,it.r,0,Math.PI*2);g.fillStyle=it.type==='coin'?'#ffdc4c':it.type==='bullet'?'#ff77a1':'#ff426d';g.shadowColor=g.fillStyle;g.shadowBlur=14;g.fill();g.shadowBlur=0;if(it.type==='coin'){g.textAlign='center';g.textBaseline='middle';g.fillStyle='#755000';g.font='bold 15px system-ui';g.fillText('★',it.x,it.y)}}
+if(boss){g.save();g.translate(boss.x,boss.y);g.shadowColor='#f24cce';g.shadowBlur=25;g.fillStyle=boss.type.color;g.beginPath();for(let i=0;i<8;i++){let a=i*Math.PI/4;let r=i%2?32:44;g.lineTo(Math.cos(a)*r,Math.sin(a)*r)}g.closePath();g.fill();g.shadowBlur=0;g.fillStyle='#fff';g.fillRect(-19,-9,12,9);g.fillRect(7,-9,12,9);g.font='25px system-ui';g.textAlign='center';g.fillText(boss.type.icon,0,-41);g.restore()}
+for(let s of shots){g.fillStyle='#65ffba';g.shadowColor='#65ffba';g.shadowBlur=12;g.fillRect(s.x-3,s.y-11,6,16);g.shadowBlur=0}
+if(inv<=0||Math.floor(inv/110)%2===0){g.beginPath();g.moveTo(player.x,player.y-22);g.lineTo(player.x-19,player.y+17);g.lineTo(player.x+19,player.y+17);g.closePath();g.fillStyle=activeChar().color;g.shadowColor=activeChar().color;g.shadowBlur=18;g.fill();g.shadowBlur=0}
+if(shield){g.strokeStyle='#8dbaff';g.lineWidth=3;g.beginPath();g.arc(player.x,player.y,27,0,Math.PI*2);g.stroke()}}
+function loop(t){if(!running||paused)return;let dt=last?Math.min(t-last,40):16;last=t;elapsed+=dt;score+=dt*.008;inv-=dt;
+let dir=(keys.arrowright||keys.d?1:0)-(keys.arrowleft||keys.a?1:0);player.x=Math.max(20,Math.min(380,player.x+dir*dt*(.35+(up.speed+activeChar().speed)*.065)));
+if(!boss&&elapsed>=30000*(bossIndex+1))spawnBoss();
+spawn-=dt;if(spawn<=0){let coin=Math.random()<.29;items.push({x:20+Math.random()*360,y:-25,r:coin?12:14+Math.random()*7,type:coin?'coin':'rock',vy:0});spawn=Math.max(220,730-elapsed*.004)}
+if(boss){boss.t+=dt;boss.x=200+130*Math.sin(boss.t*(.0015+boss.type.pattern*.00025));boss.fire-=dt;if(boss.fire<=0){let pattern=boss.type.pattern;let offsets=pattern===0?[-55,0,55]:pattern===1?[-100,-50,0,50,100]:pattern===2?[-90,-30,30,90]:[-120,-80,-40,0,40,80,120];for(let dx of offsets)items.push({x:boss.x,y:boss.y+28,r:10,type:'bullet',vx:dx/90,vy:3.5+bossIndex*.35});boss.fire=Math.max(300,(1050-bossIndex*60)*boss.type.rate)}shotTimer-=dt;if(shotTimer<=0){let w=activeWeapon();for(let j=0;j<w.projectiles;j++)shots.push({x:player.x+(j-(w.projectiles-1)/2)*16,y:player.y-22});shotTimer=w.interval}}
+for(let i=shots.length-1;i>=0;i--){let s=shots[i];s.y-=dt*.65;if(boss&&Math.hypot(s.x-boss.x,s.y-boss.y)<39){boss.hp-=5+up.power*3+activeChar().power+activeWeapon().power;shots.splice(i,1);if(boss.hp<=0){score+=100*bossIndex;addMoney((20+bossIndex*10)*(1+up.income));notify('🎉 ボス撃破！ ボーナス獲得！');boss=null;shots=[];break}}else if(s.y<0)shots.splice(i,1)}
+let speed=2.5+Math.min(5,elapsed/16000);for(let i=items.length-1;i>=0;i--){let it=items[i];if(it.type==='coin'&&up.magnet){let dist=Math.hypot(it.x-player.x,it.y-player.y);if(dist<45+up.magnet*34&&dist>1){it.x+=(player.x-it.x)/dist*dt*(.15+up.magnet*.06);it.y+=(player.y-it.y)/dist*dt*(.15+up.magnet*.06)}}it.x+=(it.vx||0)*dt/16;it.y+=(it.type==='bullet'?it.vy:speed)*dt/16;if(it.y>590){items.splice(i,1);continue}if(Math.hypot(it.x-player.x,it.y-player.y)<it.r+player.r-4){if(it.type==='coin'){score+=10;addMoney(1+up.income);items.splice(i,1)}else if(inv<=0){if(shield)shield--;else hp--;inv=1100;items.splice(i,1);if(hp<=0){draw();finish();return}}}}
+if(Math.floor(score)>best){best=Math.floor(score);save('neonDodgeBest',best)}hud();draw();raf=requestAnimationFrame(loop)}
+hud();draw();renderShop();
+</script></body></html>
