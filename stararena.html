@@ -1,0 +1,216 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>STAR ARENA - 20 HEROES</title><style>
+*{box-sizing:border-box}html,body{margin:0;background:#0a1230;color:#fff;font-family:system-ui,"Noto Sans JP",sans-serif;overscroll-behavior:none}button{cursor:pointer;border:0;color:white;font-weight:900;touch-action:manipulation}button:disabled{opacity:.45}#app{max-width:1000px;margin:auto;padding:12px}header{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}.logo{font-size:clamp(22px,5vw,35px);font-weight:1000;color:#ffdd57;text-shadow:0 3px #9c4a19}.pill{background:#26365d;border:2px solid #536b9c;border-radius:30px;padding:7px 12px;font-weight:900}.tabs{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0}.tabs button,.btn{background:linear-gradient(#547af7,#294ac2);border:2px solid #89a5ff;border-radius:12px;padding:10px 14px;box-shadow:0 4px #152d78}.tabs button.active{background:linear-gradient(#ffcb4c,#f28c17);border-color:#ffe69c;box-shadow:0 4px #9c5510}.panel{background:#172448;border:2px solid #405587;border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 8px 0 #080f29}.hero{display:flex;gap:16px;align-items:center;flex-wrap:wrap}.portrait{width:112px;height:112px;border-radius:20px;display:grid;place-items:center;font-size:62px;background:linear-gradient(135deg,#567cf7,#222d68);border:4px solid #f7d14b}.big{font-size:26px;font-weight:1000}.muted{color:#b8c7eb}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:10px}.card{background:#263861;border:2px solid #526da9;border-radius:14px;padding:10px;text-align:center}.card.selected{border-color:#ffdd56;box-shadow:0 0 0 2px #ffdd5666}.avatar{font-size:45px}.small{font-size:12px;color:#cad8f5}.green{background:linear-gradient(#52d985,#168d55);border-color:#a8ffc6;box-shadow:0 4px #09663b}.orange{background:linear-gradient(#ffcb55,#ed8619);border-color:#ffe7a2;box-shadow:0 4px #9b4e0c}.red{background:linear-gradient(#ff7387,#c52e54);border-color:#ffadbc;box-shadow:0 4px #8a1637}.btn{margin:5px;padding:11px 18px}#gameArea{display:none}#gameCanvas{display:block;width:100%;max-width:960px;aspect-ratio:16/10;background:#315d57;border:4px solid #8098c8;border-radius:14px;touch-action:none}#touchUI{display:none;justify-content:space-between;align-items:end;margin-top:8px;gap:10px;user-select:none;-webkit-user-select:none;touch-action:none}.joy{width:120px;height:120px;border-radius:50%;background:#566d9c88;border:3px solid #ffffff66;position:relative;touch-action:none}.knob{position:absolute;width:48px;height:48px;left:33px;top:33px;border-radius:50%;background:#d3e5ffbb}.actions{display:flex;gap:10px;align-items:end}.action{width:76px;height:76px;border-radius:50%;font-size:25px;border:4px solid #ffffff99;background:#f04b52;touch-action:none}.super{background:#e7b72c;width:68px;height:68px}#status{font-weight:900;color:#ffde64;min-height:25px}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.badge{background:#41598c;padding:3px 8px;border-radius:12px;font-size:12px}#overlay{display:none;position:fixed;inset:0;background:#050c24c9;z-index:5;align-items:center;justify-content:center;padding:15px}#result{max-width:450px;width:100%;background:#1c2b56;border:3px solid #fbd85a;border-radius:20px;padding:25px;text-align:center}body.playing{overflow:hidden}@media(pointer:coarse){#touchUI{display:flex}}@media(max-width:550px){#app{padding:6px}.panel{padding:10px}.joy{width:105px;height:105px}.knob{left:26px;top:26px}.action{width:66px;height:66px}.super{width:60px;height:60px}}
+</style></head><body><div id="app"><header><div class="logo">⭐ STAR ARENA</div><div class="row"><span class="pill" id="coins">🪙 0</span><span class="pill" id="trophies">🏆 0</span></div></header><div id="menu"><nav class="tabs"><button data-tab="home" class="active">ホーム</button><button data-tab="heroes">キャラ</button><button data-tab="shop">ショップ</button><button data-tab="ranking">ランク</button></nav><div id="view"></div></div><div id="gameArea"><div class="row"><button class="btn red" id="leave">退出</button><span id="modeName" class="pill"></span><span id="status"></span></div><canvas id="gameCanvas" width="960" height="600"></canvas><div id="touchUI"><div id="moveJoy" class="joy"><div class="knob"></div></div><div class="actions"><button id="superBtn" class="action super">⚡</button><button id="attackBtn" class="action">🎯</button></div></div><p class="small">PC：WASD移動／マウスで照準・クリックで攻撃／スペースで必殺技。スマホ：左スティック移動／攻撃ボタン（近くの敵を自動照準）。</p></div></div><div id="overlay"><div id="result"></div></div>
+<script>
+(()=>{'use strict';
+const NAMES=['ブレイズ','フロスト','ボルト','リーフ','シャドウ','ルナ','タイタン','スパーク','ウェーブ','ロック','ファング','コメット','ネオン','ミスト','フェニックス','ギア','ヴァイパー','スター','ゴーレム','ノヴァ'];
+const ICONS=['🔥','❄️','⚡','🌿','🥷','🌙','🛡️','💫','🌊','🪨','🐺','☄️','🌈','🌫️','🦅','🤖','🐍','⭐','🗿','🌌'];
+const COLORS=['#ff6d3c','#7cdaff','#ffe359','#74d995','#ab80ff','#e2a6ff','#a0b8d9','#ffbe59','#53b9ee','#bb8d64','#f58377','#ff995e','#f76dcc','#b2d6df','#ffb138','#8ca4ce','#9fe75e','#ffe280','#a4a9ae','#c581ff'];
+const HEROES=NAMES.map((name,i)=>({name,icon:ICONS[i],color:COLORS[i],hp:140+(i%5)*20,speed:1.65+(i%5)*.18,bodySize:15+(i*7%13),damage:(i%4===0?24:i%4===1?15:i%4===2?18:21)+(i%3)*2,range:[125,365,225,295][i%4],cooldown:390+(i%4)*75,superType:i%5}));
+const ROLE_NAMES=['近距離ファイター','長距離スナイパー','中距離バランス','中〜長距離アタッカー'];const ROLE_DESCS=['近距離で5発の散弾を放つ。近づくほど強力。','細くて高速な狙撃弾を遠距離まで飛ばす。接近戦は苦手。','射程と火力のバランスが良い。','中距離を保ちつつ牽制するタイプ。'];const ATTACKS=['火炎弾','氷結ショット','電撃連鎖','葉っぱ3連射','影の高速弾','月光ウェーブ','重装砲','流星バースト','水流ショット','岩石弾','牙の散弾','彗星弾','虹色レーザー','霧の連射','不死鳥の炎','機械砲','毒の弾','星屑3連射','巨岩投げ','宇宙弾'];
+const SUPERS=['扇状に7発の弾を放つ','周囲に衝撃波を放ち敵を吹き飛ばす','一定時間移動速度と攻撃速度が上昇','HPを大きく回復し周囲の味方も回復','前方に巨大な貫通弾を発射'];
+const SPECIAL=['炎上','減速','連鎖','3方向','高速','貫通','高威力','連射','減速','高威力','散弾','高速','貫通','連射','炎上','連射','毒','3方向','高威力','貫通'];
+const KEY='starArenaSave_v1';let data;try{data=JSON.parse(localStorage.getItem(KEY))}catch(e){}if(!data||!Array.isArray(data.owned)){data={coins:450,trophies:0,selected:0,owned:[0,1,2],levels:{},wins:0,matches:0,best:0}};const $=id=>document.getElementById(id);let tab='home',mode='royale',playing=false,raf=0,entities=[],shots=[],walls=[],bushes=[],particles=[],player=null,elapsed=0,spawnTimer=0,kills=0,score=0,last=0,mouse={x:480,y:300,active:false},keys={},move={x:0,y:0},attackHeld=false,superHeld=false,gameTime=90,matchOver=false,teamScore=[0,0],effects=[],worldW=960,worldH=600,camX=0,camY=0,gasInset=0,gasPhase=0,bossWarnings=[],bossCooldown=0,bossPattern=0;
+// キャラ別の弾数と1発のリロード時間（秒）
+const AMMO_CAP=[3,3,4,3,2,3,4,3,3,4,3,2,3,4,3,3,4,3,4,2];
+const RELOAD_SEC=[1.6,2.25,1.25,1.85,2.5,1.75,1.15,1.9,1.65,1.3,1.8,2.35,1.7,1.2,1.9,1.55,1.1,1.95,1.35,2.4];
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){}};const level=i=>data.levels[i]||1;const rank=()=>data.trophies<100?'ブロンズ':data.trophies<300?'シルバー':data.trophies<650?'ゴールド':data.trophies<1100?'ダイヤ':data.trophies<1800?'マスター':'レジェンド';const refresh=()=>{$('coins').textContent='🪙 '+data.coins;$('trophies').textContent='🏆 '+data.trophies};const btn=(label,fn,klass='')=>`<button class="btn ${klass}" data-act="${fn}">${label}</button>`;const h=i=>HEROES[i];const speedLabel=i=>h(i).speed>=2.32?'速い':h(i).speed>=1.96?'普通':'遅い';const sizeLabel=i=>h(i).bodySize>=24?'大型':h(i).bodySize>=19?'中型':'小型';const heroCard=i=>{let own=data.owned.includes(i);return `<div class="card ${data.selected===i?'selected':''}"><div class="avatar">${h(i).icon}</div><b>${h(i).name}</b><div class="small">Lv.${level(i)} ・ HP ${h(i).hp+level(i)*12}</div><div class="small">攻撃 ${h(i).damage+level(i)*3} ／ 射程 ${h(i).range}</div><div class="small" style="color:#93f5ff">⚔️ ${ROLE_NAMES[i%4]}</div><div class="small">${ROLE_DESCS[i%4]}</div><div class="small">🔋 弾数 ${AMMO_CAP[i]} ／ 1発の装填 ${RELOAD_SEC[i]}秒</div><div class="small">👟 ${speedLabel(i)} (${h(i).speed.toFixed(2)}) ／ 📏 ${sizeLabel(i)} (${h(i).bodySize})</div><div class="small" style="color:#ffdd75">🎯 ${ATTACKS[i]}（${SPECIAL[i]}）</div><div class="small">⚡ ${SUPERS[h(i).superType]}</div>${own?btn(data.selected===i?'選択中':'選択','select:'+i,'green'):btn('未解放','none')}</div>`};
+function render(){refresh();document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x.dataset.tab===tab));let v=$('view');if(tab==='home'){v.innerHTML=`<section class="panel hero"><div class="portrait">${h(data.selected).icon}</div><div><div class="big">${h(data.selected).name} <span class="badge">Lv.${level(data.selected)}</span></div><p class="muted">勝利 ${data.wins}回 ／ 対戦 ${data.matches}回 ／ 最高スコア ${data.best}</p>${btn('キャラクター変更','tab:heroes')}</div></section><section class="panel"><h2>⚔️ モード選択</h2><div class="row"><label><input type="radio" name="mode" value="boss" ${mode==='boss'?'checked':''}> ボスバトル</label><label><input type="radio" name="mode" value="royale" ${mode==='royale'?'checked':''}> バトルロイヤル</label><label><input type="radio" name="mode" value="team" ${mode==='team'?'checked':''}> 3対3</label></div><p class="muted">ボスバトル：AI味方2人と3人で強化ボスを討伐！ 倒されても味方が生存していれば20秒後に復活。3人全滅で敗北。180秒以内に討伐しよう／ロイヤル：最後の1人になる（30秒ごとに毒ガスが縮小）／3対3：90秒で撃破数を競う。草むらでは敵から隠れられます</p>${btn('▶ バトル開始','start','orange')}</section><section class="panel"><h3>🎮 遊び方</h3><p>敵を倒してコインとトロフィーを獲得！ キャラごとに弾数とリロード時間が異なり、弾は1発ずつ自動装填されます。草むらから攻撃すると1.2秒間、攻撃を受けると1秒間姿が見えます。 攻撃を当てると必殺技ゲージがたまります。最後にダメージを受けてから5秒経つと、最大HPの約16%を毎秒自動回復します。</p><p class="small">※このゲームはオリジナル作品です。CPU対戦のみで、オンライン対戦・ランキングには未対応です。</p></section>`}
+else if(tab==='heroes'){v.innerHTML=`<section class="panel"><h2>👥 キャラクター（${data.owned.length}/20）</h2><p class="muted">20種類の個性ある通常攻撃・5系統の必殺技。キャラごとの説明・最大弾数・リロード速度を確認できます。</p>${btn('選択キャラを強化：'+(150*level(data.selected))+'🪙','upgrade','green')}<p class="small">現在：${h(data.selected).name} Lv.${level(data.selected)}</p><div class="grid">${HEROES.map((_,i)=>heroCard(i)).join('')}</div></section>`}
+else if(tab==='shop'){v.innerHTML=`<section class="panel"><h2>🛒 ショップ</h2><p>所持コイン：🪙 ${data.coins}</p><div class="grid"><div class="card"><div class="avatar">🎁</div><b>ヒーローボックス</b><p class="small">未解放キャラを1体獲得。重複なし。</p>${btn('300🪙 で開封','gacha','orange')}</div><div class="card"><div class="avatar">⬆️</div><b>キャラ強化</b><p class="small">${h(data.selected).name} Lv.${level(data.selected)}</p>${btn((150*level(data.selected))+'🪙 で強化','upgrade','green')}</div></div></section>`}
+else{v.innerHTML=`<section class="panel"><h2>🏆 ランク</h2><div class="big">${rank()}</div><p>現在のトロフィー：${data.trophies} 🏆</p><p class="muted">ブロンズ 0 ／ シルバー 100 ／ ゴールド 300 ／ ダイヤ 650 ／ マスター 1100 ／ レジェンド 1800</p><p>勝利数：${data.wins} ／ 対戦数：${data.matches}</p><p class="small">ランクは端末内の記録です。オンライン順位ではありません。</p></section>`}}
+document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{tab=b.dataset.tab;render()});
+$('view').addEventListener('change',e=>{if(e.target.name==='mode')mode=e.target.value});
+$('view').addEventListener('click',e=>{let b=e.target.closest('[data-act]');if(!b)return;let a=b.dataset.act;if(a==='start')start();else if(a.startsWith('tab:')){tab=a.split(':')[1];render()}else if(a.startsWith('select:')){data.selected=+a.split(':')[1];save();render()}else if(a==='upgrade'){let cost=150*level(data.selected);if(data.coins<cost)return alert('コインが足りません');if(level(data.selected)>=20)return alert('最大レベルです');data.coins-=cost;data.levels[data.selected]=level(data.selected)+1;save();render()}else if(a==='gacha'){let locked=HEROES.map((_,i)=>i).filter(i=>!data.owned.includes(i));if(!locked.length)return alert('全キャラ解放済み！');if(data.coins<300)return alert('コインが足りません');data.coins-=300;let i=locked[Math.floor(Math.random()*locked.length)];data.owned.push(i);save();alert('🎉 '+h(i).icon+' '+h(i).name+' を獲得！');render()}});
+const canvas=$('gameCanvas'),ctx=canvas.getContext('2d');const rand=(a,b)=>a+Math.random()*(b-a);const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);const norm=(x,y)=>{let d=Math.hypot(x,y)||1;return{x:x/d,y:y/d}};function circleRect(x,y,r,w){let cx=clamp(x,w.x,w.x+w.w),cy=clamp(y,w.y,w.y+w.h);return (x-cx)**2+(y-cy)**2<r*r}
+function blocked(x,y,r=17){return x<r||y<r||x>worldW-r||y>worldH-r||walls.some(w=>circleRect(x,y,r,w))}
+function pos(radius=28){for(let k=0;k<350;k++){let p={x:rand(65,worldW-65),y:rand(65,worldH-65)};if(!blocked(p.x,p.y,radius+10)&&entities.every(e=>dist(e,p)>e.r+radius+48))return p}for(let y=65;y<worldH-65;y+=35)for(let x=65;x<worldW-65;x+=35){let p={x,y};if(!blocked(x,y,radius+10)&&entities.every(e=>dist(e,p)>e.r+radius+25))return p}return{x:worldW/2,y:worldH/2}}
+function create(id,team,ai=true,p){let a=h(id),lv=ai?Math.min(20,Math.max(1,1+Math.floor(data.trophies/170)+Math.floor(rand(-1,2)))):level(id),hp=a.hp+lv*12;return{id,lv,team,ai,x:p?.x??480,y:p?.y??300,r:a.bodySize,hp,maxhp:hp,speed:a.speed,damage:a.damage+lv*3,range:a.range,cooldown:a.cooldown,lastShot:0,super:0,dead:false,respawn:0,dir:0,lastHit:-10,think:0,tx:0,ty:0,score:0,invuln:0,slowUntil:0,boostUntil:0,poisonUntil:0,poisonOwner:null,aiStrafe:1,gasTick:0,ammo:AMMO_CAP[id],reloadProgress:0,revealedUntil:0}}
+function mapBuild(){
+worldW=mode==='royale'?3000:mode==='boss'?1300:1080;
+worldH=mode==='royale'?2200:mode==='boss'?850:720;
+walls=[];bushes=[];
+const spawnX=worldW/2,spawnY=worldH/2;
+const safe=(x,y,w,h)=>!circleRect(spawnX,spawnY,125,{x,y,w,h});
+let patterns=[
+[[.19,.20],[.75,.20],[.20,.74],[.75,.74],[.48,.16],[.48,.78]],
+[[.14,.38],[.80,.38],[.33,.15],[.63,.15],[.33,.75],[.63,.75]],
+[[.16,.16],[.78,.16],[.16,.78],[.78,.78],[.43,.35],[.54,.62]],
+[[.28,.23],[.65,.23],[.28,.70],[.65,.70],[.12,.49],[.80,.49]]
+],pattern=patterns[Math.floor(rand(0,patterns.length))];
+for(let [fx,fy] of pattern){let x=fx*worldW,y=fy*worldH,w=rand(80,145),h=rand(80,170);if(safe(x,y,w,h))walls.push({x,y,w,h})}
+let extra=mode==='royale'?56:mode==='boss'?11:8;
+for(let i=0;i<extra;i++){let x=rand(65,worldW-200),y=rand(65,worldH-190),w=rand(55,135),h=rand(45,125),rect={x,y,w,h};if(safe(x,y,w,h)&&!walls.some(o=>x<o.x+o.w+45&&x+w+45>o.x&&y<o.y+o.h+45&&y+h+45>o.y))walls.push(rect)}
+for(let i=0;i<(mode==='royale'?45:12);i++){let x=rand(30,worldW-175),y=rand(30,worldH-145);if(safe(x,y,125,100))bushes.push({x,y,w:rand(90,150),h:rand(70,125)})}
+}
+
+function inBush(e){return bushes.some(b=>circleRect(e.x,e.y,e.r*.45,b))}
+function canSee(observer,target){return target.isBoss||target.revealedUntil>elapsed||!inBush(target)||inBush(observer)&&bushes.some(b=>circleRect(observer.x,observer.y,observer.r*.45,b)&&circleRect(target.x,target.y,target.r*.45,b))||dist(observer,target)<105}
+function onScreen(e,padding=0){let x=e.x-camX,y=e.y-camY;return x>=-padding&&x<=960+padding&&y>=-padding&&y<=600+padding}
+function cameraUpdate(){let focus=mode==='boss'&&player.dead?entities.find(e=>e.team===0&&!e.dead)||player:player;camX=clamp(focus.x-480,0,Math.max(0,worldW-960));camY=clamp(focus.y-300,0,Math.max(0,worldH-600))}
+function gasState(){let phase=Math.floor(elapsed/30),progress=clamp((elapsed%30-10)/20,0,1);return{phase,inset:Math.min(worldW*.43,phase*165+progress*165)}}
+function inGas(e){return e.x<gasInset+e.r||e.y<gasInset+e.r||e.x>worldW-gasInset-e.r||e.y>worldH-gasInset-e.r}
+function start(){cancelAnimationFrame(raf);playing=true;matchOver=false;entities=[];shots=[];particles=[];effects=[];elapsed=0;spawnTimer=0;kills=0;score=0;teamScore=[0,0];gasInset=0;gasPhase=0;bossWarnings=[];bossCooldown=3;bossPattern=0;last=performance.now();mapBuild();player=create(data.selected,0,false,{x:worldW/2,y:worldH/2}); if(blocked(player.x,player.y,player.r+20)){let safe=pos(player.r);player.x=safe.x;player.y=safe.y;}entities.push(player);let count=mode==='royale'?9:mode==='team'?5:0;for(let i=0;i<count;i++){let team=mode==='team'?(i<2?0:1):1;let id=Math.floor(rand(0,20)),r=h(id).bodySize,p=null;for(let attempt=0;attempt<450;attempt++){let candidate={x:rand(110,worldW-110),y:rand(110,worldH-110)};if(!blocked(candidate.x,candidate.y,r+15)&&entities.every(e=>dist(e,candidate)>=Math.max(mode==='royale'?500:290,e.r+r+80))){p=candidate;break}}p??=pos(r);entities.push(create(id,team,true,p))}if(mode==='royale'){entities.forEach((e,i)=>e.team=i)}
+if(mode==='boss'){
+let boss=create(18,1,true,{x:worldW/2+310,y:worldH/2});
+if(blocked(boss.x,boss.y,48)){let q=pos(48);boss.x=q.x;boss.y=q.y}
+boss.isBoss=true;boss.lv=Math.min(30,5+Math.floor(data.trophies/110));boss.r=46;
+boss.maxhp=4200+boss.lv*320;boss.hp=boss.maxhp;
+boss.damage=34+boss.lv*4;boss.speed=1.48;boss.range=370;
+boss.ammo=AMMO_CAP[boss.id];boss.lastShot=0;entities.push(boss);
+for(let i=0;i<2;i++){let ally=create(Math.floor(rand(0,20)),0,true,{x:player.x+(i===0?-85:85),y:player.y+75});if(blocked(ally.x,ally.y,ally.r+5)){let q=pos(ally.r);ally.x=q.x;ally.y=q.y}ally.isBossAlly=true;entities.push(ally)}
+}$('menu').style.display='none';$('gameArea').style.display='block';$('modeName').textContent={boss:'👹 ボスバトル',royale:'👑 バトルロイヤル',team:'🔵 3対3'}[mode];document.body.classList.add('playing');$('overlay').style.display='none';raf=requestAnimationFrame(loop)}
+function shoot(e,dx,dy,superShot=false){
+let now=elapsed*1000,boost=e.boostUntil>elapsed;
+if(!superShot){if(e.ammo<1||now-e.lastShot<e.cooldown*(boost?.55:1))return;
+e.ammo--;e.lastShot=now;
+}
+e.revealedUntil=Math.max(e.revealedUntil,elapsed+1.2);
+let n=norm(dx,dy),id=e.id,kind=id%5;e.dir=Math.atan2(n.y,n.x);
+if(superShot){e.super=0;if(kind===1){effects.push({x:e.x,y:e.y,r:12,max:155,life:25,color:'#8edfff'});for(let target of entities){if(target!==e&&!target.dead&&target.team!==e.team&&dist(e,target)<155){hit(target,e.damage*2,e);let v=norm(target.x-e.x,target.y-e.y);let nx=target.x+v.x*65,ny=target.y+v.y*65;if(!blocked(nx,ny,target.r)){target.x=nx;target.y=ny}}}return}
+if(kind===2){e.boostUntil=elapsed+7;effects.push({x:e.x,y:e.y,r:30,max:95,life:35,color:'#ffe766'});return}
+if(kind===3){for(let ally of entities){if(!ally.dead&&ally.team===e.team&&dist(e,ally)<180)ally.hp=Math.min(ally.maxhp,ally.hp+ally.maxhp*.55)}effects.push({x:e.x,y:e.y,r:20,max:180,life:35,color:'#78ffa9'});return}}
+// 通常攻撃は射程タイプ別に弾速・弾の大きさ・拡散を変える。
+let role=id%4;
+let count=superShot?(kind===0?7:1):role===0?5:([3,10,17].includes(id)?3:1);
+for(let i=0;i<count;i++){
+ let spread=superShot?.17:role===0?.18:count>1?.12:0;
+ let ang=e.dir+(i-(count-1)/2)*spread;
+ let speed=superShot?9:role===1?13.8:role===0?6.5:role===3?9.1:7.6;
+ // 散弾は近距離で複数命中する代わりに、一発の威力を抑える。
+ let damage=e.damage*(superShot?2.7:role===0?.38:count>1?.70:1);
+ let radius=superShot&&kind===4?17:superShot?8:role===1?3:role===0?5:([6,9,18].includes(id)?9:6);
+ let range=superShot?450:e.range;
+ shots.push({x:e.x+Math.cos(ang)*(e.r+7),y:e.y+Math.sin(ang)*(e.r+7),vx:Math.cos(ang)*speed,vy:Math.sin(ang)*speed,owner:e,damage,life:range/speed,superShot,r:radius,pierce:superShot&&kind===4?4:([12,19].includes(id)?2:0),hitIds:new Set(),color:h(id).color,role:superShot?-1:role,trail:[]});
+ }
+}
+
+function aim(e){let candidates=entities.filter(o=>!o.dead&&o!==e&&o.team!==e.team&&canSee(e,o));candidates.sort((a,b)=>dist(a,e)-dist(b,e));return candidates[0]}
+function doAttack(superShot=false){if(!playing||player.dead)return;if(superShot&&player.super<100)return;let target=aim(player);if(target&&!onScreen(target))target=null;let v=mouse.active?{x:mouse.x+camX-player.x,y:mouse.y+camY-player.y}:target?{x:target.x-player.x,y:target.y-player.y}:{x:Math.cos(player.dir),y:Math.sin(player.dir)};shoot(player,v.x,v.y,superShot)}
+function moveEntity(e,dx,dy,step){let v=norm(dx,dy),s=e.speed*step;if(Math.hypot(dx,dy)<.01)return;let nx=e.x+v.x*s,ny=e.y+v.y*s;if(!blocked(nx,e.y,e.r))e.x=nx;if(!blocked(e.x,ny,e.r))e.y=ny}
+function hit(e,damage,owner){if(e.dead||e.invuln>elapsed)return;e.hp-=damage;e.lastHit=elapsed;e.revealedUntil=Math.max(e.revealedUntil,elapsed+1);if(owner===player)player.super=clamp(player.super+12,0,100);for(let i=0;i<6;i++)particles.push({x:e.x,y:e.y,vx:rand(-3,3),vy:rand(-3,3),life:25,color:h(e.id).color});if(e.hp<=0){e.hp=0;e.dead=true;e.respawn=elapsed+2.5;if(owner){owner.score++;if(owner===player){kills++;score+=100}}if(mode==='team'&&owner)teamScore[owner.team]++;if(e===player&&mode!=='team'&&mode!=='boss')finish(false);if(mode==='boss'&&!e.isBoss&&e.team===0){e.respawn=elapsed+20;if(!entities.some(o=>o.team===0&&!o.dead))finish(false)}if(mode==='royale'&&entities.filter(o=>!o.dead).length<=1)finish(!player.dead)}}
+// ボス専用の予告攻撃。予告時間内に赤いエリアから出れば回避できる。
+// ボスは予告付きの5パターンを順番に使用する。
+function bossAttack(boss){
+ if(!playing||boss.dead)return;
+ const living=entities.filter(e=>e.team===0&&!e.dead);
+ if(!living.length)return;
+ const victim=living[Math.floor(Math.random()*living.length)];
+ const kind=bossPattern++%5;
+ const delay=[1.1,1.0,1.25,1.15,1.3][kind];
+ const common={kind,delay,full:delay,damage:Math.round(34+boss.lv*3.1)};
+ const a=Math.atan2(victim.y-boss.y,victim.x-boss.x);
+ if(kind===0){ // 着弾地点を少し先読みしたメテオ
+  let vx=(victim.x-(victim.prevX??victim.x))*25,vy=(victim.y-(victim.prevY??victim.y))*25;
+  bossWarnings.push({...common,x:clamp(victim.x+vx*.45,70,worldW-70),y:clamp(victim.y+vy*.45,70,worldH-70),r:145});
+ }else if(kind===1){ // 幅広い直線ビーム
+  bossWarnings.push({...common,x:boss.x,y:boss.y,angle:a,length:850,width:150});
+ }else if(kind===2){ // 広いドーナツ衝撃波
+  bossWarnings.push({...common,x:boss.x,y:boss.y,inner:90,outer:350});
+ }else if(kind===3){ // 3連続メテオ：味方の足元を狙う
+  for(let j=0;j<Math.min(3,living.length);j++){
+   let e=living[(j+living.indexOf(victim))%living.length];
+   bossWarnings.push({...common,x:e.x,y:e.y,r:105,delay:delay+j*.22,full:delay+j*.22,damage:Math.round(common.damage*.75)});
+  }
+ }else{ // 十字ビーム
+  for(let j=0;j<2;j++)bossWarnings.push({...common,x:boss.x,y:boss.y,angle:a+j*Math.PI/2,length:760,width:115,damage:Math.round(common.damage*.8)});
+ }
+}
+function warningHits(w,e){
+ if(w.kind===0||w.kind===3)return Math.hypot(e.x-w.x,e.y-w.y)<w.r+e.r;
+ if(w.kind===1||w.kind===4){
+  const dx=e.x-w.x,dy=e.y-w.y,along=dx*Math.cos(w.angle)+dy*Math.sin(w.angle);
+  const side=Math.abs(-dx*Math.sin(w.angle)+dy*Math.cos(w.angle));
+  return along>=-e.r&&along<=w.length+e.r&&side<=w.width/2+e.r;
+ }
+ const d=Math.hypot(e.x-w.x,e.y-w.y);
+ return d+e.r>=w.inner&&d-e.r<=w.outer;
+}
+function updateBossAttacks(dt){
+ if(mode!=='boss')return;
+ const boss=entities.find(e=>e.isBoss&&!e.dead);if(!boss)return;
+ bossCooldown-=dt;
+ if(bossCooldown<=0&&bossWarnings.length===0){bossAttack(boss);bossCooldown=boss.hp/boss.maxhp<.4?2.2:3.15}
+ for(let i=bossWarnings.length-1;i>=0;i--){
+  const w=bossWarnings[i];w.delay-=dt;
+  if(w.delay<=0){
+   for(const ally of entities)if(ally.team===0&&!ally.dead&&warningHits(w,ally))hit(ally,w.damage,boss);
+   effects.push({x:w.x,y:w.y,r:20,max:w.r||w.outer||145,life:35,color:'#ff734c'});
+   for(let k=0;k<22;k++){let a=Math.random()*Math.PI*2,r=Math.random()*(w.r||145);particles.push({x:w.x+Math.cos(a)*r,y:w.y+Math.sin(a)*r,vx:rand(-3,3),vy:rand(-3,3),life:25,color:'#ff9c47'})}
+   bossWarnings.splice(i,1);
+  }
+ }
+}
+function drawBossWarnings(){
+ if(mode!=='boss')return;
+ for(const w of bossWarnings){
+  const t=clamp(1-w.delay/w.full,0,1);
+  ctx.save();ctx.fillStyle=`rgba(255,60,65,${.15+t*.35})`;
+  ctx.strokeStyle=t>.75?'#fff0a5':'#ff6976';ctx.lineWidth=4+t*5;
+  ctx.setLineDash(t>.7?[]:[15,10]);ctx.beginPath();
+  if(w.kind===0||w.kind===3)ctx.arc(w.x,w.y,w.r,0,Math.PI*2);
+  else if(w.kind===1||w.kind===4){ctx.translate(w.x,w.y);ctx.rotate(w.angle);ctx.rect(0,-w.width/2,w.length,w.width)}
+  else{ctx.arc(w.x,w.y,w.outer,0,Math.PI*2);ctx.arc(w.x,w.y,w.inner,0,Math.PI*2)}
+  ctx.fill(w.kind===2?'evenodd':'nonzero');ctx.stroke();ctx.restore();
+ }
+}
+function update(dt){let step=dt*60;elapsed+=dt;cameraUpdate();if(mode==='royale'){let g=gasState();gasInset=g.inset;gasPhase=g.phase}if(!player.dead){let dx=(keys.d||keys.ArrowRight?1:0)-(keys.a||keys.ArrowLeft?1:0)+move.x,dy=(keys.s||keys.ArrowDown?1:0)-(keys.w||keys.ArrowUp?1:0)+move.y;moveEntity(player,dx,dy,step*(player.slowUntil>elapsed?.6:1)*(player.boostUntil>elapsed?1.4:1));if(attackHeld)doAttack();if(superHeld){doAttack(true);superHeld=false}}
+for(let e of entities){
+if(!e.dead){e.prevX=e.prevX===undefined?e.x:e.prevX*.6+e.x*.4;e.prevY=e.prevY===undefined?e.y:e.prevY*.6+e.y*.4}
+if(!e.dead&&e.ammo<AMMO_CAP[e.id]){e.reloadProgress+=dt*(e.boostUntil>elapsed?1.25:1);while(e.reloadProgress>=RELOAD_SEC[e.id]&&e.ammo<AMMO_CAP[e.id]){e.ammo++;e.reloadProgress-=RELOAD_SEC[e.id]}}
+else if(e.ammo>=AMMO_CAP[e.id])e.reloadProgress=0;
+if(e.dead){if((mode==='team'||mode==='boss'&&e.team===0&&entities.some(o=>o!==e&&o.team===0&&!o.dead))&&elapsed>=e.respawn){let p=pos(e.r);e.x=p.x;e.y=p.y;e.hp=e.maxhp;e.dead=false;e.invuln=elapsed+1.5}continue}if(e.poisonUntil>elapsed){e.hp=Math.max(1,e.hp-4*dt)}
+if(mode==='royale'&&inGas(e)){e.gasTick+=dt;if(e.gasTick>=.65){e.gasTick=0;hit(e,Math.max(7,e.maxhp*.045),null);if(!playing)return}}else e.gasTick=0;if(!e.isBoss && elapsed-e.lastHit>=5 && e.poisonUntil<=elapsed && !(mode==='royale'&&inGas(e)))e.hp=Math.min(e.maxhp,e.hp+e.maxhp*.16*dt);if(!e.ai)continue;let target=aim(e);if(!target)continue;let d=dist(e,target),n=norm(target.x-e.x,target.y-e.y);e.think-=dt;if(e.think<=0){e.think=rand(.5,1.3);e.tx=rand(-1,1);e.ty=rand(-1,1);e.aiStrafe=Math.random()<.5?-1:1}let ideal=e.range<170?e.range*.53:e.range>320?e.range*.83:e.range*.70;
+let retreat=!e.isBoss&&e.hp/e.maxhp<.36;
+let toward=retreat?-1:d>ideal+25?1:d<ideal-25?-1:0;
+let strafe=d<e.range?e.aiStrafe*.75:0;
+let mx=n.x*toward-n.y*strafe+e.tx*.28,my=n.y*toward+n.x*strafe+e.ty*.28;
+if(retreat){ // 低HP時は敵から離れ、味方の近くを優先する
+ const friend=entities.filter(o=>o!==e&&!o.dead&&o.team===e.team).sort((a,b)=>dist(e,a)-dist(e,b))[0];
+ if(friend){const f=norm(friend.x-e.x,friend.y-e.y);mx=mx*.8+f.x*.3;my=my*.8+f.y*.3}
+}
+
+// Prefer a clear path, and choose a different side if a wall blocks movement.
+if(blocked(e.x+mx*e.speed*step*2,e.y+my*e.speed*step*2,e.r)){e.aiStrafe*=-1;mx=-n.y*e.aiStrafe+n.x*.2;my=n.x*e.aiStrafe+n.y*.2}
+if(mode==='royale'&&inGas(e)){let center=norm(worldW/2-e.x,worldH/2-e.y);mx=center.x*2;my=center.y*2}
+moveEntity(e,mx,my,step*.87*(e.slowUntil>elapsed?.6:1)*(e.boostUntil>elapsed?1.4:1));if(!e.isBoss&&onScreen(e,10)&&onScreen(target,10)&&d<e.range*.96&&Math.random()<dt*(retreat?1.1:3.2))shoot(e,n.x,n.y);if(!e.isBoss&&onScreen(e,10)&&onScreen(target,10)&&e.super>=100&&d<160&&Math.random()<dt*.7)shoot(e,n.x,n.y,true)}
+for(let i=shots.length-1;i>=0;i--){let b=shots[i];if(b.role===1){b.trail.push({x:b.x,y:b.y});if(b.trail.length>6)b.trail.shift()}b.x+=b.vx*step;b.y+=b.vy*step;b.life-=step;if(!onScreen(b,12)){shots.splice(i,1);continue}let victim=entities.find(e=>!e.dead&&e!==b.owner&&e.team!==b.owner.team&&!b.hitIds.has(e)&&dist(e,b)<e.r+b.r);if(victim){b.hitIds.add(victim);hit(victim,b.damage,b.owner);if([1,8].includes(b.owner.id))victim.slowUntil=elapsed+2;if([16].includes(b.owner.id)){victim.poisonUntil=elapsed+3;victim.poisonOwner=b.owner}if(b.owner.id===2){let extra=entities.filter(e=>e!==victim&&e!==b.owner&&!e.dead&&e.team!==b.owner.team&&dist(e,victim)<105).slice(0,2);for(let e of extra)hit(e,b.damage*.4,b.owner)}if(b.pierce>0)b.pierce--;else shots.splice(i,1)}else if(b.life<=0||blocked(b.x,b.y,b.r))shots.splice(i,1)}
+for(let i=effects.length-1;i>=0;i--){effects[i].life-=step;if(effects[i].life<=0)effects.splice(i,1)}for(let i=particles.length-1;i>=0;i--){let p=particles[i];p.x+=p.vx*step;p.y+=p.vy*step;p.life-=step;if(p.life<=0)particles.splice(i,1)}
+if(mode==='boss'){
+updateBossAttacks(dt);if(!playing)return;
+let boss=entities.find(e=>e.isBoss);
+if(boss&&boss.dead)finish(true);
+else if(elapsed>=180)finish(false);
+}else if(mode==='team'){if(elapsed>=90)finish(teamScore[0]>teamScore[1])}else if(elapsed>=180)finish(!player.dead)}
+function draw(){cameraUpdate();ctx.clearRect(0,0,960,600);ctx.save();ctx.translate(-camX,-camY);let bg=ctx.createLinearGradient(0,0,960,600);bg.addColorStop(0,'#387f75');bg.addColorStop(1,'#215b64');ctx.fillStyle=bg;ctx.fillRect(0,0,worldW,worldH);ctx.strokeStyle='#ffffff0d';ctx.lineWidth=2;for(let x=0;x<worldW;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,worldH);ctx.stroke()}for(let y=0;y<worldH;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(worldW,y);ctx.stroke()}for(let b of bushes){ctx.fillStyle='#277e3b';ctx.fillRect(b.x,b.y,b.w,b.h);ctx.fillStyle='#40a44e';for(let x=b.x+9;x<b.x+b.w;x+=20)for(let y=b.y+10;y<b.y+b.h;y+=22){ctx.beginPath();ctx.arc(x,y,8,0,7);ctx.fill()}}for(let w of walls){ctx.fillStyle='#34476b';ctx.fillRect(w.x+5,w.y+7,w.w,w.h);ctx.fillStyle='#9b7a58';ctx.fillRect(w.x,w.y,w.w,w.h);ctx.strokeStyle='#d7b68c';ctx.lineWidth=4;ctx.strokeRect(w.x+2,w.y+2,w.w-4,w.h-4)}
+for(let ef of effects){ctx.beginPath();ctx.strokeStyle=ef.color;ctx.globalAlpha=Math.max(0,ef.life/35);ctx.lineWidth=7;ctx.arc(ef.x,ef.y,ef.max*(1-ef.life/35),0,7);ctx.stroke()}ctx.globalAlpha=1;
+drawBossWarnings();
+for(let b of shots){if(b.role===1&&b.trail.length){ctx.beginPath();ctx.moveTo(b.trail[0].x,b.trail[0].y);for(let t of b.trail)ctx.lineTo(t.x,t.y);ctx.lineTo(b.x,b.y);ctx.strokeStyle=b.color;ctx.globalAlpha=.52;ctx.lineWidth=2;ctx.stroke();ctx.globalAlpha=1}ctx.beginPath();ctx.fillStyle=b.superShot?'#fff067':b.color;ctx.shadowBlur=13;ctx.shadowColor=ctx.fillStyle;if(b.role===1){ctx.save();ctx.translate(b.x,b.y);ctx.rotate(Math.atan2(b.vy,b.vx));ctx.fillRect(-9,-2,18,4);ctx.restore()}else{ctx.arc(b.x,b.y,b.r,0,7);ctx.fill()}ctx.shadowBlur=0}
+for(let e of entities){if(e.dead||e!==player&&!canSee(player,e))continue;ctx.save();ctx.translate(e.x,e.y);ctx.fillStyle=e===player?'#ffdf4a':e.team===0?'#56a8ff':'#f76679';ctx.beginPath();ctx.arc(0,0,e.r+5,0,7);ctx.fill();ctx.fillStyle=h(e.id).color;ctx.shadowBlur=e===player?17:5;ctx.shadowColor=h(e.id).color;ctx.beginPath();ctx.arc(0,0,e.r,0,7);ctx.fill();ctx.shadowBlur=0;ctx.font=`${Math.max(19,Math.round(e.r*1.23))}px system-ui`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(h(e.id).icon,0,0);ctx.restore();let bw=Math.max(46,e.r*2+10),barY=e.y-e.r-17;ctx.fillStyle='#19233c';ctx.fillRect(e.x-bw/2,barY,bw,7);ctx.fillStyle=e.hp/e.maxhp>.35?'#72f78a':'#ff616c';ctx.fillRect(e.x-bw/2,barY,bw*e.hp/e.maxhp,7);ctx.font='bold 12px system-ui';ctx.textAlign='center';ctx.fillStyle='#fff';ctx.fillText(e===player?'YOU':e.isBoss?'👹 巨大ボス Lv.'+e.lv:h(e.id).name+' Lv.'+e.lv,e.x,e.y+e.r+27);
+let slots=AMMO_CAP[e.id],gap=3,slotW=8,total=slots*slotW+(slots-1)*gap,left=e.x-total/2;
+for(let j=0;j<slots;j++){ctx.fillStyle=j<e.ammo?'#ffdb58':'#34425b';ctx.fillRect(left+j*(slotW+gap),barY-12,slotW,7);ctx.strokeStyle='#e3e9f5';ctx.lineWidth=.6;ctx.strokeRect(left+j*(slotW+gap),barY-12,slotW,7)}}
+for(let p of particles){ctx.fillStyle=p.color;ctx.globalAlpha=p.life/25;ctx.fillRect(p.x,p.y,5,5)}ctx.globalAlpha=1;
+if(mode==='royale'&&gasInset>0){ctx.save();ctx.fillStyle='rgba(134,35,180,.43)';ctx.beginPath();ctx.rect(0,0,worldW,worldH);ctx.rect(gasInset,gasInset,Math.max(0,worldW-2*gasInset),Math.max(0,worldH-2*gasInset));ctx.fill('evenodd');ctx.strokeStyle='#ee80ff';ctx.lineWidth=8;ctx.strokeRect(gasInset,gasInset,Math.max(0,worldW-2*gasInset),Math.max(0,worldH-2*gasInset));ctx.restore()}
+ctx.restore();ctx.fillStyle='#0b1537c9';ctx.fillRect(12,12,mode==='team'?280:230,112);ctx.textAlign='left';ctx.font='bold 18px system-ui';ctx.fillStyle='#fff';ctx.fillText('❤️ '+Math.ceil(player.hp)+' / '+player.maxhp,23,38);ctx.fillText('⚡ '+Math.floor(player.super)+'%  🏅 '+kills,23,63);
+ctx.font='bold 15px system-ui';ctx.fillStyle='#ffdd74';ctx.fillText('🔋 '+('●'.repeat(player.ammo)) + ('○'.repeat(AMMO_CAP[player.id]-player.ammo)),23,104);
+if(player.ammo<AMMO_CAP[player.id]){ctx.fillStyle='#27344c';ctx.fillRect(23,113,125,7);ctx.fillStyle='#f4c950';ctx.fillRect(23,113,125*clamp(player.reloadProgress/RELOAD_SEC[player.id],0,1),7)}ctx.fillStyle='#ffe77b';ctx.fillRect(22,76,Math.min(205,player.super*2.05),5);if(player.hp<player.maxhp){ctx.fillStyle=elapsed-player.lastHit>=5?'#81ff9e':'#ffffffa0';ctx.font='bold 13px system-ui';ctx.textAlign='left';ctx.fillText(elapsed-player.lastHit>=5?'💚 自動回復中':'💚 回復まで '+Math.ceil(5-(elapsed-player.lastHit))+'秒',23,142)}ctx.textAlign='right';ctx.fillText('⏱ '+Math.max(0,Math.ceil((mode==='royale'||mode==='boss'?180:90)-elapsed)),940,35);if(mode==='royale'){ctx.fillStyle=inGas(player)?'#ff9fb5':'#eecaff';ctx.font='bold 16px system-ui';ctx.textAlign='right';ctx.fillText(inGas(player)?'☠️ 毒ガス内！':'☣️ 毒ガス '+(30-Math.floor(elapsed%30))+'秒で次の縮小',940,86)}if(mode==='boss'){let boss=entities.find(e=>e.isBoss);if(boss){
+const bx=250,by=16,bw=470,bh=28,rate=clamp(boss.hp/boss.maxhp,0,1);
+ctx.fillStyle='#09122ddf';ctx.fillRect(bx-10,by-10,bw+20,75);
+ctx.fillStyle='#281a2d';ctx.fillRect(bx,by,bw,bh);
+ctx.fillStyle=rate<.4?'#ff9a32':'#f44c67';ctx.fillRect(bx,by,bw*rate,bh);
+ctx.strokeStyle='#ffcf7e';ctx.lineWidth=3;ctx.strokeRect(bx,by,bw,bh);
+ctx.textAlign='center';ctx.font='bold 17px system-ui';ctx.fillStyle='#fff';ctx.fillText('👹 巨大ボス Lv.'+boss.lv+'   '+Math.ceil(boss.hp)+' / '+boss.maxhp,480,36);
+ctx.font='bold 13px system-ui';ctx.fillStyle='#a8e8ff';ctx.fillText('味方 '+entities.filter(e=>e.team===0&&!e.dead).length+'/3 人 生存  ·  全滅すると敗北',480,67);
+}
+if(player.dead){ctx.textAlign='center';ctx.fillStyle='#fff';ctx.font='bold 25px system-ui';ctx.fillText('復活まで '+Math.max(0,Math.ceil(player.respawn-elapsed))+'秒',480,116)}
+}if(mode==='team')ctx.fillText('🔵 '+teamScore[0]+' - '+teamScore[1]+' 🔴',940,63);if(player.dead&&mode==='team'){ctx.fillStyle='#fff';ctx.font='bold 27px system-ui';ctx.textAlign='center';ctx.fillText('復活まで '+Math.max(0,Math.ceil(player.respawn-elapsed)),480,90)}$('status').textContent=mode==='royale'?'残り '+entities.filter(e=>!e.dead).length+'人':mode==='boss'?'ボス討伐':'撃破 '+kills}
+function loop(t){if(!playing)return;let dt=Math.min((t-last)/1000,.04);last=t;update(dt);draw();if(playing)raf=requestAnimationFrame(loop)}
+function finish(win){if(matchOver)return;matchOver=true;playing=false;cancelAnimationFrame(raf);attackHeld=false;superHeld=false;let reward=20+kills*18+(win?100:0),cups=win?25+kills*2:Math.max(-10,kills*2-8);data.coins+=reward;data.trophies=Math.max(0,data.trophies+cups);data.matches++;if(win)data.wins++;data.best=Math.max(data.best,score);save();$('overlay').style.display='flex';$('result').innerHTML=`<div style="font-size:55px">${win?'🏆':'💥'}</div><h1>${win?'勝利！':'バトル終了'}</h1><p>撃破数：${kills} ／ スコア：${score}</p><h2>🪙 +${reward}　🏆 ${cups>=0?'+':''}${cups}</h2>${btn('ホームに戻る','back','orange')}`;$('result').querySelector('button').onclick=back;document.body.classList.remove('playing')}
+function back(){playing=false;cancelAnimationFrame(raf);$('overlay').style.display='none';$('gameArea').style.display='none';$('menu').style.display='block';document.body.classList.remove('playing');attackHeld=false;superHeld=false;mouse.active=false;render()}
+$('leave').onclick=()=>{if(confirm('バトルを退出しますか？ 報酬は獲得できません。'))back()};
+window.addEventListener('keydown',e=>{if([' ','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)&&playing)e.preventDefault();keys[e.key]=true;keys[e.key.toLowerCase()]=true;if(e.code==='Space'&&playing){superHeld=true;e.preventDefault()}});window.addEventListener('keyup',e=>{keys[e.key]=false;keys[e.key.toLowerCase()]=false});
+canvas.addEventListener('pointermove',e=>{if(e.pointerType==='mouse'){let r=canvas.getBoundingClientRect();mouse.x=(e.clientX-r.left)*960/r.width;mouse.y=(e.clientY-r.top)*600/r.height;mouse.active=true}});canvas.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse'){attackHeld=true;doAttack()}else{mouse.active=false;doAttack()}});window.addEventListener('pointerup',e=>{if(e.pointerType==='mouse')attackHeld=false});canvas.addEventListener('contextmenu',e=>e.preventDefault());
+const joy=$('moveJoy'),knob=joy.querySelector('.knob');let joyId=null;function joyUpdate(e){let r=joy.getBoundingClientRect(),x=e.clientX-(r.left+r.width/2),y=e.clientY-(r.top+r.height/2),n=norm(x,y),d=Math.min(Math.hypot(x,y),r.width*.32);move.x=n.x*d/(r.width*.32);move.y=n.y*d/(r.width*.32);knob.style.transform=`translate(${n.x*d}px,${n.y*d}px)`}joy.addEventListener('pointerdown',e=>{e.preventDefault();joyId=e.pointerId;joy.setPointerCapture(joyId);joyUpdate(e)});joy.addEventListener('pointermove',e=>{if(e.pointerId===joyId)joyUpdate(e)});function joyEnd(e){if(e.pointerId!==joyId)return;joyId=null;move={x:0,y:0};knob.style.transform=''}joy.addEventListener('pointerup',joyEnd);joy.addEventListener('pointercancel',joyEnd);
+const attackBtn=$('attackBtn');attackBtn.addEventListener('pointerdown',e=>{e.preventDefault();attackHeld=true;mouse.active=false;attackBtn.setPointerCapture(e.pointerId);doAttack()});['pointerup','pointercancel','lostpointercapture'].forEach(ev=>attackBtn.addEventListener(ev,()=>attackHeld=false));$('superBtn').addEventListener('pointerdown',e=>{e.preventDefault();mouse.active=false;doAttack(true)});document.addEventListener('visibilitychange',()=>{if(document.hidden){attackHeld=false;move={x:0,y:0};keys={}}});render();
+})();
+</script></body></html>
