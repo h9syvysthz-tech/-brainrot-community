@@ -30,52 +30,809 @@ body.playing #battleStage .joy,body.playing #battleStage .action{opacity:.84}
 #battleExit{display:none;position:absolute;z-index:4;right:max(9px,env(safe-area-inset-right));top:max(8px,env(safe-area-inset-top));font-size:12px;padding:7px 11px;border-radius:11px;background:#ac304bbb;border:1px solid #ff9ba8;color:#fff}
 body.playing #battleExit{display:block}
 @media(pointer:fine){body.playing #battleStage #touchUI{display:none}}
-</style></head><body><div id="app"><header><div class="logo">⭐ STAR ARENA</div><div class="row"><span class="pill" id="coins">🪙 0</span><span class="pill" id="trophies">🏆 0</span></div></header><div id="menu"><nav class="tabs"><button data-tab="home" class="active">ホーム</button><button data-tab="heroes">キャラ</button><button data-tab="shop">ショップ</button><button data-tab="ranking">ランク</button></nav><div id="view"></div></div><div id="gameArea"><div class="row"><button class="btn red" id="leave">退出</button><span id="modeName" class="pill"></span><span id="status"></span></div><div id="battleStage"><button id="battleExit" type="button" aria-label="バトルから退出">退出</button><canvas id="gameCanvas" width="960" height="600"></canvas><div id="touchUI"><div id="moveJoy" class="joy"><div class="knob"></div></div><div class="actions"><button id="superBtn" class="action super">⚡</button><button id="attackBtn" class="action" aria-label="通常攻撃">🎯</button></div></div></div><p class="small">PC：WASD移動／マウスで照準・クリックで攻撃／スペースで必殺技。スマホ：画面左下のスティックで移動。攻撃ボタンをタップすると自動照準、ドラッグして離すと指定方向へ攻撃。</p></div></div><div id="overlay"><div id="result"></div></div><div id="heroDetail" role="dialog" aria-modal="true" aria-label="キャラクター詳細"><div class="detail-panel" id="detailPanel"></div></div>
+
+.ability-section{margin:16px 0;padding:12px;background:#111e3d;border:1px solid #5368a0;border-radius:14px}
+.ability-section h3{margin:12px 0 8px;font-size:17px}.ability-section h3 small{font-size:11px;color:#b6c9ef}
+.ability-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.ability-option{display:flex;flex-direction:column;gap:6px;text-align:left;min-width:0;padding:10px;border:2px solid #4d6798;background:#26375d;border-radius:12px;color:white;white-space:normal}
+.ability-option strong{font-size:13px}.ability-option span{font-size:11px;font-weight:500;color:#d3e1f7}.ability-option small{color:#ffdf79;font-size:11px}
+.ability-option.chosen{border-color:#9cff8d;background:#264d48}.ability-option:disabled{opacity:.5;cursor:default}
+#battleStage .gadget{background:#25a964;width:72px;height:72px;font-size:18px;border-color:#b9ffd0;flex-shrink:0}
+#battleStage .gadget:disabled{opacity:.45}
+@media(max-width:550px){#battleStage .gadget{width:clamp(48px,13vw,68px);height:clamp(48px,13vw,68px);font-size:14px}#battleStage .actions{gap:5px}.ability-grid{gap:5px}.ability-option{padding:7px}}
+
+/* v40: full-screen Star Drop reveal */
+#starDropScreen{position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;overflow:auto;background:radial-gradient(circle at 50% 42%,#324b9c 0%,#142353 48%,#070d29 100%);padding:24px max(16px,env(safe-area-inset-left));text-align:center;isolation:isolate}
+#starDropScreen.open{display:flex}#starDropScreen::before{content:"";position:absolute;inset:-80%;z-index:-1;background:repeating-conic-gradient(from 0deg,#ffffff10 0deg 10deg,transparent 10deg 22deg);animation:dropRays 16s linear infinite}
+@keyframes dropRays{to{transform:rotate(360deg)}}@keyframes dropPop{0%{transform:scale(.2) rotate(-24deg);opacity:0}65%{transform:scale(1.16) rotate(6deg);opacity:1}100%{transform:scale(1) rotate(0)}}@keyframes dropPulse{50%{transform:scale(1.06);filter:drop-shadow(0 0 36px #ffe68c)}}
+.drop-wrap{width:min(560px,100%);display:flex;flex-direction:column;align-items:center;gap:14px}.drop-heading{font-weight:1000;font-size:clamp(27px,7vw,46px);color:#fff2a3;text-shadow:0 4px 0 #704389,0 0 30px #b8a5ff}.drop-subtitle{font-weight:900;color:#d9e6ff;font-size:clamp(15px,3.6vw,21px)}
+.drop-star{width:min(53vw,230px);height:min(53vw,230px);display:grid;place-items:center;font-size:clamp(85px,23vw,140px);line-height:1;filter:drop-shadow(0 0 26px #ffd36d);animation:dropPop .6s cubic-bezier(.15,.8,.2,1) both,dropPulse 1.8s ease-in-out .6s infinite;cursor:pointer;user-select:none}
+.drop-prize{background:#101b44e8;border:3px solid var(--drop-color,#ffe88b);border-radius:22px;padding:20px;width:100%;box-shadow:0 0 35px color-mix(in srgb,var(--drop-color,#ffe88b) 35%,transparent);animation:dropPop .5s both}.drop-prize-icon{font-size:clamp(65px,18vw,100px)}.drop-prize-title{font-size:clamp(22px,6vw,33px);font-weight:1000;color:#fff}.drop-prize-desc{font-size:clamp(15px,3.7vw,19px);color:#d7e7ff;line-height:1.6;margin:8px 0 0}.drop-tier{font-weight:1000;color:var(--drop-color,#ffe88b);font-size:clamp(20px,5vw,29px)}.drop-action{font-size:18px;min-width:190px;padding:14px 24px}.drop-hint{color:#d5e2ff;font-size:14px}body.drop-opening{overflow:hidden}
+@media(prefers-reduced-motion:reduce){#starDropScreen::before,.drop-star,.drop-prize{animation:none}}
+.tabs{display:grid!important;grid-template-columns:repeat(9,minmax(0,1fr));gap:3px}.tabs button{min-width:0;padding:9px 1px;font-size:clamp(9px,2vw,14px);white-space:nowrap}@media(max-width:380px){.tabs button{font-size:10px;letter-spacing:-.5px}}
+
+.hero-rarity{display:inline-block;border:1px solid var(--rarity-color);color:var(--rarity-color);background:#07152bd9;padding:3px 7px;border-radius:8px;font-size:11px;font-weight:800;white-space:nowrap;margin:3px 0}
+.hero-tile .hero-rarity{font-size:10px;padding:2px 5px}
+
+#cloudGate{position:fixed;inset:0;z-index:500;background:#071127ed;display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto}
+#cloudGate.hidden{display:none}#cloudPanel{background:#1b2a4b;color:#f2f7ff;border:2px solid #526ea6;border-radius:18px;padding:24px;width:min(430px,100%);box-shadow:0 20px 70px #0008}
+#cloudPanel input{display:block;width:100%;box-sizing:border-box;margin:9px 0 13px;padding:12px;border-radius:9px;border:1px solid #7592c6;background:#0e1a34;color:white;font-size:16px}
+#cloudPanel .cloudActions{display:flex;gap:9px;flex-wrap:wrap}#cloudPanel .cloudActions button{flex:1;min-width:120px}
+#cloudMessage{font-size:13px;line-height:1.6;min-height:28px;margin-top:12px;color:#ffd08b;white-space:pre-wrap}
+
+.feedback-input{display:block;width:100%;box-sizing:border-box;padding:12px;margin:8px 0 14px;background:#101c36;color:#fff;border:1px solid #647ca6;border-radius:10px;font:inherit;font-size:16px}.feedback-input:focus{outline:2px solid #76b9ff}.feedback-hint{font-size:12px;color:#bcd1f5}.feedback-status{min-height:22px;font-size:13px;color:#ffe49c;white-space:pre-wrap}
+.hero-art-svg{display:block;max-width:100%;max-height:100%;margin:auto;filter:drop-shadow(0 2px 5px #0007)}
+</style></head><body><div id="app"><header><div class="logo">⭐ STAR ARENA</div><div class="row"><span class="pill" id="coins">🪙 0</span><span class="pill" id="trophies">🏆 0</span></div></header><div id="menu"><div id="cloudTools" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0;padding:9px;border:1px solid #4d85b1;border-radius:12px;background:#152b44"><span id="cloudStatus" style="flex:1;min-width:160px">☁️ Firebase接続待機中</span><button id="cloudSync" type="button" class="btn">☁️ 今すぐ保存</button><button id="cloudLogout" type="button" class="btn">ログアウト</button></div><div id="saveTools" style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0;padding:9px;border:1px solid #506080;border-radius:12px;background:#14203d">
+<button type="button" id="exportSave" class="btn">💾 セーブデータを書き出す</button>
+<button type="button" id="importSave" class="btn">📂 セーブデータを読み込む</button>
+<input id="saveFile" type="file" accept=".json,application/json" style="display:none">
+<small style="width:100%;color:#c4d4ee">Googleサイトの埋め込みでは保存が消える場合があります。更新前にバックアップしてください。</small>
+</div><nav class="tabs"><button data-tab="home" class="active">ホーム</button><button data-tab="battle">バトル</button><button data-tab="heroes">キャラ</button><button data-tab="shop">ショップ</button><button data-tab="ranking">ランク</button><button data-tab="missions">ミッション</button><button data-tab="events">イベント</button><button data-tab="news">ニュース</button><button data-tab="feedback">フィードバック</button></nav><div id="view"></div></div><div id="gameArea"><div class="row"><button class="btn red" id="leave">退出</button><span id="modeName" class="pill"></span><span id="status"></span></div><div id="battleStage"><button id="battleExit" type="button" aria-label="バトルから退出">退出</button><canvas id="gameCanvas" width="960" height="600"></canvas><div id="touchUI"><div id="moveJoy" class="joy"><div class="knob"></div></div><div class="actions"><button id="gadgetBtn" class="action gadget" aria-label="ガジェット">🟢3</button><button id="superBtn" class="action super">⚡</button><button id="attackBtn" class="action" aria-label="通常攻撃">🎯</button></div></div></div><p class="small">PC：矢印キーで移動／Dで自動照準攻撃（長押し連射）／Aで自動照準必殺技／マウスで照準・クリックで攻撃／スペースで必殺技／Fでガジェット。スマホ：画面左下のスティックで移動。攻撃ボタンをタップすると自動照準、ドラッグして離すと指定方向へ攻撃。</p></div></div><div id="overlay"><div id="result"></div></div><div id="starDropScreen" role="dialog" aria-modal="true" aria-label="スタードロップ開封"><div class="drop-wrap" id="starDropContent"></div></div><div id="heroDetail" role="dialog" aria-modal="true" aria-label="キャラクター詳細"><div class="detail-panel" id="detailPanel"></div></div>
+<div id="onlineDuelScreen" style="display:none;position:fixed;inset:0;z-index:3000;background:#0b1427;color:white;overflow:auto;padding:12px;box-sizing:border-box"><div style="max-width:750px;margin:auto"><div style="display:flex;gap:10px;justify-content:space-between;align-items:center"><h2>⚔️ オンラインデュエル</h2><button class="btn red" id="onlineExit">退出</button></div><p id="onlineStatus" style="min-height:40px"></p><canvas id="onlineCanvas" width="720" height="420" style="width:100%;background:#15283d;border:2px solid #6aa6da;border-radius:12px;touch-action:none"></canvas><div style="display:flex;justify-content:space-between;gap:12px;margin-top:12px;touch-action:none"><div id="onlineMove" style="width:145px;height:145px;border:2px solid #7391b7;border-radius:50%;position:relative;background:#213653;touch-action:none"><div id="onlineKnob" style="position:absolute;width:54px;height:54px;left:44px;top:44px;border-radius:50%;background:#7bc6ff;pointer-events:none"></div></div><div style="display:flex;gap:8px;align-items:center"><button id="onlineFire" class="btn orange" style="height:90px;width:95px;touch-action:none">🎯 攻撃</button><button id="onlineSuper" class="btn" style="height:75px;touch-action:none">💥 必殺</button><button id="onlineGadget" class="btn green" style="height:75px;touch-action:none">⚡ ガジェット</button></div></div><p class="small">PC：矢印キーまたはW・Sで移動、Dキーで通常攻撃、Aキー／スペースで必殺技、Fキーでガジェット。マウスで照準を合わせてクリックで攻撃。スマホ：左スティックで移動、攻撃・必殺ボタンはタップで自動照準、フリックで手動照準。オンライン報酬はクライアント判定のため不正対策に限界があります。</p></div></div><div id="cloudGate"><div id="cloudPanel"><h2>☁️ STAR ARENA オンラインセーブ</h2><p style="font-size:14px">ユーザー名とパスワードで登録・ログインできます。ユーザー名は半角英数字・_・- の3〜20文字。クラウドからの読み込みが完了するまでゲームは開始できません。</p><label>ユーザー名<input id="cloudUsername" type="text" autocomplete="username" maxlength="20" placeholder="例：player123"></label><label>パスワード（6文字以上）<input id="cloudPassword" type="password" autocomplete="current-password" placeholder="6文字以上"></label><div class="cloudActions"><button id="cloudLogin" class="btn green" type="button">ログイン</button><button id="cloudRegister" class="btn orange" type="button">新規登録</button></div><div id="cloudMessage" role="status">Firebaseに接続しています…</div></div></div>
 <script>
 (()=>{'use strict';
-const NAMES=['ブレイズ','フロスト','ボルト','リーフ','シャドウ','ルナ','タイタン','スパーク','ウェーブ','ロック','ファング','コメット','ネオン','ミスト','フェニックス','ギア','ヴァイパー','スター','ゴーレム','ノヴァ'];
-const ICONS=['🔥','❄️','⚡','🌿','🥷','🌙','🛡️','💫','🌊','🪨','🐺','☄️','🌈','🌫️','🦅','🤖','🐍','⭐','🗿','🌌'];
-const COLORS=['#ff6d3c','#7cdaff','#ffe359','#74d995','#ab80ff','#e2a6ff','#a0b8d9','#ffbe59','#53b9ee','#bb8d64','#f58377','#ff995e','#f76dcc','#b2d6df','#ffb138','#8ca4ce','#9fe75e','#ffe280','#a4a9ae','#c581ff'];
-const HEROES=NAMES.map((name,i)=>({name,icon:ICONS[i],color:COLORS[i],hp:[310, 135, 215, 180, 285, 125, 270, 170, 325, 145, 235, 155, 300, 185, 245, 175, 280, 120, 260, 160][i],speed:[2.52, 1.62, 2.05, 1.88, 2.60, 1.52, 1.94, 1.91, 2.47, 1.58, 2.25, 1.78, 2.72, 1.64, 2.0, 1.83, 2.44, 1.49, 1.93, 1.7][i],bodySize:11+(i*5%8),damage:[46, 67, 25, 30, 43, 76, 34, 32, 49, 72, 36, 52, 55, 64, 33, 34, 45, 83, 39, 60][i],range:[76, 540, 225, 310, 105, 610, 195, 345, 90, 500, 165, 410, 65, 565, 205, 365, 112, 650, 180, 450][i],cooldown:[330, 990, 490, 550, 345, 1120, 520, 610, 310, 1040, 430, 840, 295, 980, 520, 580, 340, 1200, 540, 920][i],superType:i%5}));
-const ROLE_NAMES=['近距離ファイター','長距離スナイパー','中距離バランス','中〜長距離アタッカー'];const ROLE_DESCS=['近距離で5発の散弾を放つ。近づくほど強力。','細くて高速な狙撃弾を遠距離まで飛ばす。接近戦は苦手。','射程と火力のバランスが良い。','中距離を保ちつつ牽制するタイプ。'];const ATTACKS=['灼熱散弾','氷結狙撃','電撃連鎖弾','葉の3連射','影の近距離連撃','月光貫通狙撃','重装破砕弾','流星2連射','水流散弾','岩石狙撃','牙の3連射','彗星加速弾','虹の8連散弾','霧の4連射','不死鳥の炎弾','機械2連射','猛毒散弾','星屑高速狙撃','巨岩範囲弾','宇宙貫通2連射'];
-const SUPERS=['火炎の7連散弾','氷結吹雪','電撃加速','自然の癒やし','影の貫通突撃','月光貫通砲','重装ノックバック','流星加速','水流の回復波','岩石の貫通砲','牙の9連散弾','彗星吹き飛ばし','虹の超加速','霧の全体回復','不死鳥の巨大炎弾','機械の連続砲撃','猛毒衝撃波','星屑の超加速','巨岩の回復波','宇宙貫通大砲'];
-const SPECIAL=['炎上','減速','連鎖','3連射','近距離連撃','貫通','高威力','2連射','散弾','減速','3連射','高速','散弾','4連射','炎上','2連射','毒','高速','範囲','貫通'];
+const NAMES=['ブレイズ','フロスト','ボルト','リーフ','シャドウ','ルナ','タイタン','スパーク','ウェーブ','ロック','ファング','コメット','ネオン','ミスト','フェニックス','ギア','ヴァイパー','スター','ゴーレム','ノヴァ','パンプキン'];
+const ICONS=['🔥','❄️','⚡','🌿','🥷','🌙','🛡️','💫','🌊','🪨','🐺','☄️','🌈','🌫️','🦅','🤖','🐍','⭐','🗿','🌌','🎃'];
+const COLORS=['#ff6d3c','#7cdaff','#ffe359','#74d995','#ab80ff','#e2a6ff','#a0b8d9','#ffbe59','#53b9ee','#bb8d64','#f58377','#ff995e','#f76dcc','#b2d6df','#ffb138','#8ca4ce','#9fe75e','#ffe280','#a4a9ae','#c581ff','#ed8a37'];
+// キャラクターのレアリティはキャラIDに固定し、セーブデータの互換性を保つ。
+const HERO_RARITIES=[
+ {name:'ノーマル',icon:'🟦',color:'#65b5ff'},
+ {name:'レア',icon:'🟩',color:'#67e6a1'},
+ {name:'スーパーレア',icon:'🟪',color:'#bb91ff'},
+ {name:'ウルトラレア',icon:'🟨',color:'#ffd66e'},
+ {name:'レジェンド',icon:'🌟',color:'#ffb96c'}
+];
+const HERO_RARITY_IDS=[0,0,0,0,0,1,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4];
+const heroRarity=i=>HERO_RARITIES[HERO_RARITY_IDS[i]];
+// キャラ抽選の重み。高レアリティほど同じ候補数でも当たりにくい。
+const HERO_DRAW_WEIGHTS=[55,25,12,6,2];
+const SHOP_ONLY_HERO_IDS=[20];
+const randomUnlockableHeroIds=()=>HEROES.map((_,i)=>i).filter(i=>!SHOP_ONLY_HERO_IDS.includes(i)&&!data.owned.includes(i));
+function weightedHeroDraw(ids){
+ // ショップ限定キャラは、呼び出し元が誤って候補に含めても抽選対象外。
+ ids=ids.filter(id=>!SHOP_ONLY_HERO_IDS.includes(id));
+ if(!ids.length)return null;
+ const total=ids.reduce((sum,id)=>sum+HERO_DRAW_WEIGHTS[HERO_RARITY_IDS[id]],0);
+ let roll=Math.random()*total;
+ for(const id of ids){roll-=HERO_DRAW_WEIGHTS[HERO_RARITY_IDS[id]];if(roll<0)return id;}
+ return ids[ids.length-1];
+}
+
+const ownsHero=i=>i===20?(data.pumpkinPurchased===true||data.owned.includes(20)):data.owned.includes(i);
+const ensurePumpkinOwnership=()=>{if(data.pumpkinPurchased===true&&!data.owned.includes(20))data.owned.push(20);if(data.owned.includes(20))data.pumpkinPurchased=true;};
+const rarityTag=i=>`<span class="hero-rarity" style="--rarity-color:${heroRarity(i).color}">${heroRarity(i).icon} ${heroRarity(i).name}</span>`;
+const HEROES=NAMES.map((name,i)=>({name,icon:ICONS[i],color:COLORS[i],hp:[290, 125, 215, 180, 285, 125, 390, 170, 325, 375, 235, 155, 300, 185, 245, 175, 280, 120, 475, 160, 350][i],speed:[2.12, 1.62, 2.05, 1.88, 2.72, 1.52, 1.94, 1.91, 2.47, 1.58, 2.25, 1.78, 2.35, 1.64, 2.0, 1.83, 2.44, 1.49, 1.20, 1.7, 1.58][i],bodySize:i===18?23:11+(i*5%8),damage:[33, 61, 25, 30, 51, 76, 34, 32, 49, 72, 36, 52, 43, 64, 33, 34, 45, 83, 55, 105, 204][i],range:[76, 540, 225, 310, 105, 610, 195, 345, 90, 500, 165, 410, 65, 565, 205, 365, 112, 650, 205, 450,280][i],cooldown:[330, 990, 490, 550, 345, 1120, 520, 610, 310, 1040, 430, 840, 335, 980, 520, 580, 340, 1200, 700, 1060, 950][i],superType:i%5}));
+const ROLE_NAMES=['近距離ファイター','長距離スナイパー','中距離バランス','中〜長距離アタッカー'];const ROLE_DESCS=['近距離で5発の散弾を放つ。近づくほど強力。','細くて高速な狙撃弾を遠距離まで飛ばす。接近戦は苦手。','射程と火力のバランスが良い。','中距離を保ちつつ牽制するタイプ。'];const ATTACKS=['灼熱散弾','氷結狙撃','電撃連鎖弾','葉の3連射','影の近距離連撃','月光貫通狙撃','重装破砕弾','流星2連射','水流散弾','岩石狙撃','牙の3連射','彗星加速弾','虹の8連散弾','霧の4連射','不死鳥の炎弾','機械2連射','猛毒散弾','星屑高速狙撃','巨岩範囲弾','宇宙貫通2連射','呪いの15連集中散弾'];
+const SUPERS=['火炎の7連散弾','氷結吹雪','電撃加速','自然の癒やし','影の貫通突撃','月光貫通砲','重装ノックバック','流星加速','水流の回復波','岩石の貫通砲','牙の9連散弾','彗星吹き飛ばし','虹の超加速','霧の全体回復','不死鳥の巨大炎弾','機械の連続砲撃','猛毒衝撃波','星屑の超加速','巨岩の回復波','宇宙貫通大砲','かぼちゃの生命回復'];
+const SPECIAL=['炎上','減速','連鎖','3連射','近距離連撃','貫通','高威力','2連射','散弾','減速','3連射','高速','散弾','4連射','炎上','2連射','毒','高速','範囲','貫通','集中散弾'];
 const ATTACK_CONFIG=[
 [6,.19,.31,6.6,5,0],[1,0,1.16,16,2.5,0],[1,0,.92,8.4,5,0],[3,.11,.62,10,4,0],
 [4,.23,.39,9,5,0],[1,0,1.05,15,3,2],[1,0,1.45,6.2,10,0],[2,.10,.82,11,5,0],
 [7,.18,.25,7,4,0],[1,0,1.5,11,8,0],[3,.15,.63,9,5,0],[1,0,1.12,18,3,0],
 [8,.17,.24,7.3,4,0],[4,.08,.52,10,4,0],[1,0,1.32,7.6,9,0],[2,.075,.78,13,4,0],
-[5,.20,.35,7,5,0],[1,0,1.08,19,2.5,0],[1,0,1.65,6.5,10,0],[2,.09,.82,12,5,2]
+[5,.20,.35,7,5,0],[1,0,1.08,19,2.5,0],[1,0,1.65,6.5,10,0],[2,.09,.82,12,5,2],[13,.135,.48,8.5,6,0]
 ];
-const KEY='starArenaSave_v1';let data;try{data=JSON.parse(localStorage.getItem(KEY))}catch(e){}if(!data||!Array.isArray(data.owned)){data={coins:450,trophies:0,selected:0,owned:[0,1,2],levels:{},wins:0,matches:0,best:0}};const $=id=>document.getElementById(id);let tab='home',mode='royale',playing=false,raf=0,entities=[],shots=[],walls=[],bushes=[],particles=[],player=null,elapsed=0,spawnTimer=0,kills=0,score=0,last=0,mouse={x:480,y:300,active:false},keys={},move={x:0,y:0},attackHeld=false,superHeld=false,touchAim={active:false,dx:1,dy:0},gameTime=90,matchOver=false,teamScore=[0,0],effects=[],worldW=960,worldH=600,camX=0,camY=0,gasInset=0,gasPhase=0,bossWarnings=[],bossCooldown=0,bossPattern=0,killFeed=[];
+const BOSS_NAME='👹 深淵の覇王';const BOSS_TYPES=[{id:'abyss',name:'👹 深淵の覇王',description:'高HPの重量級。メテオ・直線ビーム・衝撃波を使い、時間経過で怒りが増す。',hp:1,damage:1,speed:.95,cooldown:1},{id:'storm',name:'⚡ 雷霆の支配者',description:'深淵の覇王よりHPは低いが、移動が速く、高速落雷・扇状雷ビーム・雷の円環・追尾雷雨・十字雷撃・稲妻の壁・雷の迷路・雷嵐を使う。攻撃力はやや高い。',hp:.72,damage:1.25,speed:1.34,cooldown:.78}];let bossType='abyss';const selectedBoss=()=>BOSS_TYPES.find(b=>b.id===bossType)||BOSS_TYPES[0];const BOSS_DIFFICULTIES=[
+{name:'ビギナー',lv:3,hp:.65,damage:.60,interval:1.35,warning:1.30,rage:[85,135,170]},
+{name:'ノーマル',lv:7,hp:.85,damage:.82,interval:1.20,warning:1.18,rage:[70,115,155]},
+{name:'ハード',lv:12,hp:1.10,damage:1.05,interval:1.08,warning:1.08,rage:[55,100,140]},
+{name:'エキスパート',lv:19,hp:1.45,damage:1.35,interval:.97,warning:1.0,rage:[45,85,130]},
+{name:'ナイトメア',lv:27,hp:1.90,damage:1.75,interval:.88,warning:.96,rage:[35,75,115]}
+];let bossDifficulty=1;document.addEventListener('change',e=>{if(e.target?.id==='bossDifficultySelect')bossDifficulty=Math.max(0,Math.min(4,Number(e.target.value)||0));if(e.target?.id==='bossTypeSelect'){bossType=e.target.value;render()}});
+const KEY='starArenaSave_v1';const freshData=()=>({coins:450,trophies:0,selected:0,owned:[0,1,2],levels:{},wins:0,matches:0,best:0,drops:0,redeemedCodes:{},unlockedTitles:{},selectedTitle:"rookie"});let data;try{data=JSON.parse(localStorage.getItem(KEY)||sessionStorage.getItem(KEY))}catch(e){}if(!data||!Array.isArray(data.owned)){data=freshData()};if(data.pumpkinPurchased===true&&!data.owned.includes(20))data.owned.push(20);if(data.owned.includes(20))data.pumpkinPurchased=true;if(!Number.isInteger(data.drops)||data.drops<0)data.drops=0;const $=id=>document.getElementById(id);let tab='home',mode='royale',playing=false,raf=0,entities=[],shots=[],walls=[],bushes=[],particles=[],player=null,elapsed=0,spawnTimer=0,kills=0,score=0,last=0,mouse={x:480,y:300,active:false},keys={},move={x:0,y:0},attackHeld=false,superHeld=false,touchAim={active:false,dx:1,dy:0},gameTime=90,matchOver=false,teamScore=[0,0],effects=[],worldW=960,worldH=600,camX=0,camY=0,gasInset=0,gasPhase=0,bossWarnings=[],bossCooldown=0,bossPattern=0,bossRageStage=0,bossRageMessageUntil=0,killFeed=[];
 // キャラ別の弾数と1発のリロード時間（秒）
-const AMMO_CAP=[3,3,4,3,2,3,4,3,3,4,3,2,3,4,3,3,4,3,4,2];
-const RELOAD_SEC=[0.8, 2.65, 1.35, 1.5, 0.72, 2.95, 1.45, 1.65, 0.78, 2.75, 1.12, 2.25, 0.65, 2.6, 1.5, 1.6, 0.82, 3.1, 1.48, 2.4];
-const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){}};const level=i=>data.levels[i]||1;const rank=()=>data.trophies<100?'ブロンズ':data.trophies<300?'シルバー':data.trophies<650?'ゴールド':data.trophies<1100?'ダイヤ':data.trophies<1800?'マスター':'レジェンド';const refresh=()=>{$('coins').textContent='🪙 '+data.coins;$('trophies').textContent='🏆 '+data.trophies};const btn=(label,fn,klass='')=>`<button class="btn ${klass}" data-act="${fn}">${label}</button>`;const h=i=>HEROES[i];const speedLabel=i=>h(i).speed>=2.32?'速い':h(i).speed>=1.96?'普通':'遅い';const sizeLabel=i=>h(i).bodySize>=24?'大型':h(i).bodySize>=19?'中型':'小型';const heroCard=i=>{let own=data.owned.includes(i);return `<button type="button" class="hero-tile ${data.selected===i?'current':''} ${own?'':'locked'}" data-act="detail:${i}" aria-label="${h(i).name}のステータスを見る"><span class="avatar">${h(i).icon}</span><b>${h(i).name}</b><span class="small">Lv.${level(i)} ${own?'':'🔒 未解放'}</span>${data.selected===i?'<span class="badge">✓ 選択中</span>':''}</button>`};
+const AMMO_CAP=[3,3,4,3,2,3,4,3,3,4,3,2,3,4,3,3,4,3,4,2,1];
+const RELOAD_SEC=[1.35, 2.65, 1.35, 1.5, 0.72, 2.95, 1.45, 1.65, 0.78, 2.75, 1.12, 2.25, 0.65, 2.6, 1.5, 1.6, 0.82, 3.1, 1.48, 2.9,3.3];
+
+// キャラクターごとの装備。効果は同じ系統でも倍率や対象がキャラによって異なる。
+const GADGET_EFFECTS=['heal','dash','shield','blast','reload','haste','stealth','drain','supercharge','cleanse'];
+const STAR_EFFECTS=['hp','damage','speed','reload','armor','range','regen','supergain','ammo','execute'];
+const GADGET_TITLES=[
+ ['火炎の応急処置','爆炎ブースト'],['氷の結界','氷晶補給'],['雷光ダッシュ','電圧チャージ'],['自然の恵み','森の守り'],
+ ['影隠れ','影の急襲'],['月光の治癒','月の加護'],['鋼鉄防壁','強化装填'],['流星加速','星屑補給'],
+ ['潮の癒やし','激流の衝撃'],['岩盤シールド','大地の再生'],['野生の疾走','牙の衝撃'],['彗星ダッシュ','天体装填'],
+ ['虹色の疾走','七色の防壁'],['霧の潜伏','霧の回復'],['不死鳥の再生','炎の咆哮'],['機械式装填','オーバークロック'],
+ ['猛毒の隠れ身','毒の吸収'],['星の祝福','星光チャージ'],['石像の防壁','岩の衝撃'],['銀河の転移','宇宙エネルギー'],['呪いの治癒','かぼちゃの守護']
+];
+const STAR_TITLES=[
+ ['灼熱の威力','不屈の炎'],['極寒の射程','氷の集中'],['電撃増幅','雷の加速'],['森の生命','自然回復'],
+ ['影の速度','奇襲の威力'],['月の狙撃','月光回復'],['鋼鉄の体','装甲反射'],['星屑装填','流星の集中'],
+ ['海の生命','激流加速'],['岩石の装甲','遠距離照準'],['野生の回復','牙の威力'],['彗星の射程','加速装填'],
+ ['虹の俊足','虹色の猛攻'],['霧の回復','霧の装甲'],['不死鳥の生命','炎の威力'],['機械の装填','連続射撃'],
+ ['毒牙の威力','毒の再生'],['星の射程','星光の集中'],['巨岩の生命','不動の装甲'],['銀河の射程','宇宙装填'],
+ ['闇夜の強化','かぼちゃの再生']
+];
+const GADGET_TYPES=[
+ ['heal','blast'],['shield','reload'],['dash','supercharge'],['heal','shield'],['stealth','dash'],
+ ['heal','shield'],['shield','reload'],['haste','reload'],['heal','blast'],['shield','heal'],
+ ['haste','blast'],['dash','reload'],['haste','shield'],['stealth','heal'],['heal','blast'],
+ ['reload','haste'],['stealth','drain'],['heal','supercharge'],['shield','blast'],['dash','supercharge'],['heal','shield']
+];
+const STAR_TYPES=[
+ ['damage','hp'],['range','damage'],['damage','speed'],['hp','regen'],['speed','damage'],
+ ['range','regen'],['hp','armor'],['reload','damage'],['hp','speed'],['armor','range'],
+ ['regen','damage'],['range','reload'],['speed','damage'],['regen','armor'],['hp','damage'],
+ ['reload','ammo'],['damage','regen'],['range','supergain'],['hp','armor'],['range','reload'],['damage','regen']
+];
+const GADGET_DESC={heal:'最大HPの35%を即時回復',dash:'4秒間移動速度が45%上昇',shield:'3秒間被ダメージを50%軽減',blast:'周囲の敵にダメージとノックバック',reload:'弾薬を全回復し次の攻撃を強化',haste:'5秒間移動・リロード速度が上昇',stealth:'3秒間草むら外でも敵から見えなくなる',drain:'周囲の敵からHPを吸収',supercharge:'必殺技ゲージを50%獲得',cleanse:'状態異常を解除しHPを回復'};
+const STAR_DESC={hp:'最大HPが15%上昇',damage:'通常攻撃力が12%上昇',speed:'移動速度が12%上昇',reload:'リロードが20%高速化',armor:'受けるダメージを12%軽減',range:'通常攻撃の射程が12%上昇',regen:'自然回復の開始が早まり回復量も増加',supergain:'攻撃時の必殺技ゲージ獲得量が増加',ammo:'最大弾数が1発増加',execute:'HPが低い敵へのダメージ増加'};
+// 既存セーブキーを維持し、装備選択のみ追記。
+data.equipment??={};
+// Purchased and dropped abilities are stored separately from equipment choices.
+// Existing saves retain their previously equipped unlocked abilities.
+data.abilityOwned??={};
+for(const [id,eq] of Object.entries(data.equipment)){
+ if(!eq||typeof eq!=='object')continue;
+ const owned=data.abilityOwned[id]??={gadget:[],star:[]};
+ for(const type of ['gadget','star']){
+  if(!Array.isArray(owned[type]))owned[type]=[];
+  const slot=Number(eq[type]);
+  const threshold=type==='gadget'?7:9;
+  if(Number.isInteger(slot)&&slot>=0&&slot<=1&&(data.levels[id]||1)>=threshold&&!owned[type].includes(slot))owned[type].push(slot);
+ }
+}
+const ABILITY_COST={gadget:1000,star:2000};
+function abilityCollection(i){if(!data.abilityOwned||typeof data.abilityOwned!=='object')data.abilityOwned={};let e=data.abilityOwned[i];if(!e||typeof e!=='object')e=data.abilityOwned[i]={gadget:[],star:[]};for(let t of ['gadget','star'])if(!Array.isArray(e[t]))e[t]=[];return e}
+function hasAbility(i,type,k){return abilityCollection(i)[type].includes(k)}
+function equipment(i){if(!data.equipment||typeof data.equipment!=='object')data.equipment={};let e=data.equipment[i];if(!e||typeof e!=='object')e=data.equipment[i]={gadget:-1,star:-1};return e}
+function equippedGadget(i){let k=Number(equipment(i).gadget);return level(i)>=7&&Number.isInteger(k)&&k>=0&&k<2&&hasAbility(i,'gadget',k)?k:-1}
+function equippedStar(i){let k=Number(equipment(i).star);return level(i)>=9&&Number.isInteger(k)&&k>=0&&k<2&&hasAbility(i,'star',k)?k:-1}
+function starType(i){let n=equippedStar(i);return n<0?null:STAR_TYPES[i][n]}
+function gadgetType(i){let n=equippedGadget(i);return n<0?null:GADGET_TYPES[i][n]}
+let pendingAbilityPurchase=null;
+function gadgetPanel(i){let lv=level(i),eq=equipment(i),own=ownsHero(i);
+ const item=(type,k,name,desc)=>{const need=type==='gadget'?7:9,have=hasAbility(i,type,k),ready=lv>=need;
+ const confirming=pendingAbilityPurchase===`${type}:${i}:${k}`&&!have;
+ const label=confirming?`⚠️ もう一度押して${ABILITY_COST[type]}コインで購入` : !own?'🔒 キャラクター未所持':have&&!ready?`🎁 入手済み・Lv.${need}で使用可能`:!ready?`🔒 Lv.${need}で購入・装備可能`:have?(Number(eq[type])===k?'✓ 装備中':'装備する'):`🪙 ${ABILITY_COST[type]}コインで購入`;
+ return `<button class="ability-option ${(ready&&have&&Number(eq[type])===k)||confirming?'chosen':''}" data-ability-action="${type}:${i}:${k}" ${!own||!ready?'disabled':''}><strong>${type==='gadget'?'🟢':'⭐'} ${name}</strong><span>${desc}</span><small>${label}</small></button>`;};
+ const gadgets=GADGET_TITLES[i].map((name,k)=>item('gadget',k,name,GADGET_DESC[GADGET_TYPES[i][k]])).join('');
+ const stars=STAR_TITLES[i].map((name,k)=>item('star',k,name,STAR_DESC[STAR_TYPES[i][k]])).join('');
+ return `<section class="ability-section"><p class="small">現在 Lv.${lv} ／ 所持コイン 🪙${data.coins}　※未所持の能力は2回タップで購入、所持済みは1回で装備</p><h3>🟢 ガジェット <small>Lv.7で購入・装備可能／1試合3回</small></h3><div class="ability-grid">${gadgets}</div><h3>⭐ スターパワー <small>Lv.9で購入・装備可能／常時発動</small></h3><div class="ability-grid">${stars}</div><p class="small">🎁 ドロップで先に入手した能力は保存され、必要レベルに到達すると無料で装備できます。</p></section>`;
+}
+function maxAmmo(e){return AMMO_CAP[e.id]+(e.star==='ammo'?1:0)}
+function applyStar(e){e.star=e.lv>=9?STAR_TYPES[e.id][(e.ai?e.starIndex:equippedStar(e.id))]:null;
+ if(e.star==='hp'){e.baseMaxhp=Math.round(e.baseMaxhp*1.15);e.maxhp=e.baseMaxhp;e.hp=e.maxhp}
+ if(e.star==='damage'){e.baseDamage=Math.round(e.baseDamage*1.12);e.damage=e.baseDamage}
+ if(e.star==='speed')e.speed*=1.12;
+ if(e.star==='range')e.range*=1.12;
+ e.ammo=maxAmmo(e);
+}
+function useGadget(e){
+ if(!playing||e.dead||e.isBoss||e.gadgetCharges<=0||e.gadgetIndex<0)return false;
+ let type=GADGET_TYPES[e.id][e.gadgetIndex];e.gadgetCharges--;e.gadgetFlash=elapsed+0.7;
+ const wave=(color,r=105)=>effects.push({x:e.x,y:e.y,r:15,max:r,life:28,color});
+ if(type==='heal'){e.hp=Math.min(e.maxhp,e.hp+e.maxhp*.35);wave('#79ffad')}
+ else if(type==='dash'){e.boostUntil=Math.max(e.boostUntil,elapsed+4);wave('#f5df6b')}
+ else if(type==='shield'){e.gadgetShieldUntil=elapsed+3;wave('#8acaff')}
+ else if(type==='blast'){for(const t of entities){if(t===e||t.dead||t.team===e.team||dist(t,e)>155)continue;hit(t,e.damage*1.8,e);let v=norm(t.x-e.x,t.y-e.y),nx=t.x+v.x*65,ny=t.y+v.y*65;if(!blocked(nx,ny,t.r)){t.x=nx;t.y=ny}}wave('#ffae70',160)}
+ else if(type==='reload'){e.ammo=maxAmmo(e);e.reloadProgress=0;e.gadgetDamageUntil=elapsed+5;wave('#ffe685')}
+ else if(type==='haste'){e.boostUntil=Math.max(e.boostUntil,elapsed+5);e.gadgetReloadUntil=elapsed+5;wave('#ffe66a')}
+ else if(type==='stealth'){e.stealthUntil=elapsed+3;e.revealedUntil=0;wave('#a6a0ff')}
+ else if(type==='drain'){for(const t of entities){if(t===e||t.dead||t.team===e.team||dist(t,e)>155)continue;const d=e.damage*1.4;hit(t,d,e);e.hp=Math.min(e.maxhp,e.hp+d*.75)}wave('#a7ff78',155)}
+ else if(type==='supercharge'){e.super=clamp(e.super+50,0,100);wave('#ffeb71')}
+ else if(type==='cleanse'){e.slowUntil=0;e.poisonUntil=0;e.hp=Math.min(e.maxhp,e.hp+e.maxhp*.2);wave('#a7ffdb')}
+ updateGadgetButton();return true;
+}
+function updateGadgetButton(){const b=$('gadgetBtn');if(!b)return;
+ if(!playing||!player){b.disabled=true;return}
+ b.disabled=player.dead||player.gadgetIndex<0||player.gadgetCharges<=0;
+ b.textContent=player.gadgetIndex<0?'🔒':`🟢${player.gadgetCharges}`;
+ b.setAttribute('aria-label',player.gadgetIndex<0?'ガジェットはレベル7で解放':'ガジェット 残り'+player.gadgetCharges+'回');
+}
+
+// Higher-tier drops can unlock a previously unowned character; duplicates are never awarded.
+const DROP_TIERS=[
+ {name:'ノーマル',icon:'🟦',weight:41,min:100,max:200,heroChance:0,abilityChance:0},
+ {name:'レア',icon:'🟩',weight:30,min:220,max:420,heroChance:0,abilityChance:0},
+ {name:'スーパーレア',icon:'🟪',weight:18,min:480,max:800,heroChance:.10,abilityChance:.09},
+ {name:'ウルトラレア',icon:'🟨',weight:9,min:900,max:1500,heroChance:.23,abilityChance:.20},
+ {name:'レジェンド',icon:'🌟',weight:2,min:1800,max:3000,heroChance:.35,abilityChance:.30}
+];
+let currentDropPrize=null,dropStage=0;
+const DROP_COLORS=['#a8d4ff','#8df4a5','#d4a0ff','#ffd36c','#fff5a0'];
+function showDropScreen(){
+ const screen=$('starDropScreen'),content=$('starDropContent');
+ screen.classList.add('open');document.body.classList.add('drop-opening');
+ const tier=currentDropPrize.tier,color=DROP_COLORS[DROP_TIERS.indexOf(tier)]||'#ffe88b';
+ screen.style.setProperty('--drop-color',color);
+ if(dropStage===0){
+  content.innerHTML=`<div class="drop-heading">🌟 スタードロップ</div><div class="drop-subtitle">画面をタップして開封！</div><div class="drop-star" aria-hidden="true">⭐</div><button class="btn orange drop-action" id="dropNext">タップして開ける</button><div class="drop-hint">所持数：${data.drops}個</div>`;
+ }else{
+  const p=currentDropPrize;
+  const heading=p.type==='title'?'限定称号獲得！':p.type==='hero'?'新キャラクター獲得！':p.type==='ability'?(p.abilityType==='gadget'?'ガジェット獲得！':'スターパワー獲得！'):'コイン獲得！';
+  const icon=p.type==='title'?titleById(p.titleId).icon:p.type==='hero'?h(p.id).icon:p.type==='ability'?(p.abilityType==='gadget'?'🟢':'⭐'):'🪙';
+  const title=p.type==='title'?titleById(p.titleId).name:p.type==='hero'?h(p.id).name:p.type==='ability'?p.title:p.amount.toLocaleString('ja-JP')+' コイン';
+  const desc=p.type==='title'?'🏅 レアな称号を獲得！ランク画面で装備するとランキングの名前の横に表示されます。':p.type==='ability'?`対象キャラクター：${h(p.id).icon} ${h(p.id).name}<br>${level(p.id)<p.need?'🔒 Lv.'+p.need+'に到達したら使えます！':'✅ キャラクター詳細から装備できます！'}`:p.type==='hero'?'新しいキャラクターが使用可能になりました！':'コインを受け取りました！';
+  content.innerHTML=`<div class="drop-heading">🎉 開封結果</div><div class="drop-tier">${tier.icon} ${tier.name} スタードロップ</div><div class="drop-prize"><div class="drop-prize-icon">${icon}</div><div class="drop-prize-title">${heading}</div><div class="drop-prize-title" style="color:var(--drop-color);margin-top:9px">${title}</div><p class="drop-prize-desc">${desc}</p></div><button class="btn orange drop-action" id="dropNext">受け取る</button>`;
+ }
+ $('dropNext').focus({preventScroll:true});
+}
+function advanceDrop(){
+ if(!currentDropPrize)return;
+ if(dropStage===0){dropStage=1;showDropScreen();return}
+ $('starDropScreen').classList.remove('open');document.body.classList.remove('drop-opening');currentDropPrize=null;dropStage=0;render();
+}
+$('starDropScreen').addEventListener('click',e=>{if(e.target.closest('#dropNext')||(dropStage===0&&e.target.closest('.drop-star')))advanceDrop()});
+function openDrop(){
+ if(data.drops<=0||currentDropPrize)return;
+ // 抽選に失敗しても所持数が減らないよう、報酬決定後に消費する。
+ let roll=Math.random()*100,tier=DROP_TIERS[0];
+ for(const item of DROP_TIERS){roll-=item.weight;if(roll<0){tier=item;break}}
+ const locked=randomUnlockableHeroIds();
+ let prize={tier,type:'coins',amount:0};
+ const titlePool=tier.name==='レジェンド'?[{id:'eternal',chance:.022},{id:'celestial',chance:.07},{id:'stardust',chance:.17}]:tier.name==='ウルトラレア'?[{id:'stardust',chance:.055}]:[];
+ const titleReward=titlePool.find(t=>!data.unlockedTitles?.[t.id]&&Math.random()<t.chance);
+ if(titleReward){data.unlockedTitles??={};data.unlockedTitles[titleReward.id]=true;prize={tier,type:'title',titleId:titleReward.id};}
+ else if(locked.length&&Math.random()<tier.heroChance){
+   const id=weightedHeroDraw(locked);data.owned.push(id);prize={tier,type:'hero',id};
+ }else{
+   const missing=[];
+   for(const id of data.owned)for(const type of ['gadget','star'])for(let k=0;k<2;k++)if(!hasAbility(id,type,k))missing.push({id,type,k});
+   if(missing.length&&Math.random()<tier.abilityChance){
+    const item=missing[Math.floor(Math.random()*missing.length)];
+    abilityCollection(item.id)[item.type].push(item.k);
+    prize={tier,type:'ability',id:item.id,abilityType:item.type,need:item.type==='gadget'?7:9,title:item.type==='gadget'?GADGET_TITLES[item.id][item.k]:STAR_TITLES[item.id][item.k]};
+   }else{const amount=Math.floor(rand(tier.min,tier.max+1));data.coins+=amount;prize={tier,type:'coins',amount}}
+ }
+ data.drops--;save();currentDropPrize=prize;dropStage=0;render();showDropScreen();
+}
+// Firebaseを唯一の正規セーブ元とする。読み込み前や通信エラー時は書き込み禁止。
+const firebaseConfig={apiKey:'AIzaSyD1faBbY16X12IEH7STJ-FT4xFQ-A0Erjo',authDomain:'ster-arena.firebaseapp.com',databaseURL:'https://ster-arena-default-rtdb.asia-southeast1.firebasedatabase.app/',projectId:'ster-arena',storageBucket:'ster-arena.firebasestorage.app',messagingSenderId:'745991128667',appId:'1:745991128667:web:1264328490906f1b37217e',measurementId:'G-53QWS0PWR4'};
+// Googleサイトの埋め込みに対応：SDKを使わずFirebase公式REST APIを使用する。
+// 認証トークンはメモリのみ。再読み込み後は再ログインが必要。
+let cloudUid=null,cloudReady=false,cloudTimer=null,cloudQueue=Promise.resolve(),cloudGeneration=0,cloudDirty=false;
+let cloudIdToken=null,cloudRefreshToken=null,cloudExpiresAt=0,cloudUserName='';
+const ADMIN_UID='WpwlLr6DFpcBDoOcx1nYvfgOXgW2';const isAdmin=()=>cloudReady&&cloudUid===ADMIN_UID;let adminPanelOpen=false,adminBusy=false;
+// 称号コレクション：条件を満たすと獲得し、装備した1つだけランキングで公開。
+const TITLES=[
+ {id:'admin',name:'管理者',icon:'👑',rarity:'限定',color:'#ffdc69',desc:'運営者専用',test:()=>false},
+ {id:'rookie',name:'はじまりの挑戦者',icon:'🌱',rarity:'ノーマル',color:'#b9d4ed',desc:'最初から所持',test:()=>true},
+ {id:'firstwin',name:'勝利の第一歩',icon:'⚔️',rarity:'ノーマル',color:'#b9d4ed',desc:'1勝する',test:()=>data.wins>=1},
+ {id:'bronze',name:'駆け出しファイター',icon:'🥉',rarity:'レア',color:'#79e6a1',desc:'トロフィー100',test:()=>data.trophies>=100},
+ {id:'tenwins',name:'十戦錬磨',icon:'🔥',rarity:'レア',color:'#79e6a1',desc:'10勝する',test:()=>data.wins>=10},
+ {id:'collector',name:'キャラコレクター',icon:'🧩',rarity:'スーパーレア',color:'#c4a1ff',desc:'10体のキャラを解放',test:()=>data.owned.length>=10},
+ {id:'gold',name:'黄金の闘士',icon:'🏅',rarity:'スーパーレア',color:'#c4a1ff',desc:'トロフィー300',test:()=>data.trophies>=300},
+ {id:'fiftywins',name:'歴戦の英雄',icon:'🛡️',rarity:'ウルトラレア',color:'#ffe17a',desc:'50勝する',test:()=>data.wins>=50},
+ {id:'diamond',name:'ダイヤの覇者',icon:'💎',rarity:'ウルトラレア',color:'#ffe17a',desc:'トロフィー650',test:()=>data.trophies>=650},
+ {id:'pumpkin',name:'ハロウィンの王',icon:'🎃',rarity:'レジェンド',color:'#ff9b4b',desc:'限定キャラ・パンプキンを購入',test:()=>data.pumpkinPurchased===true||data.owned.includes(20)},
+ {id:'master',name:'アリーナの支配者',icon:'👑',rarity:'レジェンド',color:'#ff9b4b',desc:'トロフィー1100',test:()=>data.trophies>=1100},
+ {id:'legend',name:'伝説の星',icon:'🌟',rarity:'ディバイン',color:'#ff79dd',desc:'トロフィー1800',test:()=>data.trophies>=1800},
+ {id:'hundredwins',name:'百戦の伝説',icon:'🐉',rarity:'ディバイン',color:'#ff79dd',desc:'100勝する',test:()=>data.wins>=100},
+ {id:'allheroes',name:'全キャラ制覇',icon:'🏆',rarity:'ディバイン',color:'#ff79dd',desc:'全21キャラを解放',test:()=>data.owned.length>=HEROES.length},
+ {id:'stardust',name:'星屑の旅人',icon:'✨',rarity:'ウルトラレア',color:'#ffe17a',desc:'ウルトラレア以上のスタードロップから低確率',test:()=>false},
+ {id:'celestial',name:'天界の使者',icon:'🪽',rarity:'レジェンド',color:'#ff9b4b',desc:'レジェンドスタードロップから低確率',test:()=>false},
+ {id:'eternal',name:'永遠の星',icon:'🌌',rarity:'ディバイン',color:'#ff79dd',desc:'レジェンドスタードロップから超低確率',test:()=>false}
+];
+const TITLE_RARITY_ORDER=['ノーマル','レア','スーパーレア','ウルトラレア','レジェンド','ディバイン','限定'];
+const sortedTitles=()=>TITLES.filter(t=>t.id!=='admin'||isAdmin()).sort((a,b)=>TITLE_RARITY_ORDER.indexOf(a.rarity)-TITLE_RARITY_ORDER.indexOf(b.rarity));
+const titleById=id=>TITLES.find(t=>t.id===id);
+function unlockTitles(){
+ if(!data.unlockedTitles||typeof data.unlockedTitles!=='object'||Array.isArray(data.unlockedTitles))data.unlockedTitles={};
+ let changed=false;
+ if(isAdmin()&&!data.unlockedTitles.admin){data.unlockedTitles.admin=true;changed=true}
+ if(!isAdmin()&&data.selectedTitle==='admin'){data.selectedTitle='rookie';changed=true}
+ if(!isAdmin()&&data.selectedTitle2){data.selectedTitle2=null;changed=true}
+ if(!data.unlockedTitles.rookie){data.unlockedTitles.rookie=true;changed=true}
+ if(!titleById(data.selectedTitle)||!data.unlockedTitles[data.selectedTitle]){data.selectedTitle='rookie';changed=true}
+ return changed;
+}
+function equippedTitle(){const t=titleById(data.selectedTitle);return t&&data.unlockedTitles?.[t.id]?t:titleById('rookie')}
+function secondTitle(){return isAdmin()&&data.selectedTitle2&&data.selectedTitle2!==data.selectedTitle&&data.unlockedTitles?.[data.selectedTitle2]?titleById(data.selectedTitle2):null}
+function equippedTitlesHTML(){return titleHTML(equippedTitle())+(secondTitle()?titleHTML(secondTitle()):'')}
+function titleHTML(t){return t?`<span style="display:inline-block;margin-left:5px;padding:3px 7px;border:1px solid ${t.color};border-radius:9px;color:${t.color};font-size:12px;font-weight:800;white-space:normal">${t.icon} ${escapeBoard(t.name)}</span>`:''}
+function titleCollectionHTML(){unlockTitles();const total=TITLES.filter(t=>data.unlockedTitles[t.id]&&(t.id!=='admin'||isAdmin())).length;return `<section class="panel"><h2>🏅 称号コレクション（${total}種類）</h2><p class="muted">${isAdmin()?'管理者は称号を2つまで装備できます。':'所持称号から1つ装備できます。'}</p><p>装備中：${equippedTitlesHTML()}</p><div class="grid">${sortedTitles().map(t=>{const own=!!data.unlockedTitles[t.id],sel=data.selectedTitle===t.id,sel2=isAdmin()&&data.selectedTitle2===t.id;return `<div class="card" style="border-color:${own?t.color:'#52617e'};opacity:${own?1:.68}"><div style="font-size:23px">${t.icon}</div><div style="font-weight:800;color:${own?t.color:'#aab4c7'}">${own?escapeBoard(t.name):'🔒 '+escapeBoard(t.name)}</div><p class="small">${t.rarity} ／ ${escapeBoard(t.desc)}</p>${own?(sel?'<button class="btn green" disabled>✓ 1枠目</button>':btn('1枠目に装備','equipTitle:'+t.id,'green'))+(isAdmin()?(sel2?btn('2枠目から外す','equipTitle2:none'):sel?'':btn('2枠目に装備','equipTitle2:'+t.id)):''):'<span class="small">未獲得</span>'}</div>`}).join('')}</div></section>`}
+// ミッションは受け取り式。既存の称号所持状態は維持し、報酬の二重受取を防ぐ。
+const MISSIONS=[
+ {id:'firstwin',title:'初勝利',desc:'バトルで1勝する',test:()=>data.wins>=1,reward:{title:'firstwin',coins:100}},
+ {id:'bronze',title:'シルバーへの道',desc:'トロフィー100到達',test:()=>data.trophies>=100,reward:{title:'bronze',drops:1}},
+ {id:'tenwins',title:'十戦錬磨',desc:'10勝する',test:()=>data.wins>=10,reward:{title:'tenwins',coins:350}},
+ {id:'collector',title:'仲間を集めよう',desc:'キャラ10体解放',test:()=>data.owned.length>=10,reward:{title:'collector',drops:2}},
+ {id:'gold',title:'黄金の闘士',desc:'トロフィー300到達',test:()=>data.trophies>=300,reward:{title:'gold',coins:600}},
+ {id:'fiftywins',title:'歴戦の英雄',desc:'50勝する',test:()=>data.wins>=50,reward:{title:'fiftywins',drops:4}},
+ {id:'diamond',title:'ダイヤの覇者',desc:'トロフィー650到達',test:()=>data.trophies>=650,reward:{title:'diamond',coins:1200}},
+ {id:'pumpkin',title:'ハロウィンの王',desc:'ショップでパンプキンを購入',test:()=>data.pumpkinPurchased===true||data.owned.includes(20),reward:{title:'pumpkin',drops:3}},
+ {id:'master',title:'アリーナの支配者',desc:'トロフィー1100到達',test:()=>data.trophies>=1100,reward:{title:'master',coins:2000}},
+ {id:'legend',title:'伝説の星',desc:'トロフィー1800到達',test:()=>data.trophies>=1800,reward:{title:'legend',drops:8}},
+ {id:'hundredwins',title:'百戦の伝説',desc:'100勝する',test:()=>data.wins>=100,reward:{title:'hundredwins',coins:3000}},
+ {id:'allheroes',title:'全キャラ制覇',desc:'全21キャラを解放（パンプキンはショップ限定）',test:()=>data.owned.length>=HEROES.length,reward:{title:'allheroes',drops:10}},
+ {id:'matches5',title:'アリーナ入門',desc:'5試合プレイ',test:()=>data.matches>=5,reward:{coins:300}},
+ {id:'matches20',title:'戦いの経験',desc:'20試合プレイ',test:()=>data.matches>=20,reward:{drops:3}},
+ {id:'wins3',title:'新たな仲間',desc:'3勝する',test:()=>data.wins>=3,reward:{hero:true}},
+ {id:'wins15',title:'特殊能力の発見',desc:'15勝する',test:()=>data.wins>=15,reward:{ability:'gadget'}},
+ {id:'wins30',title:'星の力',desc:'30勝する',test:()=>data.wins>=30,reward:{ability:'star'}},
+ {id:'trophies500',title:'宝の山',desc:'トロフィー500到達',test:()=>data.trophies>=500,reward:{coins:1000,drops:2}}
+];
+function missionClaims(){if(!data.claimedMissions||typeof data.claimedMissions!=='object'||Array.isArray(data.claimedMissions))data.claimedMissions={};return data.claimedMissions}
+function missionRewardText(r){const v=[];if(r.title){const t=titleById(r.title);v.push('🏅 '+t.name)}if(r.coins)v.push('🪙 '+r.coins+'コイン');if(r.drops)v.push('🌟 '+r.drops+'個');if(r.hero)v.push('🎁 ランダム未解放キャラ（パンプキン除外）');if(r.ability)v.push(r.ability==='gadget'?'🟢 ランダムガジェット':'⭐ ランダムスターパワー');return v.join(' ＋ ')}
+function claimMission(id){
+ if(!cloudReady)return alert('ログインしてから受け取ってください');
+ const m=MISSIONS.find(x=>x.id===id);if(!m||missionClaims()[id])return;
+ if(!m.test())return alert('まだミッションを達成していません');
+ const r=m.reward;let message=[];
+ // 抽選対象が残っていない場合はコインで代替。限定キャラは抽選対象外。
+ if(r.hero){const pool=randomUnlockableHeroIds();if(pool.length){const hero=weightedHeroDraw(pool);data.owned.push(hero);message.push('🎁 '+h(hero).name)}else{data.coins+=800;message.push('🪙 800コイン（全キャラ解放済み）')}}
+ if(r.ability){const pool=[];for(const hero of data.owned)for(let k=0;k<2;k++)if(!hasAbility(hero,r.ability,k))pool.push({hero,k});if(pool.length){const a=pool[Math.floor(Math.random()*pool.length)];abilityCollection(a.hero)[r.ability].push(a.k);message.push((r.ability==='gadget'?'🟢 ':'⭐ ')+(r.ability==='gadget'?GADGET_TITLES[a.hero][a.k]:STAR_TITLES[a.hero][a.k]))}else{data.coins+=600;message.push('🪙 600コイン（能力取得済み）')}}
+ if(r.title){data.unlockedTitles??={};data.unlockedTitles[r.title]=true;message.push('🏅 '+titleById(r.title).name)}
+ if(r.coins){data.coins+=r.coins;message.push('🪙 '+r.coins+'コイン')}
+ if(r.drops){data.drops+=r.drops;message.push('🌟 '+r.drops+'個')}
+ missionClaims()[id]=true;save();render();alert('🎉 ミッション達成報酬を受け取りました！\n'+message.join(' / '));
+}
+function missionsHTML(){const claims=missionClaims(),done=MISSIONS.filter(m=>claims[m.id]).length;return `<section class="panel"><h2>📜 ミッション（${done}/${MISSIONS.length}）</h2><p class="muted">条件を達成したら「受け取る」を押して報酬を獲得！称号・コイン・スタードロップ・キャラ・特殊能力などが手に入ります。称号はランク画面から装備できます。</p><div class="grid">${MISSIONS.map(m=>{const claimed=!!claims[m.id],ready=m.test();return `<div class="card" style="text-align:left;border-color:${claimed?'#507d65':ready?'#d7b75b':'#52617e'}"><b>${claimed?'✅ ':ready?'🎉 ':'📜 '}${m.title}</b><p class="small">${m.desc}</p><p class="small">報酬：${missionRewardText(m.reward)}</p>${claimed?'<button class="btn" disabled>✓ 受け取り済み</button>':ready?btn('🎁 報酬を受け取る','claimMission:'+m.id,'green'):'<button class="btn" disabled>🔒 未達成</button>'}</div>`}).join('')}</div></section>`}
+// オンライン順位：セーブデータとは別の公開プロフィールのみ共有する。
+let leaderboardEntries=[],leaderboardState='読み込み前',leaderboardLoading=false,leaderboardRequest=0,leaderboardPublished=null;
+const escapeBoard=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+async function leaderboardAPI(method,uid,payload){
+ const token=await getCloudToken();
+ const path=uid?'/leaderboard/'+encodeURIComponent(uid)+'.json':'/leaderboard.json';
+ const url=firebaseConfig.databaseURL.replace(/\/$/,'')+path+'?auth='+encodeURIComponent(token);
+ const opts={method,headers:{'Content-Type':'application/json'}};
+ if(method==='PUT')opts.body=JSON.stringify(payload);
+ return firebaseRequest(url,opts);
+}
+async function publishLeaderboard(){
+ if(!cloudReady||!cloudUid)return;
+ const uid=cloudUid,gen=cloudGeneration,username=cloudUserName,trophies=Math.max(0,Math.floor(Number(data.trophies)||0));
+ unlockTitles();const title=equippedTitle().id,title2=secondTitle()?.id||null;
+ if(leaderboardPublished===uid+':'+trophies+':'+title+':'+title2)return;
+ try{
+  await leaderboardAPI('PUT',uid,{username,trophies,title,...(isAdmin()&&title2?{title2}:{})});
+  if(gen===cloudGeneration&&uid===cloudUid)leaderboardPublished=uid+':'+trophies+':'+title+':'+title2;
+ }catch(e){console.warn('ランキング登録失敗',e);if(tab==='ranking'){leaderboardState='登録エラー：'+e.message;render()}}
+}
+async function loadLeaderboard(){
+ if(!cloudReady||!cloudUid)return;
+ const request=++leaderboardRequest;leaderboardLoading=true;leaderboardState='ランキングを読み込み中…';
+ if(tab==='ranking')render();
+ try{
+  await publishLeaderboard();
+  const raw=await leaderboardAPI('GET');
+  if(request!==leaderboardRequest||!cloudReady)return;
+  leaderboardEntries=Object.entries(raw&&typeof raw==='object'?raw:{}).filter(([uid,v])=>v&&typeof v==='object'&&typeof v.username==='string'&&/^[a-z0-9_-]{3,20}$/.test(v.username)&&Number.isSafeInteger(v.trophies)&&v.trophies>=0).map(([uid,v])=>({uid,username:v.username,trophies:v.trophies,title:typeof v.title==='string'&&titleById(v.title)&& (v.title!=='admin'||uid===ADMIN_UID)?v.title:null,title2:uid===ADMIN_UID&&typeof v.title2==='string'&&titleById(v.title2)?v.title2:null})).sort((a,b)=>b.trophies-a.trophies||a.username.localeCompare(b.username));
+  leaderboardState=leaderboardEntries.length?'更新完了':'まだランキング登録者がいません';
+ }catch(e){if(request!==leaderboardRequest)return;leaderboardState='読み込みエラー：'+e.message}
+ finally{if(request===leaderboardRequest){leaderboardLoading=false;if(tab==='ranking')render()}}
+}
+function leaderboardHTML(){
+ const me=leaderboardEntries.findIndex(x=>x.uid===cloudUid);
+ const rows=leaderboardEntries.slice(0,100).map((x,i)=>`<div class="card" style="display:flex;align-items:center;gap:10px;margin:7px 0;padding:10px;${x.uid===cloudUid?'border:2px solid #facc15;':''}"><b style="min-width:45px">${i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)+'位'}</b><span style="flex:1;overflow-wrap:anywhere">${escapeBoard(x.username)}${x.uid===cloudUid?'（あなた）':''}${titleHTML(titleById(x.title))}${x.uid===ADMIN_UID&&x.title2!==x.title?titleHTML(titleById(x.title2)):''}</span><b>🏆 ${x.trophies}</b></div>`).join('');
+ return `<section class="panel"><h2>🌐 オンライントロフィーランキング</h2><p class="muted">ログイン中のプレイヤーをトロフィー数順に表示（上位100人）。</p><p>自分の順位：<strong>${me>=0?(me+1)+'位':'未登録'}</strong> ／ 自分のトロフィー：🏆 ${data.trophies}</p>${btn(leaderboardLoading?'⏳ 読み込み中…':'🔄 ランキング更新','refreshLeaderboard')}<p class="small">${escapeBoard(leaderboardState)}</p>${rows||'<p class="muted">ランキングのデータはまだありません。</p>'}<p class="small">※ユーザー名とトロフィー数がほかのプレイヤーに公開されます。ランキングの表示にはFirebaseの専用ルール設定が必要です。</p></section>`;
+}
+
+// 全プレイヤーが閲覧できる公開掲示板。投稿は各ユーザーの領域に保存する。
+let feedbackSending=false,feedbackLastSent=0,feedbackStatus='',feedbackLoading=false,feedbackPosts=[],feedbackRequest=0,feedbackBusy=false;
+const feedbackKinds={request:'✨ 新機能・要望',balance:'⚖️ バランス調整',bug:'🛠️ 不具合報告',other:'💬 その他'};
+const boardKey=(uid,id)=>encodeURIComponent(uid)+'/'+encodeURIComponent(id);
+const boardPath=(root,uid,id)=>firebaseConfig.databaseURL.replace(/\/$/,'')+'/'+root+'/'+boardKey(uid,id);
+function newBoardId(){return 'p'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,12)}
+async function boardCall(method,path,payload){const token=await getCloudToken();const url=(path.endsWith('.json')?path:path+'.json')+'?auth='+encodeURIComponent(token);return firebaseRequest(url,{method,headers:{'Content-Type':'application/json'},...(payload===undefined?{}:{body:JSON.stringify(payload)})})}
+function feedbackListHTML(){
+ const rows=feedbackPosts.slice(0,100).map(p=>{
+  const mine=p.uid===cloudUid,likes=p.likes||{},liked=!!likes[cloudUid],replies=p.replies||[];
+  const replyRows=replies.map(r=>`<div class="card" style="margin:6px 0 6px 16px;padding:9px;background:#111c37"><div class="small"><b>↳ ${escapeBoard(r.username)}</b> ・ ${new Date(r.createdAt).toLocaleString('ja-JP')}${r.uid===cloudUid?` <button type="button" class="btn" style="padding:4px 7px" data-act="deleteReply" data-owner="${escapeBoard(p.uid)}" data-post="${escapeBoard(p.id)}" data-replyuid="${escapeBoard(r.uid)}" data-replyid="${escapeBoard(r.id)}">削除</button>`:''}</div><p style="white-space:pre-wrap;overflow-wrap:anywhere">${escapeBoard(r.message)}</p></div>`).join('');
+  return `<div class="card" style="margin:10px 0;text-align:left;overflow-wrap:anywhere"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><b>👤 ${escapeBoard(p.username)}</b><span class="small">${new Date(p.createdAt).toLocaleString('ja-JP')}</span></div><p class="small">${feedbackKinds[p.category]}</p><p style="white-space:pre-wrap">${escapeBoard(p.message)}</p><div style="display:flex;gap:7px;flex-wrap:wrap;align-items:center"><button type="button" class="btn" data-act="likeFeedback" data-owner="${escapeBoard(p.uid)}" data-post="${escapeBoard(p.id)}">${liked?'❤️ いいね済み':'🤍 いいね'} ${Object.keys(likes).length}</button>${mine?`<button type="button" class="btn red" data-act="deleteFeedback" data-owner="${escapeBoard(p.uid)}" data-post="${escapeBoard(p.id)}">🗑️ 投稿を削除</button>`:''}</div><div style="margin-top:10px"><b>💬 返信（${replies.length}件）</b>${replyRows}<div style="display:flex;gap:6px;flex-wrap:wrap"><input class="feedback-input" style="flex:1;min-width:150px;margin:5px 0" maxlength="300" placeholder="返信を入力（1〜300文字）" id="reply-${p.uid}-${p.id}"><button type="button" class="btn" data-act="replyFeedback" data-owner="${escapeBoard(p.uid)}" data-post="${escapeBoard(p.id)}">返信する</button></div></div></div>`;
+ }).join('');
+ return `<h3>📢 みんなの投稿（新着順・最大100件）</h3><p class="small">${escapeBoard(feedbackLoading?'読み込み中…':feedbackStatus)}</p>${rows||(!feedbackLoading?'<p class="muted">まだ投稿がありません。</p>':'')}`;
+}
+function feedbackHTML(){
+ return `<section class="panel"><h2>💬 みんなのフィードバック掲示板</h2><p class="muted">要望・改善案・不具合報告を共有し、返信やいいねができます。</p><label for="feedbackCategory">種類</label><select class="feedback-input" id="feedbackCategory"><option value="request">✨ 新機能・要望</option><option value="balance">⚖️ バランス調整</option><option value="bug">🛠️ 不具合報告</option><option value="other">💬 その他</option></select><label for="feedbackText">内容（10〜500文字）</label><textarea class="feedback-input" id="feedbackText" rows="5" minlength="10" maxlength="500" placeholder="例：〇〇の攻撃力を少し上げてほしいです。理由は…" style="resize:vertical"></textarea><p class="feedback-hint">投稿と返信は全プレイヤーに公開されます。個人情報やパスワードを書かず、相手を傷つける投稿は避けてください。自分の投稿・返信は削除できます。</p><button type="button" class="btn green" data-act="sendFeedback" id="sendFeedbackButton" ${feedbackSending?'disabled':''}>${feedbackSending?'⏳ 投稿中…':'📨 掲示板に投稿'}</button><p class="feedback-status" id="feedbackStatus" role="status"></p></section><section class="panel"><button class="btn" type="button" data-act="refreshFeedback">🔄 投稿を更新</button><div id="feedbackList">${feedbackListHTML()}</div></section>`;
+}
+async function loadFeedback(){
+ if(!cloudReady||!cloudUid)return;
+ const req=++feedbackRequest,gen=cloudGeneration;feedbackLoading=true;
+ const target=$('feedbackList');if(target)target.innerHTML=feedbackListHTML();
+ try{
+  const base=firebaseConfig.databaseURL.replace(/\/$/,'');
+  const [raw,allLikes,allReplies]=await Promise.all(['feedback','feedbackLikes','feedbackReplies'].map(root=>boardCall('GET',base+'/'+root+'.json')));
+  if(req!==feedbackRequest||gen!==cloudGeneration)return;
+  const entries=[];
+  for(const [uid,posts] of Object.entries(raw&&typeof raw==='object'?raw:{})){
+   if(!posts||typeof posts!=='object')continue;
+   for(const [id,p] of Object.entries(posts)){
+    if(!p||typeof p!=='object'||typeof p.username!=='string'||typeof p.message!=='string'||!feedbackKinds[p.category]||!Number.isFinite(p.createdAt))continue;
+    const likeData=allLikes?.[uid]?.[id];const likes=likeData&&typeof likeData==='object'?likeData:{};
+    const replyData=allReplies?.[uid]?.[id];const replies=[];
+    if(replyData&&typeof replyData==='object')for(const [replyUid,group] of Object.entries(replyData)){
+     if(!group||typeof group!=='object')continue;
+     for(const [replyId,r] of Object.entries(group))if(r&&typeof r.username==='string'&&typeof r.message==='string'&&Number.isFinite(r.createdAt))replies.push({...r,uid:replyUid,id:replyId});
+    }
+    replies.sort((a,b)=>a.createdAt-b.createdAt);
+    entries.push({...p,uid,id,likes,replies:replies.slice(-100)});
+   }
+  }
+  feedbackPosts=entries.sort((a,b)=>b.createdAt-a.createdAt).slice(0,100);
+  feedbackStatus='投稿を更新しました（'+feedbackPosts.length+'件表示）';
+ }catch(e){if(req===feedbackRequest)feedbackStatus='読み込みエラー：'+e.message+'（HTTP 401/403ならFirebaseルールを確認）'}
+ finally{if(req===feedbackRequest){feedbackLoading=false;const list=$('feedbackList');if(list)list.innerHTML=feedbackListHTML()}}
+}
+async function sendFeedback(){
+ if(feedbackSending)return;
+ const input=$('feedbackText'),category=$('feedbackCategory');if(!input||!category)return;
+ const message=input.value.trim(),kind=category.value,status=$('feedbackStatus');
+ if(!cloudReady||!cloudUid){if(status)status.textContent='ログインしてから投稿してください。';return}
+ if(message.length<10||message.length>500){if(status)status.textContent='内容は10〜500文字で入力してください。';return}
+ if(!feedbackKinds[kind])return;
+ if(Date.now()-feedbackLastSent<30000){if(status)status.textContent='連続投稿は30秒以上あけてください。';return}
+ feedbackSending=true;const button=$('sendFeedbackButton');if(button){button.disabled=true;button.textContent='⏳ 投稿中…'}
+ const uid=cloudUid,gen=cloudGeneration;
+ try{
+  await boardCall('PUT',boardPath('feedback',uid,newBoardId()),{username:cloudUserName,category:kind,message,createdAt:Date.now()});
+  if(cloudUid!==uid||cloudGeneration!==gen)return;
+  feedbackLastSent=Date.now();input.value='';if(status)status.textContent='✅ 掲示板に投稿しました！';await loadFeedback();
+ }catch(e){if(status)status.textContent='投稿できませんでした：'+e.message+'。HTTP 401/403ならFirebaseルール、Failed to fetchならネットワークや埋め込み環境を確認してください。'}
+ finally{feedbackSending=false;const b=$('sendFeedbackButton');if(b){b.disabled=false;b.textContent='📨 掲示板に投稿'}}
+}
+async function feedbackAction(action,button){
+ if(feedbackBusy||!cloudReady||!cloudUid)return;
+ const owner=button.dataset.owner,id=button.dataset.post,post=feedbackPosts.find(p=>p.uid===owner&&p.id===id);
+ if(!post)return;
+ const base=firebaseConfig.databaseURL.replace(/\/$/,'');
+ let method,path,payload;
+ if(action==='likeFeedback'){
+  path=boardPath('feedbackLikes',owner,id)+'/'+encodeURIComponent(cloudUid);
+  method=post.likes?.[cloudUid]?'DELETE':'PUT';if(method==='PUT')payload=true;
+ }else if(action==='replyFeedback'){
+  const input=document.getElementById('reply-'+owner+'-'+id);const message=input?.value.trim()||'';
+  if(message.length<1||message.length>300)return alert('返信は1〜300文字で入力してください。');
+  method='PUT';path=boardPath('feedbackReplies',owner,id)+'/'+encodeURIComponent(cloudUid)+'/'+newBoardId();
+  payload={username:cloudUserName,message,createdAt:Date.now()};
+ }else if(action==='deleteFeedback'){
+  if(owner!==cloudUid)return;
+  if(button.dataset.confirmDelete!=='yes'){button.dataset.confirmDelete='yes';button.textContent='⚠️ もう一度押すと投稿を削除';button.title='もう一度押すと削除します';return;}
+  method='DELETE';path=boardPath('feedback',owner,id);
+ }else if(action==='deleteReply'){
+  const replyUid=button.dataset.replyuid,replyId=button.dataset.replyid;
+  if(replyUid!==cloudUid)return;
+  if(button.dataset.confirmDelete!=='yes'){button.dataset.confirmDelete='yes';button.textContent='⚠️ もう一度押すと返信を削除';button.title='もう一度押すと削除します';return;}
+  method='DELETE';path=boardPath('feedbackReplies',owner,id)+'/'+encodeURIComponent(replyUid)+'/'+encodeURIComponent(replyId);
+ }else return;
+ feedbackBusy=true;button.disabled=true;
+ try{await boardCall(method,path,payload);await loadFeedback()}
+ catch(e){alert('操作に失敗しました：'+e.message+'。Firebaseルールを確認してください。')}
+ finally{feedbackBusy=false;button.disabled=false}
+}
+const cloudStatus=msg=>{$('cloudStatus').textContent=msg};
+const cloudMessage=msg=>{$('cloudMessage').textContent=msg};
+const cloudButtons=disabled=>{['cloudLogin','cloudRegister'].forEach(id=>$(id).disabled=disabled)};
+// Realtime Databaseは空オブジェクト（levels:{}など）を保存しないため、省略可能項目は初期値で補う。
+// 重要な値の不正は拒否し、クラウドを勝手に初期化・上書きしない。
+// Firebase RESTは配列を数字キーのオブジェクトとして返す場合がある。
+// 既存のセーブを破壊しないよう、必須情報を確認してから不足項目のみ補完する。
+const cloudArray=v=>Array.isArray(v)?v.filter(x=>x!==null&&x!==undefined):(v&&typeof v==='object'&&!Array.isArray(v)&&Object.keys(v).every(k=>/^(0|[1-9]\d*)$/.test(k))?Object.keys(v).sort((a,b)=>Number(a)-Number(b)).map(k=>v[k]).filter(x=>x!==null&&x!==undefined):null);
+const saveIssues=d=>{
+ if(!d||typeof d!=='object'||Array.isArray(d))return ['ルートがオブジェクトではありません'];
+ const errors=[];
+ const owned=cloudArray(d.owned);
+ if(!owned||!owned.length||!owned.every(i=>(Number.isInteger(i)||typeof i==='string'&&/^\d+$/.test(i))&&Number(i)>=0&&Number(i)<HEROES.length))errors.push('owned（所持キャラ）');
+ if(typeof d.coins!=='number'||!Number.isFinite(d.coins)||d.coins<0)errors.push('coins（コイン）');
+ if(d.trophies!==undefined&&(typeof d.trophies!=='number'||!Number.isFinite(d.trophies)))errors.push('trophies（トロフィー）');
+ if(d.selected!==undefined&&(!Number.isInteger(d.selected)||d.selected<0||d.selected>=HEROES.length))errors.push('selected（選択キャラ）');
+ if(d.levels!==undefined&&d.levels!==null&&(typeof d.levels!=='object'))errors.push('levels（レベル）');
+ return errors;
+};
+const validateSave=d=>saveIssues(d).length===0;
+const normalizeSave=d=>{
+ const x={...freshData(),...d};
+ // Firebaseは空のオブジェクトを省略する。ログイン時に必ず再生成する。
+ x.abilityOwned=(d.abilityOwned&&typeof d.abilityOwned==='object'&&!Array.isArray(d.abilityOwned))?d.abilityOwned:{};
+ x.equipment=(d.equipment&&typeof d.equipment==='object'&&!Array.isArray(d.equipment))?d.equipment:{};
+ x.drops=Number.isInteger(d.drops)&&d.drops>=0?d.drops:0;
+ x.unlockedTitles=(d.unlockedTitles&&typeof d.unlockedTitles==='object'&&!Array.isArray(d.unlockedTitles))?d.unlockedTitles:{};
+ x.selectedTitle=typeof d.selectedTitle==='string'?d.selectedTitle:'rookie';
+ x.selectedTitle2=typeof d.selectedTitle2==='string'?d.selectedTitle2:null;
+ x.claimedMissions=(d.claimedMissions&&typeof d.claimedMissions==='object'&&!Array.isArray(d.claimedMissions))?d.claimedMissions:{};
+ x.redeemedCodes=(d.redeemedCodes&&typeof d.redeemedCodes==='object'&&!Array.isArray(d.redeemedCodes))?d.redeemedCodes:{};
+ x.levels=(d.levels&&typeof d.levels==='object')?Object.fromEntries(Object.entries(d.levels).filter(([k,v])=>/^(0|[1-9]\d*)$/.test(k)&&Number.isInteger(v)&&v>=1&&v<=20)):{};
+ x.owned=[...new Set((cloudArray(d.owned)||[]).map(i=>typeof i==='string'&&/^\d+$/.test(i)?Number(i):i).filter(i=>Number.isInteger(i)&&i>=0&&i<HEROES.length))];
+ if(d.pumpkinPurchased===true&&!x.owned.includes(20))x.owned.push(20);
+ x.pumpkinPurchased=x.owned.includes(20);
+ x.selected=Number.isInteger(d.selected)&&x.owned.includes(d.selected)?d.selected:x.owned[0];
+ return x;
+};
+const saveLocal=()=>{try{localStorage.setItem(KEY,JSON.stringify(data));sessionStorage.setItem(KEY,JSON.stringify(data))}catch(e){console.warn('ローカル保存不可:',e)}};
+async function firebaseRequest(url,options={}){
+ let response;
+ try{response=await fetch(url,{...options,cache:'no-store'})}catch(e){throw Error('通信できません。ネットワークまたはGoogleサイトの埋め込み制限を確認してください（'+e.message+'）')}
+ let result;try{result=await response.json()}catch(e){throw Error('サーバーからの応答を読み取れません（HTTP '+response.status+'）')}
+ if(!response.ok){const code=result?.error?.message||('HTTP '+response.status);const descriptions={EMAIL_EXISTS:'そのユーザー名は既に使用されています。',INVALID_LOGIN_CREDENTIALS:'ユーザー名またはパスワードが違います。',EMAIL_NOT_FOUND:'ユーザー名またはパスワードが違います。',INVALID_PASSWORD:'ユーザー名またはパスワードが違います。',OPERATION_NOT_ALLOWED:'Firebase Authenticationでメール/パスワード認証を有効にしてください。',PERMISSION_DENIED:'Realtime Databaseのセキュリティルールを確認してください。',TOO_MANY_ATTEMPTS_TRY_LATER:'試行回数が多すぎます。時間をおいてください。'};throw Error(descriptions[code]||code)}
+ return result;
+}
+async function getCloudToken(){
+ if(!cloudIdToken||!cloudRefreshToken)throw Error('ログインし直してください。');
+ if(Date.now()<cloudExpiresAt-60000)return cloudIdToken;
+ const body=new URLSearchParams({grant_type:'refresh_token',refresh_token:cloudRefreshToken});
+ const r=await firebaseRequest('https://securetoken.googleapis.com/v1/token?key='+encodeURIComponent(firebaseConfig.apiKey),{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:body.toString()});
+ cloudIdToken=r.id_token;cloudRefreshToken=r.refresh_token;cloudExpiresAt=Date.now()+Number(r.expires_in||3600)*1000;return cloudIdToken;
+}
+async function cloudDatabase(method,uid,payload){
+ const token=await getCloudToken();
+ const url=firebaseConfig.databaseURL.replace(/\/$/,'')+'/users/'+encodeURIComponent(uid)+'/save.json?auth='+encodeURIComponent(token);
+ const options={method,headers:{'Content-Type':'application/json'}};
+ if(method==='PUT')options.body=JSON.stringify(payload);
+ return firebaseRequest(url,options);
+}
+const flushCloud=()=>{
+ if(!cloudReady||!cloudUid)return Promise.resolve(false);
+ if(cloudTimer){clearTimeout(cloudTimer);cloudTimer=null}
+ if(!cloudDirty)return cloudQueue;
+ const uid=cloudUid,gen=cloudGeneration,payload=JSON.parse(JSON.stringify(data));
+ cloudDirty=false;cloudStatus('☁️ 保存中…');
+ cloudQueue=cloudQueue.catch(()=>{}).then(async()=>{
+  if(!cloudReady||uid!==cloudUid||gen!==cloudGeneration)return false;
+  try{await cloudDatabase('PUT',uid,payload);if(uid===cloudUid&&gen===cloudGeneration)cloudStatus('☁️ 保存済み');if(uid===cloudUid&&gen===cloudGeneration)publishLeaderboard();return true}
+  catch(e){if(uid===cloudUid&&gen===cloudGeneration){cloudDirty=true;cloudStatus('⚠️ クラウド保存失敗：バックアップを作成してください');cloudMessage('保存エラー：'+e.message)}console.error('Firebase保存エラー',e);return false}
+ });return cloudQueue;
+};
+const save=()=>{unlockTitles();saveLocal();if(!cloudReady||!cloudUid)return;cloudDirty=true;cloudStatus('☁️ 保存待ち…');clearTimeout(cloudTimer);cloudTimer=setTimeout(()=>flushCloud(),600)};
+$('cloudSync').onclick=async()=>{if(!cloudReady)return alert('ログインしてから保存してください');if(!cloudDirty)cloudDirty=true;const ok=await flushCloud();if(!ok)alert('保存できませんでした。Firebaseのルールと接続を確認してください。')};
+$('cloudLogout').onclick=async()=>{
+ if(cloudReady&&cloudDirty){const ok=await flushCloud();if(!ok&&!confirm('クラウド保存に失敗しました。ログアウトしますか？'))return}
+ ++cloudGeneration;++leaderboardRequest;leaderboardEntries=[];leaderboardPublished=null;cloudReady=false;cloudUid=null;adminPanelOpen=false;cloudIdToken=null;cloudRefreshToken=null;cloudExpiresAt=0;cloudDirty=false;clearTimeout(cloudTimer);data=freshData();render();$('cloudGate').classList.remove('hidden');cloudStatus('☁️ ログイン待ち');cloudMessage('ログアウトしました。ログインまたは新規登録してください。');
+};
+async function cloudLoad(uid,username){
+ const gen=++cloudGeneration;++leaderboardRequest;leaderboardEntries=[];leaderboardPublished=null;cloudReady=false;cloudUid=null;clearTimeout(cloudTimer);cloudDirty=false;$('cloudGate').classList.remove('hidden');cloudMessage('☁️ セーブデータを読み込んでいます…');cloudStatus('☁️ 読み込み中…');
+ try{
+  const remote=await cloudDatabase('GET',uid);
+  if(gen!==cloudGeneration)return;
+  if(remote!==null&&!validateSave(remote)){const fields=Object.keys(remote&&typeof remote==='object'?remote:{}).join(', ');throw Error('クラウドセーブの確認が必要です：'+saveIssues(remote).join(' / ')+'。保存項目：'+fields+'。データは上書きしていません。')}
+  data=remote===null?freshData():normalizeSave(remote);cloudUid=uid;cloudReady=true;const newlyUnlocked=unlockTitles();if(isAdmin()){data.unlockedTitles.admin=true;}saveLocal();if(newlyUnlocked&&remote!==null){cloudDirty=true;setTimeout(()=>{if(cloudReady&&cloudUid===uid)save()},1000)}
+  if(remote===null){cloudDirty=true;const ok=await flushCloud();if(!ok){cloudReady=false;cloudUid=null;throw Error('初期セーブをクラウドに保存できませんでした。ルールを確認してください。')}}
+  render();setTimeout(()=>claimAdminGifts(),1200);$('cloudGate').classList.add('hidden');cloudStatus('☁️ '+username+'：読み込み完了');cloudMessage('');loadLeaderboard(); // ログイン直後にFirebaseからランキングを自動復元
+ }catch(e){cloudReady=false;cloudUid=null;cloudMessage('読み込みに失敗しました：'+e.message+'\nFirebaseのルールと接続を確認してください。');cloudStatus('⚠️ クラウド読み込み失敗');console.error(e)}
+}
+async function cloudSubmit(register){
+ const username=$('cloudUsername').value.trim().toLowerCase(),password=$('cloudPassword').value;
+ if(!/^[a-z0-9_-]{3,20}$/.test(username)||password.length<6){cloudMessage('ユーザー名は半角英数字・_・- の3〜20文字、パスワードは6文字以上で入力してください。');return}
+ const email=username+'@players.ster-arena.example.com';cloudButtons(true);cloudMessage('認証しています…');
+ try{
+  const action=register?'signUp':'signInWithPassword';
+  const url='https://identitytoolkit.googleapis.com/v1/accounts:'+action+'?key='+encodeURIComponent(firebaseConfig.apiKey);
+  const r=await firebaseRequest(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password,returnSecureToken:true})});
+  cloudIdToken=r.idToken;cloudRefreshToken=r.refreshToken;cloudExpiresAt=Date.now()+Number(r.expiresIn||3600)*1000;cloudUserName=username;$('cloudPassword').value='';
+  await cloudLoad(r.localId,username);
+ }catch(e){cloudMessage('認証エラー：'+e.message);cloudStatus('⚠️ 認証エラー')}
+ finally{cloudButtons(false)}
+}
+$('cloudLogin').onclick=()=>cloudSubmit(false);$('cloudRegister').onclick=()=>cloudSubmit(true);
+cloudStatus('☁️ ログイン待ち');cloudMessage('ユーザー名とパスワードでログインまたは新規登録してください。');
+$('exportSave').onclick=()=>{save();const blob=new Blob([JSON.stringify({format:'star-arena-save',version:1,data},null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='star_arena_save_'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000)};
+$('importSave').onclick=()=>$('saveFile').click();
+$('saveFile').onchange=async(e)=>{const file=e.target.files?.[0];if(!file)return;try{const payload=JSON.parse(await file.text());const restored=payload?.format==='star-arena-save'?payload.data:payload;if(!validateSave(restored))throw Error('STAR ARENAのセーブデータではありません');if(!confirm('現在のセーブデータを読み込んだデータで上書きしますか？'))return;if(!cloudReady)throw Error('先にログインしてください');data=normalizeSave(restored);save();await flushCloud();render();refresh();alert('セーブデータを読み込みました。クラウドの保存状態も確認してください。')}catch(err){alert('読み込みに失敗しました: '+err.message)}finally{e.target.value=''}};
+const level=i=>Math.max(1,Number(data.levels[i])||1);const rank=()=>data.trophies<100?'ブロンズ':data.trophies<300?'シルバー':data.trophies<650?'ゴールド':data.trophies<1100?'ダイヤ':data.trophies<1800?'マスター':'レジェンド';const refresh=()=>{$('coins').textContent='🪙 '+data.coins;$('trophies').textContent='🏆 '+data.trophies};const btn=(label,fn,klass='')=>`<button class="btn ${klass}" data-act="${fn}">${label}</button>`;const h=i=>HEROES[i];const HERO_ART_SHAPES=['flame','crystal','bolt','leaf','shuriken','crescent','shield','star','wave','rock','claw','comet','prism','mist','phoenix','gear','fang','orb','tower','galaxy','pumpkin'];
+function heroArtSVG(i,size=62){
+ const c=HEROES[i],k=i%21,shape=HERO_ART_SHAPES[k];
+ const motifs={
+ flame:'<path d="M32 7 Q48 25 36 34 Q47 29 48 45 Q46 60 32 60 Q15 59 16 43 Q17 32 26 26 Q24 39 32 36 Q39 26 32 7Z"/>',
+ crystal:'<path d="M32 6 L51 23 L45 49 L32 60 L19 49 L13 23Z"/><path d="M32 6 V60 M13 23 H51"/>',
+ bolt:'<path d="M36 5 L14 35 H29 L24 59 L52 25 H36Z"/>',
+ leaf:'<path d="M11 48 Q8 11 53 10 Q57 51 18 54Z"/><path d="M18 53 Q31 29 49 17"/>',
+ shuriken:'<path d="M32 7 L41 23 L57 17 L49 33 L58 46 L39 43 L32 59 L23 43 L6 46 L15 31 L7 17 L24 23Z"/>',
+ crescent:'<path d="M43 7 A26 26 0 1 0 55 49 A23 23 0 0 1 43 7Z"/>',
+ shield:'<path d="M32 5 L54 15 V36 Q51 52 32 60 Q13 52 10 36 V15Z"/><path d="M32 14 V51 M18 29 H46"/>',
+ star:'<path d="M32 5 L39 23 L58 25 L43 38 L48 57 L32 46 L16 57 L21 38 L6 25 L25 23Z"/>',
+ wave:'<path d="M5 36 Q15 13 28 32 Q40 51 59 27 L59 45 Q42 63 26 46 Q13 33 5 53Z"/>',
+ rock:'<path d="M18 10 L44 8 L58 30 L46 57 L17 55 L6 30Z"/><path d="M18 10 L29 32 L17 55 M44 8 L29 32 L46 57"/>',
+ claw:'<path d="M14 9 L25 31 L29 8 L37 31 L50 10 L45 46 L32 58 L18 46Z"/>',
+ comet:'<path d="M5 56 L28 19 L45 9 L57 21 L46 38Z"/><circle cx="43" cy="22" r="9"/>',
+ prism:'<path d="M32 5 L56 28 L45 55 L19 55 L8 28Z"/><path d="M32 5 L32 55 M8 28 H56"/>',
+ mist:'<path d="M8 25 Q15 10 28 22 Q42 3 53 23 Q63 40 48 46 H16 Q4 43 8 25Z"/><path d="M16 55 H47"/>',
+ phoenix:'<path d="M32 7 Q51 18 48 33 L58 23 Q61 50 38 57 L32 48 L26 57 Q3 50 6 23 L16 33 Q13 18 32 7Z"/>',
+ gear:'<path d="M26 6 H38 L41 15 L50 12 L57 22 L50 29 L58 36 L52 48 L42 47 L38 58 H26 L22 47 L12 48 L6 36 L14 29 L7 22 L14 12 L23 15Z"/><circle cx="32" cy="32" r="12"/>',
+ fang:'<path d="M12 8 L26 27 L32 9 L38 27 L52 8 L49 51 L38 59 L32 45 L26 59 L15 51Z"/>',
+ orb:'<circle cx="32" cy="32" r="24"/><circle cx="32" cy="32" r="13"/><path d="M8 32 H56 M32 8 V56"/>',
+ tower:'<path d="M13 12 L24 12 L24 5 L40 5 L40 12 L51 12 L51 56 L13 56Z"/><path d="M20 24 H44 M20 36 H44 M26 56 V44 H38 V56"/>',
+ galaxy:'<path d="M9 30 Q12 6 39 13 Q59 20 50 42 Q39 60 20 47 Q9 37 25 27 Q38 20 42 35 Q40 46 30 41"/>',
+ pumpkin:'<path d="M32 14 Q9 7 7 32 Q6 57 32 57 Q58 57 57 32 Q55 7 32 14Z"/><path d="M32 15 L36 5 M22 29 L29 36 L15 36Z M42 29 L35 36 L49 36Z M21 46 Q32 54 43 46"/>'
+ };
+ return `<svg class="hero-art-svg" width="${size}" height="${size}" viewBox="0 0 64 64" role="img" aria-label="${c.name}のオリジナルアイコン" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="ha${k}"><stop stop-color="#ffffff" stop-opacity=".32"/><stop offset="1" stop-color="#000" stop-opacity=".3"/></radialGradient></defs><circle cx="32" cy="32" r="30" fill="#10223d" stroke="${c.color}" stroke-width="3"/><circle cx="32" cy="32" r="27" fill="url(#ha${k})"/><g fill="${c.color}" stroke="#e9faff" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round">${motifs[shape]}</g><circle cx="22" cy="17" r="3" fill="#fff" opacity=".65"/></svg>`;
+}
+// バトル中も選択画面と同一のSVGを使う。画像はキャラごとに1回だけ生成・キャッシュする。
+const heroArtCanvasCache=new Map();
+function heroArtCanvasImage(i){
+ if(!Number.isInteger(i)||i<0||i>=HEROES.length)return null;
+ if(heroArtCanvasCache.has(i))return heroArtCanvasCache.get(i);
+ const img=new Image();
+ const entry={img,ready:false};heroArtCanvasCache.set(i,entry);
+ img.onload=()=>{entry.ready=true};
+ img.onerror=()=>{entry.failed=true};
+ img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(heroArtSVG(i,128));
+ return entry;
+}
+function drawHeroArt(ctx,e){
+ const r=e.r,entry=heroArtCanvasImage(e.id);
+ ctx.save();
+ ctx.fillStyle=e===player?'#ffdf4a':e.team===0?'#56a8ff':'#f76679';
+ ctx.beginPath();ctx.arc(e.x,e.y,r+5,0,Math.PI*2);ctx.fill();
+ if(entry&&entry.ready){
+  // SVGの丸枠・装飾・色まで選択画面と完全に同じ画像を描画
+  ctx.drawImage(entry.img,e.x-r,e.y-r,r*2,r*2);
+ }else{
+  ctx.fillStyle='#15263e';ctx.strokeStyle=h(e.id).color;ctx.lineWidth=3;
+  ctx.beginPath();ctx.arc(e.x,e.y,r,0,Math.PI*2);ctx.fill();ctx.stroke();
+ }
+ ctx.restore();
+}
+const speedLabel=i=>h(i).speed>=2.32?'速い':h(i).speed>=1.96?'普通':'遅い';const sizeLabel=i=>h(i).bodySize>=24?'大型':h(i).bodySize>=19?'中型':'小型';const heroCard=i=>{let own=ownsHero(i);return `<button type="button" class="hero-tile ${data.selected===i?'current':''} ${own?'':'locked'}" data-act="detail:${i}" aria-label="${h(i).name}のステータスを見る"><span class="avatar">${heroArtSVG(i,62)}</span><b>${h(i).name}</b>${rarityTag(i)}<span class="small">Lv.${level(i)} ${own?'':'🔒 未解放'}</span>${data.selected===i?'<span class="badge">✓ 選択中</span>':''}</button>`};
 const attackLabel=i=>[0,8,12,16].includes(i)?'超広範囲の必殺散弾':[5,17,19].includes(i)?'超長距離貫通狙撃':[4,10].includes(i)?'無敵突撃':[6,18].includes(i)?'防御シールド＋自己回復':SUPERS[h(i).superType];
-function showHeroDetail(i){if(!Number.isInteger(i)||i<0||i>=HEROES.length)return;const c=h(i),own=data.owned.includes(i),selected=data.selected===i;const role=c.range<=120?'超短射程':c.range<=205?'短〜中射程':c.range>=540?'超長射程':c.range>=400?'長射程':'中射程';const description=c.range<=120?'高速で接近して高火力を出す近距離特化。':c.range>=400?'遠距離から高威力で狙撃する。近づかれると不利。':'弾数・攻撃の広がり・貫通を活かして戦う。';$('detailPanel').innerHTML=`<button class="detail-close" data-detail="close" aria-label="閉じる">✕</button><div class="detail-top"><div class="detail-portrait">${c.icon}</div><div><div class="detail-name">${c.name}</div><div class="detail-tag">${role}</div><div class="small" style="margin-top:8px">Lv.${level(i)}　${own?'解放済み':'🔒 未解放'}</div></div></div><p class="muted">${description}</p><div class="detail-stats"><div class="detail-stat">❤️ 最大HP<strong>${c.hp+level(i)*12}</strong></div><div class="detail-stat">💥 攻撃力<strong>${c.damage+level(i)*3}</strong></div><div class="detail-stat">🎯 射程<strong>${c.range}</strong></div><div class="detail-stat">👟 移動速度<strong>${c.speed.toFixed(2)}</strong></div><div class="detail-stat">🔋 最大弾数<strong>${AMMO_CAP[i]} 発</strong></div><div class="detail-stat">⏱️ リロード<strong>${RELOAD_SEC[i]} 秒/発</strong></div></div><div class="detail-move"><b>🎯 通常攻撃：${ATTACKS[i]}</b><p class="small">特徴：${SPECIAL[i]}</p></div><div class="detail-move"><b>⚡ 必殺技：${attackLabel(i)}</b></div><div class="detail-actions">${own?(selected?'<button class="btn green" disabled>✓ 選択中</button>':`<button class="btn green" data-detail="choose:${i}">このキャラを選択</button>`):'<button class="btn" disabled>🔒 未解放</button>'}<button class="btn red" data-detail="close">戻る</button></div>`;$('heroDetail').classList.add('open');}
-function closeHeroDetail(){$('heroDetail').classList.remove('open')}
-$('heroDetail').addEventListener('click',e=>{const b=e.target.closest('[data-detail]');if(!b){if(e.target===$('heroDetail'))closeHeroDetail();return}const a=b.dataset.detail;if(a==='close'){closeHeroDetail();return}if(a.startsWith('choose:')){const i=Number(a.split(':')[1]);if(data.owned.includes(i)){data.selected=i;save();closeHeroDetail();render()}}});
+function showHeroDetail(i){if(!Number.isInteger(i)||i<0||i>=HEROES.length)return;const c=h(i),own=ownsHero(i),selected=data.selected===i;const role=c.range<=120?'超短射程':c.range<=205?'短〜中射程':c.range>=540?'超長射程':c.range>=400?'長射程':'中射程';const description=c.range<=120?'高速で接近して高火力を出す近距離特化。':c.range>=400?'遠距離から高威力で狙撃する。近づかれると不利。':'弾数・攻撃の広がり・貫通を活かして戦う。';$('detailPanel').innerHTML=`<button class="detail-close" data-detail="close" aria-label="閉じる">✕</button><div class="detail-top"><div class="detail-portrait">${heroArtSVG(i,96)}</div><div><div class="detail-name">${c.name}</div>${rarityTag(i)}<div class="detail-tag">${role}</div><div class="small" style="margin-top:8px">Lv.${level(i)}　${own?'解放済み':'🔒 未解放'}</div></div></div><p class="muted">${description}</p><div class="detail-stats"><div class="detail-stat">❤️ 最大HP<strong>${c.hp+level(i)*12}</strong></div><div class="detail-stat">💥 攻撃力<strong>${c.damage+level(i)*3}</strong></div><div class="detail-stat">🎯 1回の攻撃弾数<strong>${ATTACK_CONFIG[i][0]} 発</strong></div><div class="detail-stat">📏 キャラサイズ<strong>${c.bodySize}（${sizeLabel(i)}）</strong></div><div class="detail-stat">🎯 射程<strong>${c.range}</strong></div><div class="detail-stat">👟 移動速度<strong>${c.speed.toFixed(2)}</strong></div><div class="detail-stat">🔋 最大弾数<strong>${AMMO_CAP[i]} 発</strong></div><div class="detail-stat">⏱️ リロード<strong>${RELOAD_SEC[i]} 秒/発</strong></div></div><div class="detail-move"><b>🎯 通常攻撃：${ATTACKS[i]}</b><p class="small">特徴：${SPECIAL[i]}</p></div><div class="detail-move"><b>⚡ 必殺技：${attackLabel(i)}</b></div>${gadgetPanel(i)}<div class="detail-actions">${own?(selected?'<button class="btn green" disabled>✓ 選択中</button>':`<button class="btn green" data-detail="choose:${i}">このキャラを選択</button>`):'<button class="btn" disabled>🔒 未解放</button>'}<button class="btn red" data-detail="close">戻る</button></div>`;$('heroDetail').classList.add('open');}
+function closeHeroDetail(){pendingAbilityPurchase=null;$('heroDetail').classList.remove('open')}
+$('heroDetail').addEventListener('click',e=>{
+ const b=e.target.closest('[data-ability-action]');if(!b)return;
+ e.preventDefault();e.stopImmediatePropagation();
+ const [type,hero,slot]=b.dataset.abilityAction.split(':');
+ const i=Number(hero),k=Number(slot),need=type==='gadget'?7:9;
+ if(!['gadget','star'].includes(type)||!Number.isInteger(i)||i<0||i>=HEROES.length||![0,1].includes(k))return;
+ if(!ownsHero(i))return alert('キャラクターを先に解放してください。');
+ if(level(i)<need)return alert('Lv.'+need+'になると購入・装備できます。');
+ if(!hasAbility(i,type,k)){
+  const cost=ABILITY_COST[type];
+  if(Number(data.coins)<cost)return alert('コインが足りません。必要：'+cost+'コイン');
+  const purchaseKey=`${type}:${i}:${k}`;
+  if(pendingAbilityPurchase!==purchaseKey){pendingAbilityPurchase=purchaseKey;showHeroDetail(i);return;}
+  pendingAbilityPurchase=null;
+  data.coins=Number(data.coins)-cost;
+  abilityCollection(i)[type].push(k);
+ }
+ pendingAbilityPurchase=null;
+ equipment(i)[type]=k;save();refresh();showHeroDetail(i);
+},true);
+$('heroDetail').addEventListener('click',e=>{const b=e.target.closest('[data-detail]');if(!b){if(e.target===$('heroDetail'))closeHeroDetail();return}const a=b.dataset.detail;if(a==='close'){closeHeroDetail();return}
+ if(a.startsWith('choose:')){const i=Number(a.split(':')[1]);if(ownsHero(i)){ensurePumpkinOwnership();data.selected=i;save();closeHeroDetail();render()}}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('heroDetail').classList.contains('open'))closeHeroDetail()});
 
-function render(){refresh();document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x.dataset.tab===tab));let v=$('view');if(tab==='home'){v.innerHTML=`<section class="panel hero"><div class="portrait">${h(data.selected).icon}</div><div><div class="big">${h(data.selected).name} <span class="badge">Lv.${level(data.selected)}</span></div><p class="muted">勝利 ${data.wins}回 ／ 対戦 ${data.matches}回 ／ 最高スコア ${data.best}</p>${btn('キャラクター変更','tab:heroes')}</div></section><section class="panel"><h2>⚔️ モード選択</h2><div class="row"><label><input type="radio" name="mode" value="boss" ${mode==='boss'?'checked':''}> ボスバトル</label><label><input type="radio" name="mode" value="royale" ${mode==='royale'?'checked':''}> バトルロイヤル</label><label><input type="radio" name="mode" value="team" ${mode==='team'?'checked':''}> 3vs3ノックアウト</label></div><p class="muted">ボスバトル：AI味方2人と3人で強化ボスを討伐！ 倒されても味方が生存していれば20秒後に復活。3人全滅で敗北。180秒以内に討伐しよう／ロイヤル：パワーキューブを集めると試合中だけHPと攻撃力が強化！最後の1人になる（30秒ごとに毒ガスが縮小）／3vs3ノックアウト：3ラウンド制、先に2ラウンド勝利したチームが勝ち。倒されたキャラは次ラウンドまで復活しません。草むらでは敵から隠れられます</p>${btn('▶ バトル開始','start','orange')}</section><section class="panel"><h3>🎮 遊び方</h3><p>敵を倒してコインとトロフィーを獲得！ キャラごとに弾数とリロード時間が異なり、弾は1発ずつ自動装填されます。草むらから攻撃すると1.2秒間、攻撃を受けると1秒間姿が見えます。 攻撃を当てると必殺技ゲージがたまります。最後にダメージを受けてから5秒経つと、最大HPの約16%を毎秒自動回復します。</p><p class="small">※このゲームはオリジナル作品です。CPU対戦のみで、オンライン対戦・ランキングには未対応です。</p></section>`}
-else if(tab==='heroes'){v.innerHTML=`<section class="panel"><h2>👥 キャラクター（${data.owned.length}/20）</h2><p class="muted">キャラクターをタップすると、詳しいステータスと攻撃方法を確認できます。詳細画面から選択するか、戻るかを決められます。</p>${btn('選択キャラを強化：'+(150*level(data.selected))+'🪙','upgrade','green')}<p class="small">現在：${h(data.selected).name} Lv.${level(data.selected)}</p><div class="grid">${HEROES.map((_,i)=>heroCard(i)).join('')}</div></section>`}
-else if(tab==='shop'){v.innerHTML=`<section class="panel"><h2>🛒 ショップ</h2><p>所持コイン：🪙 ${data.coins}</p><div class="grid"><div class="card"><div class="avatar">🎁</div><b>ヒーローボックス</b><p class="small">未解放キャラを1体獲得。重複なし。</p>${btn('300🪙 で開封','gacha','orange')}</div><div class="card"><div class="avatar">⬆️</div><b>キャラ強化</b><p class="small">${h(data.selected).name} Lv.${level(data.selected)}</p>${btn((150*level(data.selected))+'🪙 で強化','upgrade','green')}</div></div></section>`}
-else{v.innerHTML=`<section class="panel"><h2>🏆 ランク</h2><div class="big">${rank()}</div><p>現在のトロフィー：${data.trophies} 🏆</p><p class="muted">ブロンズ 0 ／ シルバー 100 ／ ゴールド 300 ／ ダイヤ 650 ／ マスター 1100 ／ レジェンド 1800</p><p>勝利数：${data.wins} ／ 対戦数：${data.matches}</p><p class="small">ランクは端末内の記録です。オンライン順位ではありません。</p></section>`}}
-document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{tab=b.dataset.tab;render()});
-$('view').addEventListener('change',e=>{if(e.target.name==='mode')mode=e.target.value});
-$('view').addEventListener('click',e=>{let b=e.target.closest('[data-act]');if(!b)return;let a=b.dataset.act;if(a==='start')start();else if(a.startsWith('tab:')){tab=a.split(':')[1];render()}else if(a.startsWith('detail:')){showHeroDetail(+a.split(':')[1])}else if(a.startsWith('select:')){data.selected=+a.split(':')[1];save();render()}else if(a==='upgrade'){let cost=150*level(data.selected);if(data.coins<cost)return alert('コインが足りません');if(level(data.selected)>=20)return alert('最大レベルです');data.coins-=cost;data.levels[data.selected]=level(data.selected)+1;save();render()}else if(a==='gacha'){let locked=HEROES.map((_,i)=>i).filter(i=>!data.owned.includes(i));if(!locked.length)return alert('全キャラ解放済み！');if(data.coins<300)return alert('コインが足りません');data.coins-=300;let i=locked[Math.floor(Math.random()*locked.length)];data.owned.push(i);save();alert('🎉 '+h(i).icon+' '+h(i).name+' を獲得！');render()}});
+let newsHistoryOpen=false;
+let titleCollectionOpen=false;
+// アイテムコード：クラウドの最新セーブをETagで条件付き更新し、同一アカウントの二重使用を防止。
+let redeemBusy=false;
+async function redeemItemCode(){
+ const input=$('itemCodeInput'),message=$('redeemCodeMessage'),button=$('redeemCodeButton');
+ if(!input||redeemBusy)return;
+ const code=input.value.trim().toLowerCase();
+ if(!code){message.textContent='コードを入力してください。';return}
+ if(code==='adomin_060208'){if(!isAdmin()){message.textContent='このコードは管理者アカウント専用です。';return;}adminPanelOpen=true;message.textContent='👑 管理者パネルを開きました。';render();return;}
+ if(code!=='risho'){message.textContent='このコードは存在しません。';return}
+ if(!cloudReady||!cloudUid){message.textContent='先にログインしてください。';return}
+ if(data.redeemedCodes?.[code]){message.textContent='このコードは既に受け取り済みです。';return}
+ redeemBusy=true;button.disabled=true;message.textContent='☁️ コードを確認しています…';
+ const uid=cloudUid,gen=cloudGeneration;
+ try{
+  // 既存の未保存データを先に送信し、コード付与が古い保存に上書きされないようにする。
+  if(cloudDirty){const ok=await flushCloud();if(!ok)throw Error('先にクラウド保存を完了してください。')}
+  await cloudQueue;
+  const token=await getCloudToken();
+  const url=firebaseConfig.databaseURL.replace(/\/$/,'')+'/users/'+encodeURIComponent(uid)+'/save.json?auth='+encodeURIComponent(token);
+  let success=false,already=false,updated=null;
+  for(let attempt=0;attempt<4;attempt++){
+   if(!cloudReady||cloudUid!==uid||cloudGeneration!==gen)throw Error('ログイン状態が変わりました。');
+   const response=await fetch(url,{headers:{'X-Firebase-ETag':'true'},cache:'no-store'});
+   if(!response.ok)throw Error('クラウドの確認に失敗しました（HTTP '+response.status+'）');
+   const etag=response.headers.get('ETag');
+   if(!etag)throw Error('クラウドの更新確認情報を取得できませんでした。');
+   const remote=await response.json();
+   if(remote===null||!validateSave(remote))throw Error('クラウドセーブを安全に確認できませんでした。');
+   const current=normalizeSave(remote);
+   if(current.redeemedCodes?.[code]){already=true;updated=current;break}
+   current.coins+=500;
+   current.redeemedCodes={...current.redeemedCodes,[code]:true};
+   const put=await fetch(url,{method:'PUT',headers:{'Content-Type':'application/json','if-match':etag},body:JSON.stringify(current)});
+   if(put.status===412)continue;
+   if(!put.ok)throw Error('報酬の保存に失敗しました（HTTP '+put.status+'）');
+   success=true;updated=current;break;
+  }
+  if(!success&&!already)throw Error('同時更新が発生しました。もう一度お試しください。');
+  if(!cloudReady||cloudUid!==uid||cloudGeneration!==gen)return;
+  data=updated;cloudDirty=false;saveLocal();render();
+  const msg=success?'🎉 risho：500コインを受け取りました！':'このコードは既に受け取り済みです。';
+  const m=$('redeemCodeMessage');if(m)m.textContent=msg;
+  cloudStatus('☁️ 保存済み');
+ }catch(e){const m=$('redeemCodeMessage');if(m)m.textContent='⚠️ '+e.message;console.error('コード受取エラー',e)}
+ finally{redeemBusy=false;const b=$('redeemCodeButton');if(b)b.disabled=false}
+}
+// 管理者ギフトは専用DB領域に保存し、Firebaseルールで管理者UIDのみ作成可能。
+async function giftCall(method,path,payload){const token=await getCloudToken();return firebaseRequest(firebaseConfig.databaseURL.replace(/\/$/,'')+'/'+path+'.json?auth='+encodeURIComponent(token),{method,headers:{'Content-Type':'application/json'},...(payload===undefined?{}:{body:JSON.stringify(payload)})})}
+let pendingAdminAction='',pendingAdminUntil=0;
+function adminPanelHTML(){return `<section class="panel"><h2>👑 管理者パネル</h2><p class="muted">対象ユーザーのアイテムを付与・削減できます。Ver.89のFirebaseルールが必要です。削減後の所持数は0未満になりません。</p><label>ユーザー名<input id="giftTarget" placeholder="例：player123" maxlength="20" style="width:100%;padding:10px;margin:5px 0;background:#101c36;color:white"></label><label>操作<select id="giftOperation" style="width:100%;padding:10px;margin:5px 0;background:#101c36;color:white"><option value="add">➕ 付与する</option><option value="subtract">➖ 削減する</option></select></label><label>アイテム<select id="giftType" style="width:100%;padding:10px;margin:5px 0;background:#101c36;color:white"><option value="coins">🪙 コイン</option><option value="drops">🌟 スタードロップ</option><option value="trophies">🏆 トロフィー</option></select></label><label>数量<input id="giftAmount" type="number" min="1" max="100000" value="500" style="width:100%;padding:10px;margin:5px 0;background:#101c36;color:white"></label>${btn('🎁 付与・削減を確認','sendGift','green')} ${btn('▲ 管理者パネルを閉じる','closeAdmin')}<p id="adminStatus" class="small">1回目で内容を確認、2回目で送信します。対象が次回ログインしたときに反映されます。</p></section>`}
+async function sendAdminGift(){if(!isAdmin()||!adminPanelOpen||adminBusy)return;const status=$('adminStatus'),name=$('giftTarget')?.value.trim().toLowerCase(),type=$('giftType')?.value,operation=$('giftOperation')?.value,amount=Number($('giftAmount')?.value);if(!/^[a-z0-9_-]{3,20}$/.test(name)||!['coins','drops','trophies'].includes(type)||!['add','subtract'].includes(operation)||!Number.isSafeInteger(amount)||amount<1||amount>100000){status.textContent='入力内容を確認してください。';return;}const action=[name,type,operation,amount].join('|');if(pendingAdminAction!==action||Date.now()>pendingAdminUntil){pendingAdminAction=action;pendingAdminUntil=Date.now()+15000;status.textContent='⚠️ '+name+' の'+({coins:'コイン',drops:'スタードロップ',trophies:'トロフィー'}[type])+'を'+amount+(operation==='subtract'?'削減':'付与')+'します。15秒以内にもう一度ボタンを押して確定してください。';return;}pendingAdminAction='';pendingAdminUntil=0;adminBusy=true;status.textContent='送信しています…';try{const raw=await leaderboardAPI('GET');const target=Object.entries(raw||{}).find(([id,v])=>v?.username===name);if(!target)throw Error('対象ユーザーがランキングに登録されていません。');const id='g'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,10);await giftCall('PUT','adminGifts/'+encodeURIComponent(target[0])+'/'+id,{type,amount:operation==='subtract'?-amount:amount,createdAt:Date.now()});status.textContent='✅ '+name+' に'+(operation==='subtract'?'削減':'付与')+'指示を送信しました。次回ログイン時に反映されます。';}catch(e){status.textContent='⚠️ '+e.message}finally{adminBusy=false}}
+let giftClaimBusy=false;
+async function claimAdminGifts(){if(!cloudReady||!cloudUid||giftClaimBusy)return;giftClaimBusy=true;const uid=cloudUid,gen=cloudGeneration;try{const gifts=await giftCall('GET','adminGifts/'+encodeURIComponent(uid));if(!gifts||typeof gifts!=='object')return;for(const [id,g] of Object.entries(gifts)){if(gen!==cloudGeneration||uid!==cloudUid)return;if(!/^g[a-z0-9_]+$/.test(id)||!g||!['coins','drops','trophies'].includes(g.type)||!Number.isSafeInteger(g.amount)||g.amount===0||Math.abs(g.amount)>100000)continue; // 先にギフトを消費し、二重受け取りを防ぐ
+ await giftCall('DELETE','adminGifts/'+encodeURIComponent(uid)+'/'+encodeURIComponent(id));data[g.type]=Math.max(0,(Number(data[g.type])||0)+g.amount);save();}if(gen===cloudGeneration)render();}catch(e){console.warn('ギフト受取エラー',e)}finally{giftClaimBusy=false}}
+function render(){refresh();document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x.dataset.tab===tab));let v=$('view');if(tab==='home'){v.innerHTML=`<section class="panel hero"><div class="portrait">${heroArtSVG(data.selected,104)}</div><div><div class="big">${h(data.selected).name} ${rarityTag(data.selected)} <span class="badge">Lv.${level(data.selected)}</span></div><p class="muted">勝利 ${data.wins}回 ／ 対戦 ${data.matches}回 ／ 最高スコア ${data.best}</p>${btn('▶ バトルへ','tab:battle','orange')} ${btn('キャラクター変更','tab:heroes')}<p>🌟 スタードロップ：${data.drops}個（スーパーレア以上はキャラや特殊能力も出現！ ウルトラレア以上からは限定称号も超低確率で出現）</p>${btn('🌟 スタードロップを開封','openDrop','orange')}<p class="small">🟢 ガジェット Lv.7で購入（1000コイン） ／ ⭐ スターパワー Lv.9で購入（2000コイン）。ドロップでも入手可能！</p></div></section><section class="panel"><h3>🎟️ アイテムコード</h3><p class="muted">特別なコードを入力するとアイテムを受け取れます。各コードは1アカウントにつき1回だけ使用可能です。</p><div style="display:flex;gap:8px;flex-wrap:wrap"><input id="itemCodeInput" type="text" maxlength="32" autocomplete="off" spellcheck="false" placeholder="アイテムコードを入力" style="flex:1;min-width:140px;padding:12px;border-radius:10px;border:1px solid #64748b;background:#101c36;color:white"><button type="button" class="btn" data-act="redeemCode" id="redeemCodeButton">🎁 受け取る</button></div><p class="small" id="redeemCodeMessage">※ログイン中のアカウントに付与します。</p></section>${isAdmin()&&adminPanelOpen?adminPanelHTML():''}<section class="panel"><h3>⌨️ パソコンの操作方法</h3><p><strong>移動：</strong>矢印キー（↑ ↓ ← →）または W・S（上下）</p><p><strong>Dキー：</strong>自動照準で通常攻撃（長押しで連射）</p><p><strong>Aキー：</strong>自動照準で必殺技</p><p><strong>マウス：</strong>照準を合わせてクリックで攻撃</p><p><strong>スペースキー：</strong>必殺技</p><p><strong>Fキー：</strong>ガジェットを使用（1試合3回）</p><p class="small">自動照準では近くの敵やパワーキューブの箱を狙います。</p></section><section class="panel"><h3>🎮 遊び方</h3><p>ボス・3vs3ノックアウト勝利でトロフィー+30とスタードロップ1個、敗北で-15。バトルロイヤルは順位ごとに報酬が変わります。ホーム画面で開封するとコインを獲得できます。スーパーレア以上からは低確率で未解放キャラクターやガジェット・スターパワー、ウルトラレア以上からは限定称号も登場します。敗北時はスタードロップを獲得できません。 キャラごとに弾数とリロード時間が異なり、弾は1発ずつ自動装填されます。草むらから攻撃すると1.2秒間、攻撃を受けると1秒間姿が見えます。 攻撃を当てると必殺技ゲージがたまります。最後にダメージを受けるか、自分が攻撃してから5秒経つと、最大HPの約16%を毎秒自動回復します。攻撃すると自動回復は中断されます。</p><p class="small">※このゲームはオリジナル作品です。通常バトルはCPU対戦です。オンラインデュエル試験版は専用アリーナで対人対戦できます。</p></section>`}
+else if(tab==='battle'){const modeCards=[['boss','👹 ボスバトル','味方AI2人と協力して180秒以内にボスを討伐。仲間が生存していれば20秒後に復活できます。'],['royale','👑 バトルロイヤル','10人で生き残りを競います。箱からパワーキューブを集め、縮小する毒ガスを避けて戦おう。'],['team','🔵 3vs3ノックアウト','味方AI2人と敵チーム3人で対戦。ラウンド中は復活なし。先に2ラウンド勝利したチームの勝ち。'],['duel','⚔️ デュエル（1vs1）','自分と敵AIの一騎打ち。3ラウンド制で先に2勝した側の勝ち。']];const info=modeCards.find(x=>x[0]===mode)||modeCards[0];v.innerHTML=`<section class="panel"><h2>⚔️ バトルモードを選択</h2><p class="muted">遊びたいモードを押すと、ルールや設定が表示されます。</p><div class="grid">${modeCards.map(m=>`<button type="button" class="hero-tile ${mode===m[0]?'current':''}" data-act="chooseMode:${m[0]}" style="min-height:100px;cursor:pointer"><span class="avatar">${m[1].split(' ')[0]}</span><b>${m[1]}</b><span class="small">${mode===m[0]?'✓ 選択中':'詳細を見る'}</span></button>`).join('')}</div><div class="panel" style="margin-top:15px;border:2px solid #7ea8ff"><h2>${info[1]}</h2><p>${info[2]}</p><p class="small">${mode==='royale'?'順位に応じてトロフィーとスタードロップを獲得。1〜4位は報酬あり。':'勝利：🏆 +30・🌟 1個 ／ 敗北：🏆 −15・ドロップなし'}</p>${mode==='boss'?`<h3>👹 戦うボスを選択</h3><div class="grid">${BOSS_TYPES.map(b=>`<button type="button" class="hero-tile ${bossType===b.id?'current':''}" data-act="chooseBoss:${b.id}" style="cursor:pointer"><span class="avatar" style="display:inline-flex;align-items:center;justify-content:center;width:112px;height:112px;background:#0e1d36;border-radius:14px"><img src="${bossPortrait(b.id)}" alt="${b.name}のバトル中の姿" style="width:108px;height:108px;object-fit:contain"></span><b>${b.name}</b><span class="small">${bossType===b.id?'✓ 選択中':'このボスと戦う'}</span></button>`).join('')}</div><p>${selectedBoss().description}</p><p class="small">HP倍率：${selectedBoss().hp}倍 ／ 攻撃力倍率：${selectedBoss().damage}倍 ／ 攻撃頻度：${selectedBoss().cooldown<1?'高い':'標準'}</p><h3>🎚️ 難易度を選択</h3><select id="bossDifficultySelect" style="width:100%;padding:12px;background:#101c36;color:white;border:1px solid #a78bfa;border-radius:9px">${BOSS_DIFFICULTIES.map((d,i)=>`<option value="${i}" ${bossDifficulty===i?'selected':''}>${i+1}. ${d.name}</option>`).join('')}</select><p class="small">ボスのHP・攻撃力・攻撃間隔・怒りになる時間が難易度で大きく変化します。プレイヤーのレベルは変更されません。</p>`:''}${btn('▶ '+info[1]+'を開始','start','orange')}</div><div class="panel" style="margin-top:15px;border:1px solid #67b5ff"><h3>🌐 オンラインデュエル（試験版）</h3><p class="small">別端末のプレイヤーと1vs1。ランダムマッチ／ルームコード対応。オンライン専用の簡易アリーナです。</p>${btn('🌐 ランダムマッチ','onlineRandom','orange')} ${btn('🔑 ルーム作成','onlineCreate')}<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap"><input id="onlineRoomCode" placeholder="6桁のルームコード" maxlength="6" style="padding:10px;min-width:130px;flex:1;background:#101c36;color:white;border:1px solid #64748b;border-radius:8px">${btn('ルーム参加','onlineJoin')}</div><p id="onlineNotice" class="small">ログインしてから参加してください。</p></div></section>`}
+else if(tab==='heroes'){v.innerHTML=`<section class="panel"><h2>👥 キャラクター（${new Set([...data.owned,...(ownsHero(20)?[20]:[])]).size}/${HEROES.length}）</h2><p class="muted">レアリティ：🟦 ノーマル ／ 🟩 レア ／ 🟪 スーパーレア ／ 🟨 ウルトラレア ／ 🌟 レジェンド</p><p class="muted">キャラクターをタップすると、ステータス・ガジェット2種類・スターパワー2種類を確認して装備できます。詳細画面から選択するか、戻るかを決められます。購入済みの🎃パンプキンもここから選択できます。</p>${btn('選択キャラを強化：'+(150*level(data.selected))+'🪙','upgrade','green')}<p class="small">現在：${h(data.selected).name} Lv.${level(data.selected)}</p><div class="grid">${HEROES.map((_,i)=>heroCard(i)).join('')}</div></section>`}
+else if(tab==='shop'){v.innerHTML=`<section class="panel"><h2>🛒 ショップ</h2><p>所持コイン：🪙 ${data.coins}</p><div class="grid"><div class="card"><div class="avatar">🎁</div><b>ヒーローボックス</b><p class="small">未解放キャラを1体獲得。高レアほど出にくい・重複なし。</p>${btn('1000🪙 で開封','gacha','orange')}</div><div class="card"><div class="avatar">⬆️</div><b>キャラ強化</b><p class="small">${h(data.selected).name} Lv.${level(data.selected)}</p>${btn((150*level(data.selected))+'🪙 で強化','upgrade','green')}</div><h3 style="margin:24px 0 12px">🎃❄️ 期間限定キャラクター</h3><p class="muted">ハロウィン限定キャラは販売中！ クリスマス限定キャラは近日公開です。</p><div class="grid"><div class="card" style="border:2px solid #f19a49;background:linear-gradient(145deg,#443049,#28253f)"><div class="avatar" style="font-size:48px">🎃</div><b>🎃 パンプキン</b>${rarityTag(20)}<p class="small">HP${h(20).hp} / 攻撃力${h(20).damage} / ${ATTACK_CONFIG[20][0]}発の集中散弾・中射程・まとまりのある弾道 / 弾数1 / リロード3.3秒 / 低速 / 必殺技：自身のHPを65%回復</p>${data.owned.includes(20)?(data.selected===20?'<button class="btn green" disabled>✓ 使用中</button>':btn('✓ 購入済み・使用キャラに設定','choosePumpkin','green')):btn('5000🪙 で購入','buyHalloween','orange')}</div><div class="card" style="border:2px solid #85d6f1;background:linear-gradient(145deg,#264b62,#293349)"><div class="avatar" style="font-size:48px">🎄</div><b>🎄 クリスマス限定キャラ</b><p class="small">クリスマス限定の特別なキャラクターが登場予定！</p><button class="btn" type="button" disabled style="opacity:.65;cursor:not-allowed;width:100%;background:#416c80">🔒 近日公開・購入不可</button></div></div></section>`}
+else if(tab==='missions'){v.innerHTML=missionsHTML()}
+else if(tab==='events'){v.innerHTML=`<section class="panel"><div class="row" style="justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px"><h2 style="margin:0">🎪 イベント</h2><span class="pill">📅 開催準備中</span></div><p class="muted">期間限定イベントの専用ページです。開催期間・参加条件・報酬はイベント公開時にお知らせします。</p><div class="grid"><div class="card" style="text-align:left"><div class="avatar">🌐</div><h3>🌐 全サーバー共通の大型ミッション</h3><p>全プレイヤーで協力して目標達成を目指すイベントを予定しています。</p><p class="small">予定内容：全体の撃破数・勝利数などを合算し、達成段階に応じた報酬を開放</p><p class="pill">🔒 準備中・現在は集計なし</p><button class="btn" disabled>開催をお待ちください</button></div><div class="card" style="text-align:left"><div class="avatar">👹</div><h3>👹 イベント限定ボス</h3><p>開催期間中だけ登場する特別なボスとのバトルを予定しています。</p><p class="small">予定内容：イベント専用の攻撃パターン・難易度・限定報酬</p><p class="pill">🔒 準備中・現在は挑戦不可</p><button class="btn" disabled>開催をお待ちください</button></div></div></section><section class="panel"><h3>📢 イベントのお知らせ</h3><p>現在開催中のイベントはありません。開催日や報酬は今後のアップデートで発表します。</p><p class="small">※ 全サーバー共通進捗にはFirebase側の集計・不正対策が必要です。今回のバージョンでは、イベント用の画面のみ追加しています。</p>${btn('📰 更新ニュースを見る','tab:news')}</section>`}
+
+else if(tab==='feedback'){v.innerHTML=feedbackHTML()}
+else if(tab==='news'){
+// 次回以降は先頭に最新更新を追加すると最新ニュースと過去5件が自動で切り替わる。
+const updates=[
+{ver:103,title:'👹 ボス選択画面とバトル中の姿を統一',detail:'深淵の覇王と雷霆の支配者の選択画面に、実際のバトルで使われる同じ描画処理のボス画像を表示。見た目を完全統一。',date:'2026年11月16日（日本時間）'},
+{ver:102,title:'🎨 キャラクターの見た目を完全統一',detail:'キャラクター選択画面のオリジナルSVGデザインを、通常バトル中にもそのまま使用するよう変更。21体すべての形・色・装飾を統一。',date:'2026年11月16日（日本時間）'},
+{ver:101,title:'🎨 21体のキャラデザイン刷新＆ボス再調整',detail:'21体のキャラクターを絵文字から専用の幾何学アバターに変更。ボスの攻撃範囲と頻度をVer.100より少し戻し、難易度差を緩やかに調整。Ver.100のニュース表示不具合も修正。',date:'2026年11月16日（日本時間）'},
+{ver:100,title:'👹 ボスの攻撃バランスと見た目を更新',detail:'ボスの攻撃範囲と頻度を抑え、攻撃予告を延長。難易度ごとのHP・攻撃力・怒り時間を調整し、ボス2体の専用デザインを追加。',date:'2026年11月16日（日本時間）'},
+ {ver:99,title:'⚡ 雷霆の支配者の攻撃を8種類に拡張',detail:'高速落雷・扇状雷ビーム・雷の円環に加え、追尾雷雨・十字雷撃・稲妻の壁・雷の迷路・雷嵐を追加。怒り段階で技が増え、雷の予告エリアを青色に変更。',date:'2026年11月14日（日本時間）'},
+ {ver:98,title:'⚔️ 新ボス「雷霆の支配者」＆モード詳細選択',detail:'新ボスを追加。深淵の覇王とは異なるHP・攻撃力・移動速度と、落雷・扇状雷ビーム・円環攻撃を実装。モードをタップすると詳細が開き、ボスバトルではボスと5段階の難易度を選べます。',date:'2026年11月14日（日本時間）'},
+ {ver:97,title:'👹 ボスに名前＆5段階難易度選択を追加',detail:'ボス名「深淵の覇王」を表示。ボスバトル開始前にビギナーからナイトメアまで5段階の難易度を選択可能にし、ボスの強さがトロフィー数で変動する仕様を廃止。',date:'2026年11月14日（日本時間）'},
+ {ver:96,title:'🎪 イベントタブを新設',detail:'全サーバー共通の大型ミッションとイベント限定ボスの専用コーナーを追加。現在は準備中で、開催期間・報酬・全体進捗の同期は今後実装予定。',date:'2026年11月14日（日本時間）'},
+ {ver:95,title:'⚔️ ノックアウト・デュエルの初期距離改善＆ゴーレム再調整',detail:'3vs3・デュエルの敵味方をマップ両端に配置し、スポーン地点周辺の障害物を避けるよう修正。ゴーレムの速度1.38→1.20、リロード2.4→2.9秒、攻撃51→55、射程180→205に調整。',date:'2026年11月14日（日本時間）'},
+ {ver:94,title:'🏅 称号を低レア順に・ゴーレム鈍足化・ドロップ報酬調整',detail:'称号一覧をノーマル→レア→スーパーレア→ウルトラレア→レジェンド→ディバイン→限定の順に変更。ゴーレムの速度1.54→1.38。スタードロップのキャラ・能力・限定称号の抽選確率を少し上げ、上位レアの出現率も微調整。',date:'2026年11月13日（日本時間）'},
+ {ver:93,title:'🏅 称号のレアリティ順表示・ショップとドロップ調整',detail:'称号を限定→ディバイン→レジェンド→ウルトラレア→スーパーレア→レア→ノーマル順に表示。ヒーローボックスを1000コインに変更。高レアドロップの出現率とキャラ・能力・限定称号の抽選率を上方調整。',date:'2026年11月13日（日本時間）'},
+
+ {ver:92,title:'🎮 オンラインデュエルの操作を通常バトルに統一',detail:'PCのD/A/Space/Fキーとマウス照準、スマホのタップ自動照準・フリック手動照準をオンライン対戦に追加。',date:'2026年11月13日（日本時間）'},{ver:91,title:'⚔️ オンラインデュエル能力・報酬の試験実装',detail:'キャラ別HP・速度・通常攻撃、必殺・ガジェット・スターパワーの簡易効果、勝敗報酬を追加。クライアント主導のため不正対策は限定的。',date:'2026年11月13日（日本時間）'},{ver:90,title:'🌐 オンラインデュエル試験版',detail:'ランダムマッチとルームコード対戦を追加。専用アリーナでリアルタイム1vs1・2本先取。オンライン報酬は安全性検証まで無効。',date:'2026年11月13日（日本時間）'},{ver:89,title:'👑 管理者パネルからアイテム削減',detail:'管理者がコイン・スタードロップ・トロフィーを付与または削減可能に。2回押して確認、所持数は0未満にならない。Firebaseルール更新が必要。',date:'2026年11月13日（日本時間）'},
+ {ver:88,title:'👑 管理者パネルと管理者専用の2称号装備',detail:'shutoのUIDに管理者称号を追加。専用コードで管理者パネルを開き、ユーザー名を指定してコイン・スタードロップ・トロフィーのギフトを送信可能に。shutoだけ称号を2つ装備・ランキング表示。Firebaseルールの更新が必要。',date:'2026年11月13日（日本時間）'},
+ {ver:87,title:'🎃 パンプキンの散弾を微調整',detail:'パンプキンの通常攻撃を15発→13発、攻撃力210→204に微減。散弾の広がりを0.11→0.135に少し広げ、集中しすぎない弾道に調整。',date:'2026年11月13日（日本時間）'},
+ {ver:86,title:'⚖️ ブレイズ・ネオン再調整とパンプキン散弾改善',detail:'ブレイズの速度2.30→2.12、攻撃力37→33。ネオンの速度2.66→2.35。パンプキンの15発散弾の広がりを0.24→0.11に狭め、弾がまとまって飛ぶよう調整。キャラ詳細のステータスも反映。',date:'2026年11月12日（日本時間）'},
+ {ver:85,title:'🟢⭐ ガジェット・スターパワーの購入ボタンを修正',detail:'Googleサイトの埋め込みで確認ダイアログが表示されず購入できない問題に対応。購入ボタンを2回押して確定する方式に変更し、購入・装備・クラウドセーブを維持。',date:'2026年11月12日（日本時間）'},
+ {ver:84,title:'⚖️ バランス再調整とステータス表示改善',detail:'ブレイズ速度2.44→2.30、攻撃40→37。フロスト攻撃64→61、HP135→125。フロスト・ロックの鈍足を軽減。パンプキン散弾11→15発。ゴーレムHP430→475、攻撃45→51、速度1.70→1.54、サイズを大型化。キャラ詳細に散弾数とサイズを追加。',date:'2026年11月12日（日本時間）'},
+ {ver:83,title:'⚖️ ブレイズ・フロスト・パンプキンのバランス調整',detail:'ブレイズの速度2.52→2.44、攻撃力42→40。フロストの攻撃力67→64。パンプキンの通常攻撃を9発→11発、攻撃力200→210に強化。',date:'2026年11月12日（日本時間）'},
+ {ver:82,title:'⚔️ 新モード「デュエル」追加',detail:'プレイヤーと敵AIの1vs1ノックアウトを追加。3ラウンド制・2勝先取、ラウンド間復活とHP・弾薬回復、勝利+30トロフィー＆ドロップ1個、敗北-15を実装。',date:'2026年11月12日（日本時間）'},
+ {ver:81,title:'🤖 AIの画面外戦闘と障害物回避を改善',detail:'画面外でもAI同士が攻撃し、弾が移動するよう修正。障害物を迂回する経路探索を追加し、引っかかりにくくしました。',date:'2026年11月12日（日本時間）'},
+ {ver:80,title:'🏆 トロフィー報酬を全面改定＆称号欄を折りたたみ可能に',detail:'ボス・3vs3は勝利+30＆ドロップ1個、敗北-15。バトルロイヤルは1位+35＆2個から10位-17まで順位別報酬に変更。ランク画面の称号コレクションを開閉可能にしました。',date:'2026年11月11日（日本時間）'},
+ {ver:79,title:'🎃 パンプキンのキャラ詳細画面を修正',detail:'パンプキン専用のガジェット・スターパワー効果定義が不足していたため詳細画面が開けない問題を修正。購入済みキャラの選択と能力表示に対応。',date:'2026年11月11日（日本時間）'},
+ {ver:78,title:'🗑️ 掲示板の削除ボタンを修正',detail:'Googleサイト埋め込み環境で確認ダイアログが表示されない場合に備え、投稿・返信の削除を2回タップして確定する方式に変更。Firebaseの書き込みURL修正も維持。',date:'2026年11月11日（日本時間）'},
+ {ver:77,title:'💬 掲示板の通信URLを修正',detail:'投稿・返信・いいね・削除のFirebase REST API URLに必須の.jsonを付与。読み込みだけ成功して書き込みに失敗する問題を修正。',date:'2026年11月11日（日本時間）'},
+ {ver:75,title:'💬 公開掲示板の通信エラー対策',detail:'掲示板の読み込み・投稿失敗時の案内を改善。Firebaseルール設定用ファイルを同梱し、返信・いいね・削除の権限を整理しました。',date:'2026年11月11日（日本時間）'},
+ {ver:74,title:'📰 過去のニュース表示を10件に拡大',detail:'ニュース画面で確認できる過去のアップデートを5件から10件に増やしました。',date:'2026年11月10日（日本時間）'},
+ {ver:73,title:'📜 ミッション＆限定称号ドロップ登場！',detail:'受け取り式ミッション18種類を追加。称号・コイン・スタードロップ・ランダムキャラ（パンプキン除外）・ガジェット・スターパワーを獲得できます。高レアのスタードロップから低確率で限定称号3種類が出現。報酬履歴はFirebaseに保存。',date:'2026年11月10日（日本時間）'},
+ {ver:71,title:'🏅 称号コレクション登場！',detail:'トロフィー・勝利数・キャラ収集で13種類の称号を解放。所持称号から1つだけ装備でき、オンラインランキングのユーザー名の横に公開表示されます。Firebaseルール更新が必要です。',date:'2026年11月10日（日本時間）'},
+ {ver:70,title:'🎃 購入済みパンプキンをキャラ選択画面から選択可能に',detail:'ショップで購入済みのパンプキンをキャラクター一覧と詳細画面で解放済みとして扱い、そのまま使用キャラに設定できるよう修正。Firebaseからの購入履歴との整合性も維持。',date:'2026年11月10日（日本時間）'},
+ {ver:69,title:'🎃 パンプキンの購入・選択とAI登場、攻撃時の自然回復を修正',detail:'攻撃すると自然回復が中断され、5秒後から再開。パンプキン購入時に即選択し、Firebaseの所持キャラ配列の読み込みを改善。通常AIとボスバトル味方AIにもパンプキンが登場するよう修正。',date:'2026年11月10日（日本時間）'},
+ {ver:68,title:'💬 掲示板に返信・いいね・削除を追加',detail:'公開フィードバックに返信、1アカウント1いいね（取り消し可能）、自分の投稿と返信の削除を追加。Firebaseルールの更新が必要です。',date:'2026年11月10日（日本時間）'},
+ {ver:67,title:'💬 公開フィードバック掲示板に進化',detail:'投稿した要望・改善案・不具合報告を全プレイヤーが閲覧可能に。新着順表示と更新ボタンを追加しました。Firebaseルールの更新が必要です。',date:'2026年11月7日（日本時間）'},
+ {ver:66,title:'💬 オンラインフィードバック機能を追加',detail:'ニュースの隣にフィードバックタブを追加。要望・バランス調整・不具合報告をFirebaseに送信できるようにしました。送信内容はほかのプレイヤーには公開されません。専用のFirebaseルール設定が必要です。',date:'2026年11月7日（日本時間）'},
+ {ver:65,title:'🎃 パンプキンの選択不具合・AI必殺技を改善',detail:'購入済みパンプキンをショップから直接使用キャラに設定できるように修正。Firebaseの所持キャラデータの数値文字列にも対応。AIの必殺技使用頻度を上げ、回復・防御系はHPに応じて使用するよう調整。',date:'2026年11月7日（日本時間）'},
+ {ver:64,title:'🏆 ランキングの自動読み込みを修正',detail:'再読み込み後のログイン完了時にFirebaseからランキングを自動取得。ランキング更新ボタンを押さなくても順位が復元されるようにしました。',date:'2026年11月6日（日本時間）'},
+ {ver:63,title:'🌐 オンライントロフィーランキング登場',detail:'Firebaseにユーザー名とトロフィー数を登録し、全プレイヤーのランキング上位100人と自分の順位を表示。ランク画面から更新可能。専用のFirebaseルール設定が必要です。',date:'2026年11月6日（日本時間）'},
+ {ver:62,title:'⚖️ ネオン・シャドウのバランス調整',detail:'ネオンの攻撃力55→43、移動速度2.72→2.66、リロード時間295→335ms。シャドウの攻撃力43→51、移動速度2.60→2.72に変更。',date:'2026年11月6日（日本時間）'},
+ {ver:61,title:'⚖️ ブレイズ・ゴーレム・ロックを調整',detail:'ブレイズのHP310→290、攻撃力46→42。ゴーレムのHP400→430、攻撃力39→45、移動速度1.93→1.70、リロード時間540→700ms。ロックのHP145→375（タイタン390より少し低い）に変更。',date:'2026年11月6日（日本時間）'},
+ {ver:60,title:'🎟️ アイテムコード機能を追加',detail:'ホームにアイテムコード入力欄を追加。rishoを入力すると500コインを獲得。同じアカウントでは1回のみ受け取り可能で、Firebaseに受取履歴を保存。',date:'2026年11月6日（日本時間）'},
+ {ver:59,title:'🎃 パンプキンをショップ購入限定に修正',detail:'ヒーローボックスの候補からパンプキンを除外。スタードロップでも除外を維持し、抽選関数にも二重の除外チェックを追加。購入済みの所持状況とFirebaseオンラインセーブは維持。',date:'2026年11月6日（日本時間）'},
+ {ver:58,title:'🌟 スタードロップ開封・所持数の修正',detail:'Firebaseからロードした際に空の特殊能力・装備データが欠落する問題を修正。開封抽選が途中停止して所持数だけ減る不具合を防止し、既存セーブを維持。',date:'2026年11月6日（日本時間）'},
+ {ver:57,title:'🛠️ クラウドレベルデータの配列形式に対応',detail:'Firebaseがlevelsを配列に変換して返した場合でも、キャラクターレベルを保持して読み込めるように修正。セーブデータの保護とオンライン保存は維持。',date:'2026年11月6日（日本時間）'},
+ {ver:56,title:'📱 スマホでのクラウド再ログイン不具合を修正',detail:'Firebaseが数字キーのオブジェクトとして返す所持キャラ一覧に対応。省略された選択キャラ・トロフィーを補完し、既存データを保持。読み込みエラー時は問題の項目を表示し、上書きを防止。',date:'2026年11月6日（日本時間）'},
+ {ver:55,title:'💾 クラウドセーブの再ログイン不具合を修正',detail:'Firebase Realtime Databaseで空のlevelsデータが省略されても安全に読み込めるように修正。既存データを消さず、必要な初期値だけを補完。',date:'2026年11月6日（日本時間）'},
+ {ver:54,title:'🔧 Firebaseログインの読み込み不具合を修正',detail:'GoogleサイトのHTML直接埋め込みでも動作しやすいようFirebase SDK依存を廃止。公式REST APIによるユーザー名認証・クラウドセーブ・自動復元・トークン更新に対応。通信エラー表示も改善。',date:'2026年11月6日（日本時間）'},
+ {ver:53,title:'👤 ユーザー名ログイン対応',detail:'メールアドレス入力を廃止し、ユーザー名とパスワードで登録・ログインできるように変更。Firebase内部ではユーザー名を専用の認証用アドレスに変換。',date:'2026年11月6日（日本時間）'},
+ {ver:52,title:'☁️ Firebaseオンラインセーブ対応',detail:'メール・パスワード認証、Realtime Databaseの自動保存・自動復元、クラウド保存状態表示、手動同期、JSONバックアップに対応。読み込み完了までプレイをロックし初期データによる上書きを防止。',date:'2026年11月6日（日本時間）'},
+ {ver:51,title:'💾 セーブデータのバックアップ機能',detail:'セーブデータのJSON書き出しと読み込み機能を追加。',date:'2026年11月6日（日本時間）'},
+ {ver:50,title:'🎃 ハロウィン限定キャラ「パンプキン」登場！',detail:'ショップ限定レジェンド「パンプキン」を5000コインで販売開始。HP350・攻撃力200・弾数1・広範囲攻撃・低速リロード・自己回復必殺技。ヒーローボックスとスタードロップからは出現しません。クリスマス限定キャラは近日公開のままです。',date:'2026年11月6日（日本時間）'},
+ {ver:49,title:'⚖️ キャラクターバランス調整',detail:'タイタンの最大HPを270→390、ゴーレムを260→400に増加。ノヴァの基本攻撃力を60→105に強化し全キャラ最高値に。ブレイズの1発リロード時間を0.8秒→1.35秒に変更。',date:'2026年11月6日（日本時間）'},
+ {ver:48,title:'🎲 キャラクターのレア度別出現率を調整',detail:'ヒーローボックスとスタードロップのキャラクター抽選をレアリティ別の重み付き抽選に変更。ノーマルほど出やすく、レジェンドほど出にくい仕様に。未解放キャラのみ対象で、重複なし。',date:'2026年11月6日（日本時間）'},
+ {ver:47,title:'🌟 キャラクターのレアリティを追加',detail:'全21体に5段階のレアリティを設定。キャラクター一覧・詳細・ホームにレア度を表示。ニュースを最新バージョンに更新。',date:'2026年11月6日（日本時間）'},
+ {ver:46,title:'🛠️ 特殊能力の購入不具合を修正',detail:'Lv.7以上のガジェットとLv.9以上のスターパワーの購入処理を修正。'},
+ {ver:45,title:'🤖 バトルロイヤルAIを改善',detail:'AIが毒ガスを避ける移動を改善。敵AIが必殺技を使用するように調整。'},
+ {ver:44,title:'📜 アップデート履歴を追加',detail:'ニュース画面から過去5件の更新内容を確認できる機能を追加。'},
+ {ver:43,title:'📰 ニュース画面を追加',detail:'6つ目のニュースタブを追加。最新の更新情報・バージョン・更新日を表示。',date:'2026年11月5日 09:30（日本時間）'},
+ {ver:42,title:'⚔️ バトルタブを追加',detail:'ホームとキャラの間にバトルボタンを追加。モード選択画面を独立。'}
+];
+const latest=updates[0],history=updates.slice(1,11);
+const historyHtml=history.map(n=>`<article class="card" style="margin-top:12px;text-align:left"><div class="row" style="justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><h3 style="margin:0">${n.title}</h3><span class="pill">Ver.${n.ver}</span></div>${n.date?`<p class="small muted">更新日時：${n.date}</p>`:''}<p>${n.detail}</p></article>`).join('');
+v.innerHTML=`<section class="panel news-panel"><div class="row" style="justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><h2 style="margin:0">📰 最新ニュース</h2><span class="pill">Ver.${latest.ver}</span></div><p class="muted">最終アップデート：${latest.date}</p><div class="card" style="margin-top:16px;text-align:left"><h3>✨ ${latest.title}</h3><p>${latest.detail}</p></div><div style="margin-top:18px"><button type="button" class="btn" data-act="toggleHistory" aria-expanded="${newsHistoryOpen}" aria-controls="newsHistory">${newsHistoryOpen?'▲ 過去のアップデートを閉じる':'📜 過去のアップデートを見る'}</button></div><div id="newsHistory" ${newsHistoryOpen?'':'hidden'} style="margin-top:14px"><h3>📚 過去のアップデート（10件）</h3>${historyHtml}</div></section>`;
+}
+else{v.innerHTML=`<section class="panel"><h2>🏆 ランク</h2><div class="big">${rank()}</div><p>現在のトロフィー：${data.trophies} 🏆</p><p class="muted">ブロンズ 0 ／ シルバー 100 ／ ゴールド 300 ／ ダイヤ 650 ／ マスター 1100 ／ レジェンド 1800</p><p>勝利数：${data.wins} ／ 対戦数：${data.matches}</p></section><section class="panel"><div class="row" style="justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><h2 style="margin:0">🏅 称号コレクション</h2><button type="button" class="btn" data-act="toggleTitles" aria-expanded="${titleCollectionOpen}">${titleCollectionOpen?'▲ 閉じる':'🏅 称号を表示・選択'}</button></div><p class="muted">装備中：${equippedTitlesHTML()}</p>${titleCollectionOpen?titleCollectionHTML():''}</section>${leaderboardHTML()}`}}
+document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{tab=b.dataset.tab;render();if(tab==='feedback')loadFeedback()});
+$('view').addEventListener('change',e=>{if(e.target.name==='mode'){mode=e.target.value;render()}});
+$('view').addEventListener('click',e=>{let b=e.target.closest('[data-act]');if(!b)return;let a=b.dataset.act;if(a.startsWith('chooseMode:')){mode=a.split(':')[1];render()}else if(a.startsWith('chooseBoss:')){bossType=a.split(':')[1];render()}else if(a==='onlineRandom'){onlineRandom()}else if(a==='onlineCreate'){onlineCreate()}else if(a==='onlineJoin'){onlineJoin()}else if(a==='sendFeedback'){sendFeedback()}else if(a==='refreshFeedback'){loadFeedback()}else if(['likeFeedback','replyFeedback','deleteFeedback','deleteReply'].includes(a)){feedbackAction(a,b)}else if(a==='redeemCode'){redeemItemCode()}else if(a==='sendGift'){sendAdminGift()}else if(a==='closeAdmin'){adminPanelOpen=false;pendingAdminAction='';render()}else if(a.startsWith('equipTitle2:')){if(!isAdmin())return;const id=a.split(':')[1];unlockTitles();if(id!=='none'&&(!data.unlockedTitles[id]||!titleById(id)||id===data.selectedTitle))return;data.selectedTitle2=id==='none'?null:id;leaderboardPublished=null;save();publishLeaderboard().then(()=>{if(tab==='ranking')loadLeaderboard()});render()}else if(a.startsWith('claimMission:')){claimMission(a.split(':')[1])}else if(a.startsWith('equipTitle:')){const id=a.split(':')[1];unlockTitles();if(!data.unlockedTitles[id]||!titleById(id))return alert('未獲得の称号です');data.selectedTitle=id;leaderboardPublished=null;save();publishLeaderboard().then(()=>{if(tab==='ranking')loadLeaderboard()});render()}else if(a==='refreshLeaderboard'){if(!leaderboardLoading)loadLeaderboard()}else if(a==='toggleTitles'){titleCollectionOpen=!titleCollectionOpen;render()}else if(a==='toggleHistory'){newsHistoryOpen=!newsHistoryOpen;render()}else if(a==='start')start();else if(a==='openDrop')openDrop();else if(a.startsWith('tab:')){tab=a.split(':')[1];render();if(tab==='ranking')loadLeaderboard();if(tab==='feedback')loadFeedback()}else if(a.startsWith('detail:')){showHeroDetail(+a.split(':')[1])}else if(a.startsWith('select:')){data.selected=+a.split(':')[1];save();render()}else if(a==='upgrade'){let cost=150*level(data.selected);if(data.coins<cost)return alert('コインが足りません');if(level(data.selected)>=20)return alert('最大レベルです');data.coins-=cost;data.levels[data.selected]=level(data.selected)+1;save();render()}else if(a==='choosePumpkin'){if(!data.owned.includes(20)&&data.pumpkinPurchased===true)data.owned.push(20);if(!data.owned.includes(20))return alert('パンプキンの購入情報が見つかりません。Firebaseの所持キャラ一覧を確認してください。');data.selected=20;save();render();alert('🎃 パンプキンを使用キャラに設定しました！')}else if(a==='buyHalloween'){if(data.owned.includes(20))return alert('すでに購入済みです');if(data.coins<5000)return alert('コインが足りません（5000コイン必要）');if(!confirm('🎃 パンプキンを5000コインで購入しますか？'))return;data.coins-=5000;data.owned.push(20);data.pumpkinPurchased=true;data.selected=20;save();alert('🎉 🎃 パンプキンを購入し、使用キャラに設定しました！');render()}else if(a==='gacha'){let locked=randomUnlockableHeroIds();if(!locked.length)return alert('ヒーローボックスで解放できるキャラは全員解放済みです！ ショップ限定キャラはショップから購入してください。');if(data.coins<1000)return alert('コインが足りません');data.coins-=1000;let i=weightedHeroDraw(locked);data.owned.push(i);save();alert('🎉 '+h(i).icon+' '+h(i).name+' を獲得！');render()}});
 const canvas=$('gameCanvas'),ctx=canvas.getContext('2d');const rand=(a,b)=>a+Math.random()*(b-a);const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);const norm=(x,y)=>{let d=Math.hypot(x,y)||1;return{x:x/d,y:y/d}};function circleRect(x,y,r,w){let cx=clamp(x,w.x,w.x+w.w),cy=clamp(y,w.y,w.y+w.h);return (x-cx)**2+(y-cy)**2<r*r}
 function blocked(x,y,r=17){return x<r||y<r||x>worldW-r||y>worldH-r||walls.some(w=>circleRect(x,y,r,w))}
 function pos(radius=28){for(let k=0;k<350;k++){let p={x:rand(65,worldW-65),y:rand(65,worldH-65)};if(!blocked(p.x,p.y,radius+10)&&entities.every(e=>dist(e,p)>e.r+radius+48))return p}for(let y=65;y<worldH-65;y+=35)for(let x=65;x<worldW-65;x+=35){let p={x,y};if(!blocked(x,y,radius+10)&&entities.every(e=>dist(e,p)>e.r+radius+25))return p}return{x:worldW/2,y:worldH/2}}
 let powerCubes=[];let powerBoxes=[];
-function create(id,team,ai=true,p){let a=h(id),lv=ai?Math.min(20,Math.max(1,1+Math.floor(data.trophies/170)+Math.floor(rand(-1,2)))):level(id),hp=a.hp+lv*12;return{id,lv,team,ai,power:0,baseMaxhp:hp,baseDamage:a.damage+lv*3,x:p?.x??480,y:p?.y??300,r:a.bodySize,hp,maxhp:hp,speed:a.speed,damage:a.damage+lv*3,range:a.range,cooldown:a.cooldown,lastShot:0,super:0,dead:false,respawn:0,dir:0,lastHit:-10,think:0,tx:0,ty:0,score:0,invuln:0,slowUntil:0,boostUntil:0,poisonUntil:0,poisonOwner:null,aiStrafe:1,gasTick:0,ammo:AMMO_CAP[id],reloadProgress:0,revealedUntil:0}}
+function create(id,team,ai=true,p){let a=h(id),lv=ai?Math.min(20,Math.max(1,1+Math.floor(data.trophies/170)+Math.floor(rand(-1,2)))):level(id),hp=a.hp+lv*12;return{id,lv,team,ai,power:0,baseMaxhp:hp,baseDamage:a.damage+lv*3,x:p?.x??480,y:p?.y??300,r:a.bodySize,hp,maxhp:hp,speed:a.speed,damage:a.damage+lv*3,range:a.range,cooldown:a.cooldown,lastShot:0,super:0,dead:false,respawn:0,dir:0,lastHit:-10,think:0,tx:0,ty:0,score:0,invuln:0,slowUntil:0,boostUntil:0,poisonUntil:0,poisonOwner:null,aiStrafe:1,gasTick:0,ammo:AMMO_CAP[id],reloadProgress:0,revealedUntil:0,gadgetIndex:lv>=7?(ai?Math.floor(Math.random()*2):equippedGadget(id)):-1,starIndex:lv>=9&&ai?Math.floor(Math.random()*2):-1,gadgetCharges:lv>=7?3:0,gadgetShieldUntil:0,gadgetReloadUntil:0,gadgetDamageUntil:0,gadgetFlash:0,stealthUntil:0}}
 function mapBuild(){
 worldW=mode==='royale'?3000:mode==='boss'?1300:1080;
 worldH=mode==='royale'?2200:mode==='boss'?850:720;
 walls=[];bushes=[];
 const spawnX=worldW/2,spawnY=worldH/2;
-const safe=(x,y,w,h)=>!circleRect(spawnX,spawnY,125,{x,y,w,h});
+const safe=(x,y,w,h)=>{
+ const rect={x,y,w,h};
+ if(circleRect(spawnX,spawnY,125,rect))return false;
+ if(mode==='team'||mode==='duel'){
+  for(const sx of [100,worldW-100])for(const sy of [worldH/2-155,worldH/2,worldH/2+155]){
+   if(circleRect(sx,sy,85,rect))return false;
+  }
+ }
+ return true;
+};
 let patterns=[
 [[.19,.20],[.75,.20],[.20,.74],[.75,.74],[.48,.16],[.48,.78]],
 [[.14,.38],[.80,.38],[.33,.15],[.63,.15],[.33,.75],[.63,.75]],
@@ -89,31 +846,52 @@ for(let i=0;i<(mode==='royale'?45:12);i++){let x=rand(30,worldW-175),y=rand(30,w
 }
 
 function inBush(e){return bushes.some(b=>circleRect(e.x,e.y,e.r*.45,b))}
-function canSee(observer,target){return target.isBoss||target.revealedUntil>elapsed||!inBush(target)||inBush(observer)&&bushes.some(b=>circleRect(observer.x,observer.y,observer.r*.45,b)&&circleRect(target.x,target.y,target.r*.45,b))||dist(observer,target)<105}
+function canSee(observer,target){return target.isBoss?true:target.stealthUntil>elapsed?false:target.revealedUntil>elapsed||!inBush(target)||inBush(observer)&&bushes.some(b=>circleRect(observer.x,observer.y,observer.r*.45,b)&&circleRect(target.x,target.y,target.r*.45,b))||dist(observer,target)<105}
 function onScreen(e,padding=0){let x=e.x-camX,y=e.y-camY;return x>=-padding&&x<=960+padding&&y>=-padding&&y<=600+padding}
 function cameraUpdate(){let focus=mode==='boss'&&player.dead?entities.find(e=>e.team===0&&!e.dead)||player:player;camX=clamp(focus.x-480,0,Math.max(0,worldW-960));camY=clamp(focus.y-300,0,Math.max(0,worldH-600))}
 function gasState(){let phase=Math.floor(elapsed/30),progress=clamp((elapsed%30-10)/20,0,1);return{phase,inset:Math.min(worldW*.43,phase*165+progress*165)}}
 function inGas(e){return e.x<gasInset+e.r||e.y<gasInset+e.r||e.x>worldW-gasInset-e.r||e.y>worldH-gasInset-e.r}
 let knockoutRound=1,roundBreak=0;
-function start(){powerCubes=[];powerBoxes=[];cancelAnimationFrame(raf);playing=true;matchOver=false;entities=[];shots=[];particles=[];effects=[];elapsed=0;spawnTimer=0;kills=0;score=0;teamScore=[0,0];gasInset=0;gasPhase=0;bossWarnings=[];bossCooldown=2.6;bossPattern=0;killFeed=[];knockoutRound=1;roundBreak=0;last=performance.now();mapBuild();player=create(data.selected,0,false,{x:worldW/2,y:worldH/2}); if(blocked(player.x,player.y,player.r+20)){let safe=pos(player.r);player.x=safe.x;player.y=safe.y;}entities.push(player);let count=mode==='royale'?9:mode==='team'?5:0;for(let i=0;i<count;i++){let team=mode==='team'?(i<2?0:1):1;let id=Math.floor(rand(0,20)),r=h(id).bodySize,p=null;for(let attempt=0;attempt<450;attempt++){let candidate={x:rand(110,worldW-110),y:rand(110,worldH-110)};if(!blocked(candidate.x,candidate.y,r+15)&&entities.every(e=>dist(e,candidate)>=Math.max(mode==='royale'?500:290,e.r+r+80))){p=candidate;break}}p??=pos(r);entities.push(create(id,team,true,p))}if(mode==='royale'){entities.forEach((e,i)=>e.team=i)}
+function start(){if(mode==='boss'){const difficultySelect=$('bossDifficultySelect');if(difficultySelect)bossDifficulty=Math.max(0,Math.min(4,Number(difficultySelect.value)||0));}powerCubes=[];powerBoxes=[];cancelAnimationFrame(raf);playing=true;matchOver=false;entities=[];shots=[];particles=[];effects=[];elapsed=0;spawnTimer=0;kills=0;score=0;teamScore=[0,0];gasInset=0;gasPhase=0;bossWarnings=[];bossCooldown=3.2;bossPattern=0;bossRageStage=0;bossRageMessageUntil=0;killFeed=[];knockoutRound=1;roundBreak=0;last=performance.now();mapBuild();player=create(data.selected,0,false,{x:worldW/2,y:worldH/2}); if(blocked(player.x,player.y,player.r+20)){let safe=pos(player.r);player.x=safe.x;player.y=safe.y;}applyStar(player);entities.push(player);let count=mode==='royale'?9:mode==='team'?5:mode==='duel'?1:0;for(let i=0;i<count;i++){let team=mode==='team'?(i<2?0:1):1;let id=Math.floor(rand(0,HEROES.length)),r=h(id).bodySize,p=null;for(let attempt=0;attempt<450;attempt++){let candidate={x:rand(110,worldW-110),y:rand(110,worldH-110)};if(!blocked(candidate.x,candidate.y,r+15)&&entities.every(e=>dist(e,candidate)>=Math.max(mode==='royale'?500:290,e.r+r+80))){p=candidate;break}}p??=pos(r);let bot=create(id,team,true,p);
+// ノックアウトの味方AIも敵AIと同様、各試合で固有能力をランダム装備。
+if(mode==='team'&&team===0){
+ bot.gadgetIndex=bot.lv>=7?Math.floor(Math.random()*2):-1;
+ bot.starIndex=bot.lv>=9?Math.floor(Math.random()*2):-1;
+ bot.gadgetCharges=bot.gadgetIndex>=0?3:0;
+}
+applyStar(bot);entities.push(bot)}if(mode==='royale'){entities.forEach((e,i)=>e.team=i)}
 if(mode==='royale'){for(let i=0;i<17;i++){let p=pos(32);if(!powerBoxes.some(c=>dist(c,p)<110)&&entities.every(e=>dist(e,p)>85))powerBoxes.push({x:p.x,y:p.y,hp:200,maxhp:200,r:27})}}
 if(mode==='boss'){
 let boss=create(18,1,true,{x:worldW/2+310,y:worldH/2});
 if(blocked(boss.x,boss.y,48)){let q=pos(48);boss.x=q.x;boss.y=q.y}
-boss.isBoss=true;boss.lv=Math.min(30,5+Math.floor(data.trophies/110));boss.r=46;
-boss.maxhp=8200+boss.lv*550;boss.hp=boss.maxhp;
-boss.damage=52+boss.lv*6;boss.speed=1.78;boss.range=420;
+boss.isBoss=true;boss.gadgetIndex=-1;boss.starIndex=-1;boss.gadgetCharges=0;boss.star=null;boss.lv=BOSS_DIFFICULTIES[bossDifficulty].lv;boss.difficulty=bossDifficulty;boss.bossName=selectedBoss().name;boss.bossType=bossType;boss.r=bossType==='storm'?39:46;
+boss.maxhp=Math.round((8200+boss.lv*550)*selectedBoss().hp*BOSS_DIFFICULTIES[bossDifficulty].hp);boss.hp=boss.maxhp;
+boss.damage=Math.round((52+boss.lv*6)*selectedBoss().damage*BOSS_DIFFICULTIES[bossDifficulty].damage);boss.speed=selectedBoss().speed;boss.range=bossType==='storm'?480:420;boss.cooldown*=selectedBoss().cooldown;boss.baseBossDamage=boss.damage;boss.baseBossSpeed=boss.speed;boss.baseBossCooldown=boss.cooldown;
 boss.ammo=AMMO_CAP[boss.id];boss.lastShot=0;entities.push(boss);
-for(let i=0;i<2;i++){let ally=create(Math.floor(rand(0,20)),0,true,{x:player.x+(i===0?-85:85),y:player.y+75});if(blocked(ally.x,ally.y,ally.r+5)){let q=pos(ally.r);ally.x=q.x;ally.y=q.y}ally.isBossAlly=true;entities.push(ally)}
-}$('menu').style.display='none';$('gameArea').style.display='block';$('modeName').textContent={boss:'👹 ボスバトル',royale:'👑 バトルロイヤル',team:'🔵 3vs3ノックアウト'}[mode];document.body.classList.add('playing');$('overlay').style.display='none';raf=requestAnimationFrame(loop)}
+for(let i=0;i<2;i++){let ally=create(Math.floor(rand(0,HEROES.length)),0,true,{x:player.x+(i===0?-85:85),y:player.y+75});if(blocked(ally.x,ally.y,ally.r+5)){let q=pos(ally.r);ally.x=q.x;ally.y=q.y}ally.isBossAlly=true;applyStar(ally);entities.push(ally)}
+}if(mode==='duel'||mode==='team')beginKnockoutRound();$('menu').style.display='none';$('gameArea').style.display='block';$('modeName').textContent={boss:'👹 ボスバトル',royale:'👑 バトルロイヤル',team:'🔵 3vs3ノックアウト',duel:'⚔️ デュエル（1vs1）'}[mode];document.body.classList.add('playing');$('overlay').style.display='none';updateGadgetButton();raf=requestAnimationFrame(loop)}
 function beginKnockoutRound(){
  shots=[];particles=[];effects=[];killFeed=[];mapBuild();
- const positions=[{x:125,y:worldH/2},{x:125,y:worldH/2-155},{x:125,y:worldH/2+155},{x:worldW-125,y:worldH/2},{x:worldW-125,y:worldH/2-155},{x:worldW-125,y:worldH/2+155}];
- entities.forEach((e,i)=>{let p=positions[i]||pos(e.r);if(blocked(p.x,p.y,e.r+6))p=pos(e.r);e.x=p.x;e.y=p.y;e.dead=false;e.hp=e.maxhp;e.ammo=AMMO_CAP[e.id];e.reloadProgress=0;e.super=0;e.lastHit=elapsed;e.lastShot=-100000;e.invuln=elapsed+1.5;e.revealedUntil=0});
+ const allyY=[worldH/2,worldH/2-155,worldH/2+155];
+ const enemyY=[worldH/2,worldH/2-155,worldH/2+155];
+ let allyIndex=0,enemyIndex=0;
+ entities.forEach(e=>{
+  const friendly=e.team===0;
+  const y=(friendly?allyY[allyIndex++%3]:enemyY[enemyIndex++%3]);
+  const x=friendly?100:worldW-100;
+  let p={x,y};
+  if(blocked(p.x,p.y,e.r+6)){
+   for(let d=0;d<120;d+=12){
+    const cx=friendly?x+d:x-d;
+    if(!blocked(cx,y,e.r+6)){p={x:cx,y};break}
+   }
+  }
+  e.x=p.x;e.y=p.y;e.dead=false;e.hp=e.maxhp;e.ammo=maxAmmo(e);e.reloadProgress=0;e.super=0;e.gadgetCharges=e.gadgetIndex>=0?3:0;e.lastHit=elapsed;e.lastShot=-100000;e.invuln=elapsed+1.5;e.revealedUntil=0;
+ });
  roundBreak=0;cameraUpdate();
 }
 function knockoutCheck(){
- if(mode!=='team'||roundBreak>0||!playing)return;
+ if((mode!=='team'&&mode!=='duel')||roundBreak>0||!playing)return;
  const blue=entities.some(e=>e.team===0&&!e.dead),red=entities.some(e=>e.team===1&&!e.dead);
  if(blue&&red)return;
  if(blue!==red)teamScore[blue?0:1]++;
@@ -126,9 +904,11 @@ let now=elapsed*1000,boost=e.boostUntil>elapsed;
 if(!superShot){if(e.ammo<1||now-e.lastShot<e.cooldown*(boost?.55:1))return;
 e.ammo--;e.lastShot=now;
 }
-e.revealedUntil=Math.max(e.revealedUntil,elapsed+1.2);
+e.lastHit=elapsed; // 通常攻撃・必殺技の使用で自然回復を中断し、5秒カウントを再開
+e.revealedUntil=Math.max(e.revealedUntil,elapsed+1.2);e.stealthUntil=0;
 let n=norm(dx,dy),id=e.id,kind=id%5;e.dir=Math.atan2(n.y,n.x);
 if(superShot){e.super=0;
+if(id===20){e.hp=Math.min(e.maxhp,e.hp+e.maxhp*.65);effects.push({x:e.x,y:e.y,r:22,max:165,life:38,color:'#ffb35c'});return;}
 // キャラクター固有の追加必殺技
 if([0,8,12,16].includes(id)){
  const bursts=id===12?13:10,spread=id===12?.19:.14;
@@ -150,7 +930,7 @@ if([6,18].includes(id)){
  effects.push({x:e.x,y:e.y,r:20,max:130,life:40,color:'#8bd8ff'});return;
 }
 
-if(kind===1){let radius=id===11?195:155;effects.push({x:e.x,y:e.y,r:12,max:radius,life:25,color:'#8edfff'});for(let target of entities){if(target!==e&&!target.dead&&target.team!==e.team&&dist(e,target)<radius){hit(target,e.damage*(id===11?2.5:2),e);target.slowUntil=elapsed+2.4;let v=norm(target.x-e.x,target.y-e.y),nx=target.x+v.x*85,ny=target.y+v.y*85;if(!blocked(nx,ny,target.r)){target.x=nx;target.y=ny}}}return}
+if(kind===1){let radius=id===11?195:155;effects.push({x:e.x,y:e.y,r:12,max:radius,life:25,color:'#8edfff'});for(let target of entities){if(target!==e&&!target.dead&&target.team!==e.team&&dist(e,target)<radius){hit(target,e.damage*(id===11?2.5:2),e);target.slowUntil=elapsed+2.1;let v=norm(target.x-e.x,target.y-e.y),nx=target.x+v.x*85,ny=target.y+v.y*85;if(!blocked(nx,ny,target.r)){target.x=nx;target.y=ny}}}return}
 if(kind===2){e.boostUntil=elapsed+(id===12?9:7);if(id===12)e.invuln=elapsed+1.1;effects.push({x:e.x,y:e.y,r:30,max:95,life:35,color:'#ffe766'});return}
 if(kind===3){let heal=id===13?.85:.55;for(let ally of entities){if(!ally.dead&&ally.team===e.team&&dist(e,ally)<(id===13?320:190))ally.hp=Math.min(ally.maxhp,ally.hp+ally.maxhp*heal)}effects.push({x:e.x,y:e.y,r:20,max:180,life:35,color:'#78ffa9'});return}}
 const cfg=ATTACK_CONFIG[id];let count=superShot?(kind===0?(id===10?9:7):id===15?5:1):cfg[0];
@@ -159,6 +939,7 @@ let spread=superShot?(count>1?.17:0):cfg[1],ang=e.dir+(i-(count-1)/2)*spread;
 let speed=superShot?Math.max(10,cfg[3]*1.2):cfg[3];
 let damage=e.damage*(superShot?(count>1?.82:3.2):(e.range<=120&&count>1?cfg[2]*1.3:cfg[2]));
 let radius=superShot&&kind===4?17:superShot?9:cfg[4],range=superShot?(id===5?660:450):e.range;
+if(e.gadgetDamageUntil>elapsed)damage*=1.25;
 shots.push({x:e.x+Math.cos(ang)*(e.r+5),y:e.y+Math.sin(ang)*(e.r+5),vx:Math.cos(ang)*speed,vy:Math.sin(ang)*speed,owner:e,damage,life:range/speed,superShot,r:radius,pierce:superShot&&kind===4?4:cfg[5],hitIds:new Set(),color:h(id).color,role:superShot?-1:id%4,trail:[]});
 }}
 function damagePowerBox(box,damage,owner){
@@ -171,17 +952,72 @@ function nearestPowerObjective(e){
  if(mode!=='royale'||e.isBoss)return null;
  const opts=[...powerBoxes.map(b=>({x:b.x,y:b.y,box:b})),...powerCubes.filter(c=>elapsed>=c.spawn).map(c=>({x:c.x,y:c.y,box:null}))];
  opts.sort((a,b)=>dist(e,a)-dist(e,b));
- return opts.find(o=>dist(e,o)<850)||null;
+ return opts.find(o=>dist(e,o)<850&&(gasInset<=0||(o.x>gasInset+50&&o.x<worldW-gasInset-50&&o.y>gasInset+50&&o.y<worldH-gasInset-50)))||null;
 }
 function aim(e){let candidates=entities.filter(o=>!o.dead&&o!==e&&o.team!==e.team&&canSee(e,o));candidates.sort((a,b)=>dist(a,e)-dist(b,e));return candidates[0]}
-function doAttack(superShot=false,manualDirection=null){if(!playing||player.dead)return;if(superShot&&player.super<100)return;let target=aim(player);if(target&&!onScreen(target))target=null;let v=manualDirection|| (mouse.active?{x:mouse.x+camX-player.x,y:mouse.y+camY-player.y}:target?{x:target.x-player.x,y:target.y-player.y}:{x:Math.cos(player.dir),y:Math.sin(player.dir)});shoot(player,v.x,v.y,superShot)}
+function autoAimTarget(e){
+ const enemies=entities.filter(o=>!o.dead&&o!==e&&o.team!==e.team&&canSee(e,o)&&onScreen(o));
+ const boxes=mode==='royale'?powerBoxes.filter(b=>b.hp>0&&onScreen(b)):[];
+ const targets=[...enemies,...boxes];
+ targets.sort((a,b)=>dist(e,a)-dist(e,b));
+ return targets[0]||null;
+}
+function doAttack(superShot=false,manualDirection=null,forceAuto=false){
+ if(!playing||player.dead)return;
+ if(superShot&&player.super<100)return;
+ let target=autoAimTarget(player);
+ let v=manualDirection||(!forceAuto&&mouse.active?{x:mouse.x+camX-player.x,y:mouse.y+camY-player.y}:target?{x:target.x-player.x,y:target.y-player.y}:{x:Math.cos(player.dir),y:Math.sin(player.dir)});
+ shoot(player,v.x,v.y,superShot);
+}
 function moveEntity(e,dx,dy,step){let v=norm(dx,dy),s=e.speed*step;if(Math.hypot(dx,dy)<.01)return;let nx=e.x+v.x*s,ny=e.y+v.y*s;if(!blocked(nx,e.y,e.r))e.x=nx;if(!blocked(e.x,ny,e.r))e.y=ny}
-function hit(e,damage,owner){if(e.dead||e.invuln>elapsed)return;e.hp-=damage;e.lastHit=elapsed;e.revealedUntil=Math.max(e.revealedUntil,elapsed+1);if(owner===player)player.super=clamp(player.super+12,0,100);for(let i=0;i<6;i++)particles.push({x:e.x,y:e.y,vx:rand(-3,3),vy:rand(-3,3),life:25,color:h(e.id).color});if(e.hp<=0){
+// Ver.81: camera-independent AI navigation. Grid A* routes around walls.
+function aiClearPath(x1,y1,x2,y2,r){
+ const d=Math.hypot(x2-x1,y2-y1),steps=Math.max(1,Math.ceil(d/20));
+ for(let i=1;i<=steps;i++){const t=i/steps;if(blocked(x1+(x2-x1)*t,y1+(y2-y1)*t,r))return false}
+ return true;
+}
+function aiWaypoint(e,focus){
+ if(aiClearPath(e.x,e.y,focus.x,focus.y,e.r+3))return null;
+ const cell=42,cols=Math.ceil(worldW/cell),rows=Math.ceil(worldH/cell);
+ const ix=x=>Math.max(0,Math.min(cols-1,Math.floor(x/cell))),iy=y=>Math.max(0,Math.min(rows-1,Math.floor(y/cell)));
+ const start=iy(e.y)*cols+ix(e.x),goal=iy(focus.y)*cols+ix(focus.x);
+ if(e.navGoal===goal&&e.navUntil>elapsed&&e.navPath?.length){
+  while(e.navPath.length>1&&Math.hypot(e.x-e.navPath[0].x,e.y-e.navPath[0].y)<cell*.55)e.navPath.shift();
+  if(e.navPath.length)return e.navPath[0];
+ }
+ e.navGoal=goal;e.navUntil=elapsed+.6;e.navPath=[];
+ const total=cols*rows,pass=new Uint8Array(total),margin=e.r+3;
+ for(let y=0;y<rows;y++)for(let x=0;x<cols;x++){
+  const k=y*cols+x,px=Math.min(worldW-margin-1,(x+.5)*cell),py=Math.min(worldH-margin-1,(y+.5)*cell);
+  pass[k]=!blocked(px,py,margin)?1:0;
+ }
+ pass[start]=1;
+ const g=new Float64Array(total).fill(Infinity),prev=new Int32Array(total).fill(-1),closed=new Uint8Array(total),open=[start];g[start]=0;
+ const heuristic=k=>Math.hypot(k%cols-goal%cols,Math.floor(k/cols)-Math.floor(goal/cols));
+ let found=-1,best=start,bestDist=heuristic(start),iterations=0;
+ while(open.length&&iterations++<total){
+  let at=0;for(let i=1;i<open.length;i++)if(g[open[i]]+heuristic(open[i])<g[open[at]]+heuristic(open[at]))at=i;
+  const k=open.splice(at,1)[0];if(closed[k])continue;closed[k]=1;
+  const hd=heuristic(k);if(hd<bestDist){best=k;bestDist=hd}
+  if(k===goal){found=k;break}
+  const x=k%cols,y=Math.floor(k/cols);
+  for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){
+   const nx=x+dx,ny=y+dy;if(nx<0||ny<0||nx>=cols||ny>=rows)continue;
+   const nk=ny*cols+nx;if(!pass[nk]||closed[nk])continue;
+   const ng=g[k]+1;if(ng<g[nk]){g[nk]=ng;prev[nk]=k;open.push(nk)}
+  }
+ }
+ let k=found>=0?found:best,chain=[];
+ while(k!==start&&k>=0&&chain.length<total){const x=k%cols,y=Math.floor(k/cols);chain.push({x:Math.min(worldW-margin-1,(x+.5)*cell),y:Math.min(worldH-margin-1,(y+.5)*cell)});k=prev[k]}
+ chain.reverse();e.navPath=chain;
+ return chain[0]||null;
+}
+function hit(e,damage,owner){if(e.dead||e.invuln>elapsed)return;if(e.star==='armor')damage*=.88;if(e.gadgetShieldUntil>elapsed)damage*=.5;e.hp-=damage;e.lastHit=elapsed;e.revealedUntil=Math.max(e.revealedUntil,elapsed+1);if(owner===player)player.super=clamp(player.super+(player.star==='supergain'?19:12),0,100);for(let i=0;i<6;i++)particles.push({x:e.x,y:e.y,vx:rand(-3,3),vy:rand(-3,3),life:25,color:h(e.id).color});if(e.hp<=0){
 let killerName=owner?(owner===player?'YOU':owner.isBoss?'👹 ボス':h(owner.id).name):'☠️ 毒ガス';
 let victimName=e===player?'YOU':e.isBoss?'👹 ボス':h(e.id).name;
 killFeed.unshift({killer:killerName,victim:victimName,killerColor:owner?(owner.team===0?'#8dc7ff':'#ffb1b9'):'#dfb3ff',victimColor:e.team===0?'#8dc7ff':'#ffb1b9',time:elapsed});
 killFeed=killFeed.slice(0,5);
-if(mode==='royale'&&!e.isBoss){powerCubes.push({x:e.x,y:e.y,spawn:elapsed+0.25})}e.hp=0;e.dead=true;e.respawn=elapsed+2.5;if(owner){owner.score++;if(owner===player){kills++;score+=100}}if(mode==='team')knockoutCheck();if(e===player&&mode!=='team'&&mode!=='boss')finish(false);if(mode==='boss'&&!e.isBoss&&e.team===0){e.respawn=elapsed+20;if(!entities.some(o=>o.team===0&&!o.dead))finish(false)}if(mode==='royale'&&entities.filter(o=>!o.dead).length<=1)finish(!player.dead)}}
+if(mode==='royale'&&!e.isBoss){powerCubes.push({x:e.x,y:e.y,spawn:elapsed+0.25})}e.hp=0;e.dead=true;e.respawn=elapsed+2.5;if(owner){owner.score++;if(owner===player){kills++;score+=100}}if(mode==='team'||mode==='duel')knockoutCheck();if(e===player&&mode==='royale')finish(entities.filter(o=>!o.dead).length<=3);if(mode==='boss'&&!e.isBoss&&e.team===0){e.respawn=elapsed+20;if(!entities.some(o=>o.team===0&&!o.dead))finish(false)}if(mode==='royale'&&entities.filter(o=>!o.dead).length<=1)finish(!player.dead)}}
 // ボス専用の予告攻撃。予告時間内に赤いエリアから出れば回避できる。
 // ボスは予告付きの5パターンを順番に使用する。
 function bossAttack(boss){
@@ -189,11 +1025,33 @@ function bossAttack(boss){
  const living=entities.filter(e=>e.team===0&&!e.dead);
  if(!living.length)return;
  const victim=living[Math.floor(Math.random()*living.length)];
- const kind=bossPattern++%5;
- const delay=[1.0,.9,1.1,1.0,1.1][kind];
- const common={kind,delay,full:delay,damage:Math.round(49+boss.lv*4.4)};
+ const stormPatterns=[9,10,11,12,13,14,15,16];
+ const stormAvailable=bossRageStage>=2?8:bossRageStage>=1?7:6;
+ const kind=boss.bossType==='storm'?stormPatterns[(bossPattern++)%stormAvailable]:bossPattern++%(5+(bossRageStage>=1?2:0)+(bossRageStage>=2?2:0));
+ const delay=([1.0,.9,1.1,1.0,1.1,1.05,1.0,.95,1.05,.72,.85,.9,1.05,.95,1.1,1.0,1.15][kind]||1)*Math.max(.82,1-bossRageStage*.05)*BOSS_DIFFICULTIES[bossDifficulty].warning*1.17;
+ const common={kind,delay,full:delay,damage:Math.round((49+boss.lv*4.4)*(1+bossRageStage*.20)*(boss.bossType==='storm'?1.25:1)*BOSS_DIFFICULTIES[bossDifficulty].damage)};
+ const warningStart=bossWarnings.length;
  const a=Math.atan2(victim.y-boss.y,victim.x-boss.x);
- if(kind===0){ // 着弾地点を少し先読みしたメテオ
+ if(kind===9){ // 雷霆：全味方を狙う高速落雷
+  for(const e of living)bossWarnings.push({...common,kind:9,x:clamp(e.x+rand(-35,35),60,worldW-60),y:clamp(e.y+rand(-35,35),60,worldH-60),r:105});
+ }else if(kind===10){ // 雷霆：扇状の3本の雷ビーム
+  for(const offset of [-.36,0,.36])bossWarnings.push({...common,kind:10,x:boss.x,y:boss.y,angle:a+offset,length:760,width:75,damage:Math.round(common.damage*.8)});
+ }else if(kind===11){ // 雷霆：中心から離れた円環を爆破
+  bossWarnings.push({...common,kind:11,x:boss.x,y:boss.y,inner:180,outer:430});
+ }else if(kind===12){ // 追尾雷雨：味方の移動先に連続して落雷
+  for(let j=0;j<6;j++){const e=living[j%living.length];const vx=e.x-(e.prevX??e.x),vy=e.y-(e.prevY??e.y);bossWarnings.push({...common,kind:12,x:clamp(e.x+vx*16+rand(-75,75),55,worldW-55),y:clamp(e.y+vy*16+rand(-75,75),55,worldH-55),r:85,delay:delay+j*.15,full:delay+j*.15,damage:Math.round(common.damage*.62)})}
+ }else if(kind===13){ // 十字雷撃：対象を中心に縦横の雷ビーム
+  for(let j=0;j<4;j++)bossWarnings.push({...common,kind:13,x:victim.x,y:victim.y,angle:j*Math.PI/2,length:500,width:68,damage:Math.round(common.damage*.67)});
+ }else if(kind===14){ // 稲妻の壁：進路を塞ぐ平行ビーム
+  const base=a+Math.PI/2;
+  for(const shift of [-145,0,145])bossWarnings.push({...common,kind:14,x:clamp(victim.x+Math.cos(a)*shift,30,worldW-30),y:clamp(victim.y+Math.sin(a)*shift,30,worldH-30),angle:base,length:600,width:56,damage:Math.round(common.damage*.6)});
+ }else if(kind===15){ // 雷の迷路：複数のドーナツと隙間のある落雷
+  bossWarnings.push({...common,kind:15,x:boss.x,y:boss.y,inner:100,outer:250,damage:Math.round(common.damage*.7)});
+  for(let j=0;j<5;j++){const angle=j*Math.PI*2/5+elapsed*.2;bossWarnings.push({...common,kind:15,x:clamp(boss.x+Math.cos(angle)*390,50,worldW-50),y:clamp(boss.y+Math.sin(angle)*390,50,worldH-50),r:85,delay:delay+.16,full:delay+.16,damage:Math.round(common.damage*.55)})}
+ }else if(kind===16){ // 雷嵐：全味方への雷雨＋全方位の細い雷ビーム
+  for(const e of living)bossWarnings.push({...common,kind:16,x:e.x,y:e.y,r:95,damage:Math.round(common.damage*.68)});
+  for(let j=0;j<8;j++)bossWarnings.push({...common,kind:16,x:boss.x,y:boss.y,angle:j*Math.PI/4+elapsed*.08,length:720,width:48,delay:delay+.25,full:delay+.25,damage:Math.round(common.damage*.5)});
+ }else if(kind===0){ // 着弾地点を少し先読みしたメテオ
   let vx=(victim.x-(victim.prevX??victim.x))*25,vy=(victim.y-(victim.prevY??victim.y))*25;
   bossWarnings.push({...common,x:clamp(victim.x+vx*.45,70,worldW-70),y:clamp(victim.y+vy*.45,70,worldH-70),r:165});
  }else if(kind===1){ // 幅広い直線ビーム
@@ -205,13 +1063,34 @@ function bossAttack(boss){
    let e=living[(j+living.indexOf(victim))%living.length];
    bossWarnings.push({...common,x:e.x,y:e.y,r:122,delay:delay+j*.22,full:delay+j*.22,damage:Math.round(common.damage*.75)});
   }
- }else{ // 十字ビーム
+ }else if(kind===4){ // 十字ビーム
   for(let j=0;j<2;j++)bossWarnings.push({...common,x:boss.x,y:boss.y,angle:a+j*Math.PI/2,length:760,width:135,damage:Math.round(common.damage*.8)});
+ }else if(kind===5){ // 連続落雷：周囲の味方に時間差で着弾
+  for(let j=0;j<5;j++){const e=living[j%living.length];bossWarnings.push({...common,kind:5,x:clamp(e.x+rand(-90,90),50,worldW-50),y:clamp(e.y+rand(-90,90),50,worldH-50),r:105,delay:delay+j*.19,full:delay+j*.19,damage:Math.round(common.damage*.7)})}
+ }else if(kind===6){ // 360度全方位ビーム
+  for(let j=0;j<6;j++)bossWarnings.push({...common,kind:6,x:boss.x,y:boss.y,angle:j*Math.PI/3+elapsed*.1,length:790,width:90,damage:Math.round(common.damage*.62)});
+ }else if(kind===7){ // 二重衝撃波
+  bossWarnings.push({...common,kind:7,x:boss.x,y:boss.y,inner:65,outer:260});
+  bossWarnings.push({...common,kind:7,x:boss.x,y:boss.y,inner:300,outer:510,delay:delay+.38,full:delay+.38});
+ }else if(kind===8){ // 広域メテオ散布
+  for(let j=0;j<7;j++){const e=living[j%living.length];bossWarnings.push({...common,kind:8,x:clamp(e.x+rand(-180,180),50,worldW-50),y:clamp(e.y+rand(-180,180),50,worldH-50),r:120,delay:delay+j*.11,full:delay+j*.11,damage:Math.round(common.damage*.72)})}
+ }
+ balanceBossWarnings(bossWarnings,warningStart);
+}
+function balanceBossWarnings(warnings,start){
+ for(let i=start;i<warnings.length;i++){
+  const w=warnings[i];
+  if(Number.isFinite(w.r))w.r=Math.max(32,Math.round(w.r*.79));
+  if(Number.isFinite(w.width))w.width=Math.max(22,Math.round(w.width*.77));
+  if(Number.isFinite(w.inner)&&Number.isFinite(w.outer)){
+   const mid=(w.inner+w.outer)/2,half=(w.outer-w.inner)*.39;
+   w.inner=Math.max(0,mid-half);w.outer=mid+half;
+  }
  }
 }
 function warningHits(w,e){
- if(w.kind===0||w.kind===3)return Math.hypot(e.x-w.x,e.y-w.y)<w.r+e.r;
- if(w.kind===1||w.kind===4){
+ if(Number.isFinite(w.r))return Math.hypot(e.x-w.x,e.y-w.y)<w.r+e.r;
+ if(Number.isFinite(w.width)){
   const dx=e.x-w.x,dy=e.y-w.y,along=dx*Math.cos(w.angle)+dy*Math.sin(w.angle);
   const side=Math.abs(-dx*Math.sin(w.angle)+dy*Math.cos(w.angle));
   return along>=-e.r&&along<=w.length+e.r&&side<=w.width/2+e.r;
@@ -222,14 +1101,23 @@ function warningHits(w,e){
 function updateBossAttacks(dt){
  if(mode!=='boss')return;
  const boss=entities.find(e=>e.isBoss&&!e.dead);if(!boss)return;
+ // 怒りはHPではなく経過時間だけで進行する（45/90/135秒）。
+ const rageTimes=BOSS_DIFFICULTIES[bossDifficulty].rage;
+ const nextStage=elapsed>=rageTimes[2]?3:elapsed>=rageTimes[1]?2:elapsed>=rageTimes[0]?1:0;
+ if(nextStage>bossRageStage){bossRageStage=nextStage;bossRageMessageUntil=elapsed+4;
+  boss.damage=Math.round(boss.baseBossDamage*(1+bossRageStage*.22));
+  boss.speed=boss.baseBossSpeed*(1+bossRageStage*.13);
+  boss.cooldown=boss.baseBossCooldown*(1-bossRageStage*.09);
+  for(let i=0;i<35;i++){let a=Math.random()*Math.PI*2;particles.push({x:boss.x,y:boss.y,vx:Math.cos(a)*rand(2,7),vy:Math.sin(a)*rand(2,7),life:30,color:'#ff8c30'})}
+ }
  bossCooldown-=dt;
- if(bossCooldown<=0&&bossWarnings.length===0){bossAttack(boss);bossCooldown=boss.hp/boss.maxhp<.4?1.85:2.65}
+ if(bossCooldown<=0&&bossWarnings.length===0){bossAttack(boss);bossCooldown=Math.max(1.45,(3.25-bossRageStage*.32)*(boss.bossType==='storm'?.91:1)*BOSS_DIFFICULTIES[bossDifficulty].interval)}
  for(let i=bossWarnings.length-1;i>=0;i--){
   const w=bossWarnings[i];w.delay-=dt;
   if(w.delay<=0){
    for(const ally of entities)if(ally.team===0&&!ally.dead&&warningHits(w,ally))hit(ally,w.damage,boss);
-   effects.push({x:w.x,y:w.y,r:20,max:w.r||w.outer||145,life:35,color:'#ff734c'});
-   for(let k=0;k<22;k++){let a=Math.random()*Math.PI*2,r=Math.random()*(w.r||145);particles.push({x:w.x+Math.cos(a)*r,y:w.y+Math.sin(a)*r,vx:rand(-3,3),vy:rand(-3,3),life:25,color:'#ff9c47'})}
+   effects.push({x:w.x,y:w.y,r:20,max:w.r||w.outer||145,life:35,color:w.kind>=9?'#78d6ff':'#ff734c'});
+   for(let k=0;k<22;k++){let a=Math.random()*Math.PI*2,r=Math.random()*(w.r||145);particles.push({x:w.x+Math.cos(a)*r,y:w.y+Math.sin(a)*r,vx:rand(-3,3),vy:rand(-3,3),life:25,color:w.kind>=9?'#8cdfff':'#ff9c47'})}
    bossWarnings.splice(i,1);
   }
  }
@@ -238,16 +1126,16 @@ function drawBossWarnings(){
  if(mode!=='boss')return;
  for(const w of bossWarnings){
   const t=clamp(1-w.delay/w.full,0,1);
-  ctx.save();ctx.fillStyle=`rgba(255,60,65,${.15+t*.35})`;
-  ctx.strokeStyle=t>.75?'#fff0a5':'#ff6976';ctx.lineWidth=4+t*5;
+  ctx.save();ctx.fillStyle=w.kind>=9?`rgba(89,144,255,${.15+t*.35})`:`rgba(255,60,65,${.15+t*.35})`;
+  ctx.strokeStyle=w.kind>=9?(t>.75?'#d8faff':'#6cbcff'):(t>.75?'#fff0a5':'#ff6976');ctx.lineWidth=4+t*5;
   ctx.setLineDash(t>.7?[]:[15,10]);ctx.beginPath();
-  if(w.kind===0||w.kind===3)ctx.arc(w.x,w.y,w.r,0,Math.PI*2);
-  else if(w.kind===1||w.kind===4){ctx.translate(w.x,w.y);ctx.rotate(w.angle);ctx.rect(0,-w.width/2,w.length,w.width)}
+  if(Number.isFinite(w.r))ctx.arc(w.x,w.y,w.r,0,Math.PI*2);
+  else if(Number.isFinite(w.width)){ctx.translate(w.x,w.y);ctx.rotate(w.angle);ctx.rect(0,-w.width/2,w.length,w.width)}
   else{ctx.arc(w.x,w.y,w.outer,0,Math.PI*2);ctx.arc(w.x,w.y,w.inner,0,Math.PI*2)}
-  ctx.fill(w.kind===2?'evenodd':'nonzero');ctx.stroke();ctx.restore();
+  ctx.fill(Number.isFinite(w.inner)?'evenodd':'nonzero');ctx.stroke();ctx.restore();
  }
 }
-function update(dt){let step=dt*60;elapsed+=dt;if(mode==='team'&&roundBreak>0){roundBreak-=dt;if(roundBreak<=0)beginKnockoutRound();return;}cameraUpdate();if(mode==='royale'){let g=gasState();gasInset=g.inset;gasPhase=g.phase}if(!player.dead){let dx=(keys.d||keys.ArrowRight?1:0)-(keys.a||keys.ArrowLeft?1:0)+move.x,dy=(keys.s||keys.ArrowDown?1:0)-(keys.w||keys.ArrowUp?1:0)+move.y;moveEntity(player,dx,dy,step*(player.slowUntil>elapsed?.6:1)*(player.boostUntil>elapsed?1.4:1));if(attackHeld)doAttack();if(superHeld){doAttack(true);superHeld=false}}
+function update(dt){let step=dt*60;elapsed+=dt;if(mode==='boss'&&elapsed>=180){finish(false);return;}if((mode==='team'||mode==='duel')&&roundBreak>0){roundBreak-=dt;if(roundBreak<=0)beginKnockoutRound();return;}cameraUpdate();if(mode==='royale'){let g=gasState();gasInset=g.inset;gasPhase=g.phase}if(!player.dead){let dx=(keys.ArrowRight?1:0)-(keys.ArrowLeft?1:0)+move.x,dy=(keys.s||keys.ArrowDown?1:0)-(keys.w||keys.ArrowUp?1:0)+move.y;moveEntity(player,dx,dy,step*(player.slowUntil>elapsed?.7:1)*(player.boostUntil>elapsed?1.4:1));if(attackHeld)doAttack();if(keys.autoAttack)doAttack(false,null,true);if(superHeld){doAttack(true);superHeld=false}}
 if(mode==='royale'){
  for(let i=powerCubes.length-1;i>=0;i--){let cube=powerCubes[i];if(elapsed<cube.spawn)continue;
   let collector=entities.find(e=>!e.dead&&dist(e,cube)<e.r+20);
@@ -266,18 +1154,29 @@ if(mode==='royale'&&gasInset>0)for(let box of [...powerBoxes]){
 }
 for(let e of entities){
 if(!e.dead){e.prevX=e.prevX===undefined?e.x:e.prevX*.6+e.x*.4;e.prevY=e.prevY===undefined?e.y:e.prevY*.6+e.y*.4}
-if(!e.dead&&e.ammo<AMMO_CAP[e.id]){e.reloadProgress+=dt*(e.boostUntil>elapsed?1.25:1);while(e.reloadProgress>=RELOAD_SEC[e.id]&&e.ammo<AMMO_CAP[e.id]){e.ammo++;e.reloadProgress-=RELOAD_SEC[e.id]}}
-else if(e.ammo>=AMMO_CAP[e.id])e.reloadProgress=0;
+if(!e.dead&&e.ammo<maxAmmo(e)){e.reloadProgress+=dt*(e.boostUntil>elapsed?1.25:1)*(e.star==='reload'?1.25:1)*(e.gadgetReloadUntil>elapsed?1.6:1);while(e.reloadProgress>=RELOAD_SEC[e.id]&&e.ammo<maxAmmo(e)){e.ammo++;e.reloadProgress-=RELOAD_SEC[e.id]}}
+else if(e.ammo>=maxAmmo(e))e.reloadProgress=0;
 if(e.dead){if((mode==='boss'&&e.team===0&&entities.some(o=>o!==e&&o.team===0&&!o.dead))&&elapsed>=e.respawn){let p=pos(e.r);e.x=p.x;e.y=p.y;e.hp=e.maxhp;e.dead=false;e.invuln=elapsed+1.5}continue}if(e.poisonUntil>elapsed){e.hp=Math.max(1,e.hp-4*dt)}
-if(mode==='royale'&&inGas(e)){e.gasTick+=dt;let gasDamage=e.maxhp*.20*dt;if(e.invuln<=elapsed){e.hp-=gasDamage;e.lastHit=elapsed;if(e.hp<=0){hit(e,Math.max(1,e.maxhp*.01),null);if(!playing)return}}}else e.gasTick=0;if(!e.isBoss && elapsed-e.lastHit>=5 && e.poisonUntil<=elapsed && !(mode==='royale'&&inGas(e)))e.hp=Math.min(e.maxhp,e.hp+e.maxhp*.16*dt);if(!e.ai)continue;let target=aim(e),objective=mode==='royale'&&!e.isBoss?nearestPowerObjective(e):null;
+if(mode==='royale'&&inGas(e)){e.gasTick+=dt;let gasDamage=e.maxhp*.20*dt;if(e.invuln<=elapsed){e.lastHit=elapsed;hit(e,gasDamage,null);if(e.dead){if(!playing)return}}}else e.gasTick=0;if(!e.isBoss && elapsed-e.lastHit>=(e.star==='regen'?3.5:5) && e.poisonUntil<=elapsed && !(mode==='royale'&&inGas(e)))e.hp=Math.min(e.maxhp,e.hp+e.maxhp*(e.star==='regen'?.21:.16)*dt);if(!e.ai)continue;if(!e.isBoss&&e.gadgetCharges>0&&e.gadgetIndex>=0){
+ const gt=GADGET_TYPES[e.id][e.gadgetIndex];
+ const foe=aim(e),near=foe&&dist(e,foe)<Math.min(e.range+90,320);
+ const injured=e.hp/e.maxhp<.55;
+ const useful=gt==='heal'?injured:gt==='cleanse'?(injured||e.poisonUntil>elapsed||e.slowUntil>elapsed):
+ gt==='shield'?near:gt==='blast'||gt==='drain'?foe&&dist(e,foe)<145:
+ gt==='reload'?near&&e.ammo<=Math.max(1,Math.floor(maxAmmo(e)/2)):
+ gt==='supercharge'?near&&e.super<85:
+ gt==='haste'||gt==='dash'?near||injured:
+ gt==='stealth'?near&&injured:false;
+ if(useful&&Math.random()<dt*.85)useGadget(e);
+}let target=aim(e),objective=mode==='royale'&&!e.isBoss?nearestPowerObjective(e):null;
 let wantsObjective=!!objective&&(!target||dist(e,target)>Math.max(185,e.range*.65));
 if(!target&&!wantsObjective)continue;
 let focus=wantsObjective?objective:target;
-let d=dist(e,focus),n=norm(focus.x-e.x,focus.y-e.y);e.think-=dt;if(e.think<=0){e.think=rand(.5,1.3);e.tx=rand(-1,1);e.ty=rand(-1,1);e.aiStrafe=Math.random()<.5?-1:1}let ideal=wantsObjective?(objective.box?Math.min(e.range*.65,110):0):e.isBoss?220:e.range<=120?Math.max(22,e.range*.32):e.range>=400?e.range*.91:e.range*.73;
+let d=dist(e,focus),n=norm(focus.x-e.x,focus.y-e.y);const waypoint=aiWaypoint(e,focus);if(waypoint){n=norm(waypoint.x-e.x,waypoint.y-e.y);d=Math.max(d,Math.max(190,e.range*.9));}e.think-=dt;if(e.think<=0){e.think=rand(.5,1.3);e.tx=rand(-1,1);e.ty=rand(-1,1);e.aiStrafe=Math.random()<.5?-1:1}let ideal=wantsObjective?(objective.box?Math.min(e.range*.65,110):0):e.isBoss?220:e.range<=120?Math.max(22,e.range*.32):e.range>=400?e.range*.91:e.range*.73;
 let retreat=!wantsObjective&&!e.isBoss&&e.hp/e.maxhp<.36;
 let toward=retreat?-1:d>ideal+12?1:d<ideal-12?-1:0;
-let strafe=d<e.range?e.aiStrafe*(e.range>=400?.35:.75):0;
-let mx=n.x*toward-n.y*strafe+e.tx*(e.range>=400?.07:.28),my=n.y*toward+n.x*strafe+e.ty*(e.range>=400?.07:.28);
+let strafe=waypoint?0:d<e.range?e.aiStrafe*(e.range>=400?.35:.75):0;
+let mx=n.x*toward-n.y*strafe+e.tx*(waypoint?0:e.range>=400?.07:.28),my=n.y*toward+n.x*strafe+e.ty*(waypoint?0:e.range>=400?.07:.28);
 if(retreat){ // 低HP時は敵から離れ、味方の近くを優先する
  const friend=entities.filter(o=>o!==e&&!o.dead&&o.team===e.team).sort((a,b)=>dist(e,a)-dist(e,b))[0];
  if(friend){const f=norm(friend.x-e.x,friend.y-e.y);mx=mx*.8+f.x*.3;my=my*.8+f.y*.3}
@@ -285,18 +1184,71 @@ if(retreat){ // 低HP時は敵から離れ、味方の近くを優先する
 
 // Prefer a clear path, and choose a different side if a wall blocks movement.
 if(blocked(e.x+mx*e.speed*step*2,e.y+my*e.speed*step*2,e.r)){e.aiStrafe*=-1;mx=-n.y*e.aiStrafe+n.x*.2;my=n.x*e.aiStrafe+n.y*.2}
-if(mode==='royale'&&inGas(e)){let center=norm(worldW/2-e.x,worldH/2-e.y);mx=center.x*2;my=center.y*2}
-moveEntity(e,mx,my,step*.87*(e.slowUntil>elapsed?.6:1)*(e.boostUntil>elapsed?1.4:1));if(!e.isBoss&&onScreen(e,10)&&onScreen(focus,10)&&d<e.range*.98&&Math.random()<dt*(retreat?1.1:4.2)&&(target||objective.box))shoot(e,n.x,n.y);if(target&&!e.isBoss&&onScreen(e,10)&&onScreen(target,10)&&e.super>=100&&d<Math.min(e.range*.85,480)&&Math.random()<dt*.7)shoot(e,n.x,n.y,true)}
-for(let i=shots.length-1;i>=0;i--){let b=shots[i];if(b.role===1){b.trail.push({x:b.x,y:b.y});if(b.trail.length>6)b.trail.shift()}b.x+=b.vx*step;b.y+=b.vy*step;b.life-=step;if(!onScreen(b,12)){shots.splice(i,1);continue}let boxHit=mode==='royale'?powerBoxes.find(box=>Math.hypot(box.x-b.x,box.y-b.y)<box.r+b.r):null;
+if(mode==='royale'&&gasInset>0){
+ // Predict the next movement and refuse routes into the poisonous boundary.
+ const safePad=e.r+35, left=gasInset+safePad,right=worldW-gasInset-safePad,top=gasInset+safePad,bottom=worldH-gasInset-safePad;
+ const nextX=e.x+mx*e.speed*step,nextY=e.y+my*e.speed*step;
+ const danger=inGas(e)||nextX<left||nextX>right||nextY<top||nextY>bottom;
+ if(danger){
+  const goalX=clamp(e.x,left,right),goalY=clamp(e.y,top,bottom);
+  let escape=norm(goalX-e.x,goalY-e.y);
+  if(Math.hypot(goalX-e.x,goalY-e.y)<4)escape=norm(worldW/2-e.x,worldH/2-e.y);
+  mx=escape.x*3;my=escape.y*3;
+  // If walls obstruct the inward route, try a tangential escape instead.
+  if(blocked(e.x+escape.x*e.speed*step*3,e.y+escape.y*e.speed*step*3,e.r)){
+   const leftTurn={x:-escape.y,y:escape.x},rightTurn={x:escape.y,y:-escape.x};
+   const opts=[leftTurn,rightTurn].filter(v=>!blocked(e.x+v.x*e.speed*step*3,e.y+v.y*e.speed*step*3,e.r));
+   if(opts.length){mx=opts[0].x*2+escape.x;my=opts[0].y*2+escape.y;}
+  }
+ }
+}
+moveEntity(e,mx,my,step*.87*(e.slowUntil>elapsed?.7:1)*(e.boostUntil>elapsed?1.4:1));if(!e.isBoss&&aiClearPath(e.x,e.y,focus.x,focus.y,5)&&dist(e,focus)<e.range*.98&&Math.random()<dt*(retreat?1.1:4.2)&&(target||objective.box))shoot(e,n.x,n.y);if(!e.isBoss&&e.super>=100){
+ const superTarget=target&&dist(e,target)<Math.min(e.range*.92,480)?target:(objective&&objective.box&&dist(e,objective)<e.range*.85?objective:null);
+ // AIは必殺技が満タンなら積極的に使用。回復・防御系はHPに応じて判断。
+ const defensive=[6,18,20].includes(e.id);
+ const injured=e.hp/e.maxhp<(e.id===20?.82:.85);
+ const superRange=[4,10].includes(e.id)?Math.max(190,e.range*1.4):Math.min(e.range*1.2,650);
+ const foe=target&&dist(e,target)<superRange?target:null;
+ const chosen=foe||superTarget;
+ if((defensive&&injured&&(foe||e.hp/e.maxhp<.45))||(!defensive&&chosen&&Math.random()<dt*7.5)){
+  const v=chosen?norm(chosen.x-e.x,chosen.y-e.y):{x:Math.cos(e.dir||0),y:Math.sin(e.dir||0)};
+  shoot(e,v.x,v.y,true);
+ }
+}}
+for(let i=shots.length-1;i>=0;i--){let b=shots[i];if(b.role===1){b.trail.push({x:b.x,y:b.y});if(b.trail.length>6)b.trail.shift()}b.x+=b.vx*step;b.y+=b.vy*step;b.life-=step;if(b.x<0||b.y<0||b.x>worldW||b.y>worldH){shots.splice(i,1);continue}let boxHit=mode==='royale'?powerBoxes.find(box=>Math.hypot(box.x-b.x,box.y-b.y)<box.r+b.r):null;
 if(boxHit){damagePowerBox(boxHit,b.damage,b.owner);shots.splice(i,1);continue}
-let victim=entities.find(e=>!e.dead&&e!==b.owner&&e.team!==b.owner.team&&!b.hitIds.has(e)&&dist(e,b)<e.r+b.r);if(victim){b.hitIds.add(victim);hit(victim,b.damage,b.owner);if([1,8,9].includes(b.owner.id))victim.slowUntil=elapsed+2;if([0,14,16].includes(b.owner.id)){victim.poisonUntil=elapsed+3;victim.poisonOwner=b.owner}if(b.owner.id===18){let splash=entities.filter(e=>e!==victim&&e!==b.owner&&!e.dead&&e.team!==b.owner.team&&dist(e,victim)<75);for(let e of splash)hit(e,b.damage*.45,b.owner)}if(b.owner.id===2){let extra=entities.filter(e=>e!==victim&&e!==b.owner&&!e.dead&&e.team!==b.owner.team&&dist(e,victim)<105).slice(0,2);for(let e of extra)hit(e,b.damage*.4,b.owner)}if(b.pierce>0)b.pierce--;else shots.splice(i,1)}else if(b.life<=0||blocked(b.x,b.y,b.r))shots.splice(i,1)}
+let victim=entities.find(e=>!e.dead&&e!==b.owner&&e.team!==b.owner.team&&!b.hitIds.has(e)&&dist(e,b)<e.r+b.r);if(victim){b.hitIds.add(victim);hit(victim,b.damage,b.owner);if([1,8,9].includes(b.owner.id))victim.slowUntil=elapsed+([1,9].includes(b.owner.id)?1.6:2);if([0,14,16].includes(b.owner.id)){victim.poisonUntil=elapsed+3;victim.poisonOwner=b.owner}if(b.owner.id===18){let splash=entities.filter(e=>e!==victim&&e!==b.owner&&!e.dead&&e.team!==b.owner.team&&dist(e,victim)<75);for(let e of splash)hit(e,b.damage*.45,b.owner)}if(b.owner.id===2){let extra=entities.filter(e=>e!==victim&&e!==b.owner&&!e.dead&&e.team!==b.owner.team&&dist(e,victim)<105).slice(0,2);for(let e of extra)hit(e,b.damage*.4,b.owner)}if(b.pierce>0)b.pierce--;else shots.splice(i,1)}else if(b.life<=0||blocked(b.x,b.y,b.r))shots.splice(i,1)}
 for(let i=effects.length-1;i>=0;i--){effects[i].life-=step;if(effects[i].life<=0)effects.splice(i,1)}for(let i=particles.length-1;i>=0;i--){let p=particles[i];p.x+=p.vx*step;p.y+=p.vy*step;p.life-=step;if(p.life<=0)particles.splice(i,1)}
 if(mode==='boss'){
 updateBossAttacks(dt);if(!playing)return;
 let boss=entities.find(e=>e.isBoss);
 if(boss&&boss.dead)finish(true);
 else if(elapsed>=180)finish(false);
-}else if(mode==='team'){knockoutCheck()}else if(mode==='royale'){if(entities.filter(e=>!e.dead).length<=1)finish(!player.dead)}}
+}else if(mode==='team'||mode==='duel'){knockoutCheck()}else if(mode==='royale'){if(entities.filter(e=>!e.dead).length<=1)finish(!player.dead)}}
+function drawBossAppearance(e,bossCtx=ctx){
+ bossCtx.save();bossCtx.translate(e.x,e.y);
+ const storm=e.bossType==='storm',t=elapsed*2;
+ bossCtx.shadowBlur=19;bossCtx.shadowColor=storm?'#4eeaff':'#b563ff';
+ bossCtx.fillStyle=storm?'#123c70':'#42204d';bossCtx.strokeStyle=storm?'#70ecff':'#ffb66c';bossCtx.lineWidth=4;
+ bossCtx.beginPath();
+ for(let i=0;i<8;i++){let a=i*Math.PI/4+t*.08,r=e.r*(i%2?.95:1.22);if(i===0)bossCtx.moveTo(Math.cos(a)*r,Math.sin(a)*r);else bossCtx.lineTo(Math.cos(a)*r,Math.sin(a)*r)}
+ bossCtx.closePath();bossCtx.fill();bossCtx.stroke();bossCtx.shadowBlur=0;
+ if(storm){
+  bossCtx.fillStyle='#76eaff';bossCtx.beginPath();bossCtx.moveTo(-11,-28);bossCtx.lineTo(3,-8);bossCtx.lineTo(-5,3);bossCtx.lineTo(15,8);bossCtx.lineTo(-4,29);bossCtx.lineTo(1,10);bossCtx.lineTo(-15,4);bossCtx.closePath();bossCtx.fill();
+  bossCtx.fillStyle='#e5fbff';bossCtx.fillRect(-24,-8,12,6);bossCtx.fillRect(13,-8,12,6);
+ }else{
+  bossCtx.fillStyle='#ffcf8b';bossCtx.beginPath();bossCtx.moveTo(-25,-17);bossCtx.lineTo(-31,-43);bossCtx.lineTo(-7,-27);bossCtx.lineTo(0,-36);bossCtx.lineTo(7,-27);bossCtx.lineTo(31,-43);bossCtx.lineTo(25,-17);bossCtx.closePath();bossCtx.fill();
+  bossCtx.fillStyle='#ff725e';bossCtx.fillRect(-20,-7,13,8);bossCtx.fillRect(8,-7,13,8);
+  bossCtx.strokeStyle='#ffcf8b';bossCtx.lineWidth=3;bossCtx.beginPath();bossCtx.arc(0,10,14,0,Math.PI);bossCtx.stroke();
+ }
+ bossCtx.restore();
+}
+function bossPortrait(id){
+ const c=document.createElement('canvas');c.width=124;c.height=124;
+ const p=c.getContext('2d');
+ drawBossAppearance({x:62,y:66,r:id==='storm'?39:46,bossType:id},p);
+ return c.toDataURL('image/png');
+}
 function draw(){cameraUpdate();ctx.clearRect(0,0,960,600);ctx.save();ctx.translate(-camX,-camY);let bg=ctx.createLinearGradient(0,0,960,600);bg.addColorStop(0,'#387f75');bg.addColorStop(1,'#215b64');ctx.fillStyle=bg;ctx.fillRect(0,0,worldW,worldH);ctx.strokeStyle='#ffffff0d';ctx.lineWidth=2;for(let x=0;x<worldW;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,worldH);ctx.stroke()}for(let y=0;y<worldH;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(worldW,y);ctx.stroke()}for(let b of bushes){ctx.fillStyle='#277e3b';ctx.fillRect(b.x,b.y,b.w,b.h);ctx.fillStyle='#40a44e';for(let x=b.x+9;x<b.x+b.w;x+=20)for(let y=b.y+10;y<b.y+b.h;y+=22){ctx.beginPath();ctx.arc(x,y,8,0,7);ctx.fill()}}for(let w of walls){ctx.fillStyle='#34476b';ctx.fillRect(w.x+5,w.y+7,w.w,w.h);ctx.fillStyle='#9b7a58';ctx.fillRect(w.x,w.y,w.w,w.h);ctx.strokeStyle='#d7b68c';ctx.lineWidth=4;ctx.strokeRect(w.x+2,w.y+2,w.w-4,w.h-4)}
 if(mode==='royale')for(let box of powerBoxes){
 ctx.save();ctx.translate(box.x,box.y);
@@ -314,7 +1266,9 @@ if(mode==='royale')for(let cube of powerCubes){if(elapsed<cube.spawn)continue;ct
 for(let ef of effects){ctx.beginPath();ctx.strokeStyle=ef.color;ctx.globalAlpha=Math.max(0,ef.life/35);ctx.lineWidth=7;ctx.arc(ef.x,ef.y,ef.max*(1-ef.life/35),0,7);ctx.stroke()}ctx.globalAlpha=1;
 drawBossWarnings();
 for(let b of shots){if(b.role===1&&b.trail.length){ctx.beginPath();ctx.moveTo(b.trail[0].x,b.trail[0].y);for(let t of b.trail)ctx.lineTo(t.x,t.y);ctx.lineTo(b.x,b.y);ctx.strokeStyle=b.color;ctx.globalAlpha=.52;ctx.lineWidth=2;ctx.stroke();ctx.globalAlpha=1}ctx.beginPath();ctx.fillStyle=b.superShot?'#fff067':b.color;ctx.shadowBlur=13;ctx.shadowColor=ctx.fillStyle;if(b.role===1){ctx.save();ctx.translate(b.x,b.y);ctx.rotate(Math.atan2(b.vy,b.vx));ctx.fillRect(-9,-2,18,4);ctx.restore()}else{ctx.arc(b.x,b.y,b.r,0,7);ctx.fill()}ctx.shadowBlur=0}
-for(let e of entities){if(e.dead||e!==player&&!canSee(player,e))continue;ctx.save();ctx.translate(e.x,e.y);ctx.fillStyle=e===player?'#ffdf4a':e.team===0?'#56a8ff':'#f76679';ctx.beginPath();ctx.arc(0,0,e.r+5,0,7);ctx.fill();ctx.fillStyle=h(e.id).color;ctx.shadowBlur=e===player?17:5;ctx.shadowColor=h(e.id).color;ctx.beginPath();ctx.arc(0,0,e.r,0,7);ctx.fill();ctx.shadowBlur=0;ctx.font=`${Math.max(15,Math.round(e.r*1.23))}px system-ui`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(h(e.id).icon,0,0);ctx.restore();let bw=Math.max(69,e.r*2+34),barY=e.y-e.r-20;
+for(let e of entities){if(e.dead||e!==player&&!canSee(player,e))continue;
+if(e.isBoss){drawBossAppearance(e);}else{
+drawHeroArt(ctx,e);}let bw=Math.max(69,e.r*2+34),barY=e.y-e.r-20;
 if(mode==='royale'){
 ctx.textAlign='center';ctx.font='bold 14px system-ui';ctx.lineWidth=4;ctx.strokeStyle='#10221a';ctx.fillStyle='#d7ff86';
 const powerText='🟩 '+(e.power||0);
@@ -328,10 +1282,15 @@ ctx.strokeText(hpLabel,e.x,barY-7);ctx.fillStyle='#fff';ctx.fillText(hpLabel,e.x
 ctx.fillStyle='#19233c';ctx.fillRect(e.x-bw/2,barY,bw,7);
 ctx.fillStyle=e.hp/e.maxhp>.35?'#72f78a':'#ff616c';ctx.fillRect(e.x-bw/2,barY,bw*Math.max(0,e.hp/e.maxhp),7);
 ctx.font='bold 14px system-ui';ctx.textAlign='center';ctx.fillStyle='#fff';ctx.lineWidth=3;ctx.strokeStyle='#08152b';
-const nameLabel=e===player?'YOU':e.isBoss?'👹 巨大ボス Lv.'+e.lv:h(e.id).name+' Lv.'+e.lv;ctx.strokeText(nameLabel,e.x,e.y+e.r+25);ctx.fillText(nameLabel,e.x,e.y+e.r+25);
+const nameLabel=e===player?'YOU':e.isBoss?(e.bossName||BOSS_NAME)+' ['+BOSS_DIFFICULTIES[bossDifficulty].name+']':h(e.id).name+' Lv.'+e.lv;ctx.strokeText(nameLabel,e.x,e.y+e.r+25);ctx.fillText(nameLabel,e.x,e.y+e.r+25);
+// 味方AIの装備状況を表示（敵AIの装備情報は非表示）。
+if(mode==='team'&&e.ai&&e.team===player.team){
+ const abilityLabel=(e.gadgetIndex>=0?'🟢'+e.gadgetCharges:'')+(e.star?' ⭐':'');
+ if(abilityLabel){ctx.font='bold 12px system-ui';ctx.strokeText(abilityLabel,e.x,e.y+e.r+41);ctx.fillStyle='#d9ffab';ctx.fillText(abilityLabel,e.x,e.y+e.r+41);}
+}
 // Only show reload ammo for the player and their allies, never enemies or boss.
 if(e===player||e.team===player.team){
-let slots=AMMO_CAP[e.id],gap=2,slotW=7,total=slots*slotW+(slots-1)*gap,left=e.x-total/2;
+let slots=maxAmmo(e),gap=2,slotW=7,total=slots*slotW+(slots-1)*gap,left=e.x-total/2;
 for(let j=0;j<slots;j++){ctx.fillStyle=j<e.ammo?'#ffdb58':'#34425b';ctx.fillRect(left+j*(slotW+gap),barY-37,slotW,7);ctx.strokeStyle='#e3e9f5';ctx.lineWidth=.6;ctx.strokeRect(left+j*(slotW+gap),barY-37,slotW,7)}
 }}
 for(let p of particles){ctx.fillStyle=p.color;ctx.globalAlpha=p.life/25;ctx.fillRect(p.x,p.y,5,5)}ctx.globalAlpha=1;
@@ -341,7 +1300,7 @@ if((touchAim.active||superAim.active)&&!player.dead){
  ctx.save();ctx.strokeStyle='#fff5a8';ctx.lineWidth=5;ctx.globalAlpha=.85;ctx.setLineDash([18,11]);ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(ex,ey);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#fff5a8';ctx.beginPath();ctx.arc(ex,ey,8,0,Math.PI*2);ctx.fill();ctx.restore();
 }
 ctx.restore();
-ctx.fillStyle='#0b1537c9';ctx.fillRect(12,12,mode==='team'?280:230,112);ctx.textAlign='left';ctx.font='bold 18px system-ui';ctx.fillStyle='#fff';ctx.fillText('❤️ '+Math.ceil(player.hp)+' / '+player.maxhp,23,38);ctx.fillText('⚡ '+Math.floor(player.super)+'%  🏅 '+kills,23,63);if(mode==='royale'){ctx.font='bold 15px system-ui';ctx.fillStyle='#c6ff79';ctx.fillText('🟩 パワーキューブ ×'+(player.power||0),23,88)}
+ctx.fillStyle='#0b1537c9';ctx.fillRect(12,12,mode==='team'?280:250,134);ctx.textAlign='left';ctx.font='bold 18px system-ui';ctx.fillStyle='#fff';ctx.fillText('❤️ '+Math.ceil(player.hp)+' / '+player.maxhp,23,38);ctx.fillText('⚡ '+Math.floor(player.super)+'%  🏅 '+kills,23,63);ctx.font='bold 13px system-ui';ctx.fillStyle='#9dffb6';ctx.fillText('🟢 ガジェット '+(player.gadgetIndex<0?'Lv.7で解放':player.gadgetCharges+'/3'),23,111);if(mode==='royale'){ctx.font='bold 15px system-ui';ctx.fillStyle='#c6ff79';ctx.fillText('🟩 パワーキューブ ×'+(player.power||0),23,88)}
 ctx.font='bold 15px system-ui';ctx.fillStyle='#ffdd74';ctx.fillText('🔋 '+('●'.repeat(player.ammo)) + ('○'.repeat(AMMO_CAP[player.id]-player.ammo)),23,104);
 if(player.ammo<AMMO_CAP[player.id]){ctx.fillStyle='#27344c';ctx.fillRect(23,113,125,7);ctx.fillStyle='#f4c950';ctx.fillRect(23,113,125*clamp(player.reloadProgress/RELOAD_SEC[player.id],0,1),7)}ctx.fillStyle='#ffe77b';ctx.fillRect(22,76,Math.min(205,player.super*2.05),5);if(player.hp<player.maxhp){ctx.fillStyle=elapsed-player.lastHit>=5?'#81ff9e':'#ffffffa0';ctx.font='bold 13px system-ui';ctx.textAlign='left';ctx.fillText(elapsed-player.lastHit>=5?'💚 自動回復中':'💚 回復まで '+Math.ceil(5-(elapsed-player.lastHit))+'秒',23,142)}ctx.textAlign='right';ctx.fillText('⏱ '+Math.max(0,Math.ceil((mode==='royale'||mode==='boss'?180:90)-elapsed)),940,35);if(mode==='royale'){ctx.fillStyle=inGas(player)?'#ff9fb5':'#eecaff';ctx.font='bold 16px system-ui';ctx.textAlign='right';ctx.fillText(inGas(player)?'☠️ 毒ガス内！':'☣️ 毒ガス '+(30-Math.floor(elapsed%30))+'秒で次の縮小',940,86)}if(mode==='boss'){let boss=entities.find(e=>e.isBoss);if(boss){
 const bx=250,by=16,bw=470,bh=28,rate=clamp(boss.hp/boss.maxhp,0,1);
@@ -349,11 +1308,13 @@ ctx.fillStyle='#09122ddf';ctx.fillRect(bx-10,by-10,bw+20,75);
 ctx.fillStyle='#281a2d';ctx.fillRect(bx,by,bw,bh);
 ctx.fillStyle=rate<.4?'#ff9a32':'#f44c67';ctx.fillRect(bx,by,bw*rate,bh);
 ctx.strokeStyle='#ffcf7e';ctx.lineWidth=3;ctx.strokeRect(bx,by,bw,bh);
-ctx.textAlign='center';ctx.font='bold 17px system-ui';ctx.fillStyle='#fff';ctx.fillText('👹 巨大ボス Lv.'+boss.lv+'   '+Math.ceil(boss.hp)+' / '+boss.maxhp,480,36);
+ctx.textAlign='center';ctx.font='bold 17px system-ui';ctx.fillStyle='#fff';ctx.fillText((boss.bossName||BOSS_NAME)+' ['+BOSS_DIFFICULTIES[bossDifficulty].name+']   '+Math.ceil(boss.hp)+' / '+boss.maxhp,480,36);
 ctx.font='bold 13px system-ui';ctx.fillStyle='#a8e8ff';ctx.fillText('味方 '+entities.filter(e=>e.team===0&&!e.dead).length+'/3 人 生存  ·  全滅すると敗北',480,67);
+ctx.font='bold 15px system-ui';ctx.fillStyle=bossRageStage?'#ffac59':'#c9e8ff';ctx.fillText('⏳ 制限時間 '+Math.max(0,Math.ceil(180-elapsed))+'秒  ·  '+(bossRageStage?'🔥 '+['','怒り','激怒','超激怒'][bossRageStage]:'通常状態')+(bossRageStage<3?'  ·  次の怒りまで '+Math.max(0,Math.ceil(BOSS_DIFFICULTIES[bossDifficulty].rage[bossRageStage]-elapsed))+'秒':''),480,89);
+if(elapsed<bossRageMessageUntil){ctx.font='bold 33px system-ui';ctx.fillStyle='#ff8e35';ctx.strokeStyle='#351522';ctx.lineWidth=5;let msg='🔥 ボスが'+['','怒り','激怒','超激怒'][bossRageStage]+'状態になった！';ctx.strokeText(msg,480,155);ctx.fillText(msg,480,155)}
 }
 if(player.dead){ctx.textAlign='center';ctx.fillStyle='#fff';ctx.font='bold 25px system-ui';ctx.fillText('復活まで '+Math.max(0,Math.ceil(player.respawn-elapsed))+'秒',480,116)}
-}if(mode==='team'){ctx.textAlign='right';ctx.fillStyle='#fff';ctx.font='bold 18px system-ui';ctx.fillText('🔵 '+teamScore[0]+' - '+teamScore[1]+' 🔴  R'+knockoutRound,940,63);if(roundBreak>0){ctx.textAlign='center';ctx.font='bold 31px system-ui';ctx.fillStyle='#ffdc6c';ctx.fillText('次のラウンドまで '+Math.ceil(roundBreak)+'秒',480,125)}else if(player.dead){ctx.textAlign='center';ctx.fillStyle='#fff';ctx.font='bold 24px system-ui';ctx.fillText('観戦中・次のラウンドまで復活なし',480,112)}}// 左上のキルログとバトルロイヤル生存人数
+}if(mode==='team'||mode==='duel'){ctx.textAlign='right';ctx.fillStyle='#fff';ctx.font='bold 18px system-ui';ctx.fillText('🔵 '+teamScore[0]+' - '+teamScore[1]+' 🔴  R'+knockoutRound,940,63);if(roundBreak>0){ctx.textAlign='center';ctx.font='bold 31px system-ui';ctx.fillStyle='#ffdc6c';ctx.fillText('次のラウンドまで '+Math.ceil(roundBreak)+'秒',480,125)}else if(player.dead){ctx.textAlign='center';ctx.fillStyle='#fff';ctx.font='bold 24px system-ui';ctx.fillText('観戦中・次のラウンドまで復活なし',480,112)}}// 左上のキルログとバトルロイヤル生存人数
 ctx.save();
 const feedX=14,feedY=mode==='royale'?194:166;
 if(mode==='royale'){
@@ -375,12 +1336,46 @@ for(let i=0;i<visibleFeed.length;i++){
 ctx.restore();
 $('status').textContent=mode==='royale'?'残り '+entities.filter(e=>!e.dead).length+'人':mode==='boss'?'ボス討伐':'撃破 '+kills}
 function loop(t){if(!playing)return;let dt=Math.min((t-last)/1000,.04);last=t;update(dt);draw();if(playing)raf=requestAnimationFrame(loop)}
-function finish(win){if(matchOver)return;matchOver=true;playing=false;cancelAnimationFrame(raf);attackHeld=false;superHeld=false;let reward=20+kills*18+(win?100:0),cups=win?25+kills*2:Math.max(-10,kills*2-8);data.coins+=reward;data.trophies=Math.max(0,data.trophies+cups);data.matches++;if(win)data.wins++;data.best=Math.max(data.best,score);save();$('overlay').style.display='flex';$('result').innerHTML=`<div style="font-size:55px">${win?'🏆':'💥'}</div><h1>${win?'勝利！':'バトル終了'}</h1><p>撃破数：${kills} ／ スコア：${score}</p><h2>🪙 +${reward}　🏆 ${cups>=0?'+':''}${cups}</h2>${btn('ホームに戻る','back','orange')}`;$('result').querySelector('button').onclick=back;document.body.classList.remove('playing')}
-function back(){playing=false;cancelAnimationFrame(raf);$('overlay').style.display='none';$('gameArea').style.display='none';$('menu').style.display='block';document.body.classList.remove('playing');attackHeld=false;superHeld=false;mouse.active=false;render()}
+function finish(win){if(matchOver)return;
+const placement=mode==='royale'?Math.max(1,Math.min(10,entities.filter(e=>!e.dead).length+(player.dead?1:0))):null;
+let trophyDelta=0,dropReward=0;
+if(mode==='royale'){
+ const trophyByPlace=[35,26,17,8,0,-2,-5,-9,-12,-17];
+ const dropsByPlace=[2,1,1,1,0,0,0,0,0,0];
+ trophyDelta=trophyByPlace[placement-1];dropReward=dropsByPlace[placement-1];
+ win=placement<=4;
+}else{
+ trophyDelta=win?30:-15;dropReward=win?1:0;
+}
+matchOver=true;playing=false;cancelAnimationFrame(raf);attackHeld=false;superHeld=false;keys.autoAttack=false;
+data.drops=(data.drops||0)+dropReward;
+data.trophies=Math.max(0,data.trophies+trophyDelta);
+data.matches++;if(win)data.wins++;data.best=Math.max(data.best,score);save();
+const trophyLabel=trophyDelta>0?'+'+trophyDelta:String(trophyDelta);
+const resultTitle=mode==='royale'?(placement===1?'🏆 1位！':placement<=4?'🎉 上位入賞！':`🏁 ${placement}位`):(win?'🏆 勝利！':'💥 敗北');
+$('overlay').style.display='flex';
+$('result').innerHTML=`<div style="font-size:55px">${win?'🏆':'🏁'}</div><h1>${resultTitle}</h1>${mode==='royale'?`<p>順位：${placement}位 / 10人</p>`:''}<p>撃破数：${kills} ／ スコア：${score}</p><h2>🏆 トロフィー ${trophyLabel}　🌟 スタードロップ +${dropReward}</h2><p>${dropReward?'ホーム画面からスタードロップを開封できます。':'今回のスタードロップ報酬はありません。'}${trophyDelta<0?'（トロフィーは0未満になりません）':''}</p>${btn('ホームに戻る','back','orange')}`;
+$('result').querySelector('button').onclick=back;document.body.classList.remove('playing')}
+
+function back(){playing=false;cancelAnimationFrame(raf);$('overlay').style.display='none';$('gameArea').style.display='none';$('menu').style.display='block';document.body.classList.remove('playing');attackHeld=false;superHeld=false;keys.autoAttack=false;mouse.active=false;render()}
 $('leave').onclick=()=>{if(confirm('バトルを退出しますか？ 報酬は獲得できません。'))back()};$('battleExit').onclick=()=>{$('leave').click()};
-window.addEventListener('keydown',e=>{if([' ','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)&&playing)e.preventDefault();keys[e.key]=true;keys[e.key.toLowerCase()]=true;if(e.code==='Space'&&playing){superHeld=true;e.preventDefault()}});window.addEventListener('keyup',e=>{keys[e.key]=false;keys[e.key.toLowerCase()]=false});
+window.addEventListener('keydown',e=>{
+ if(!playing)return;
+ const k=e.key.toLowerCase();
+ if([' ','arrowup','arrowdown','arrowleft','arrowright','a','d','f'].includes(k))e.preventDefault();
+ if(k==='f'){if(!e.repeat)useGadget(player);return}
+ if(k==='d'){if(!e.repeat)doAttack(false,null,true);keys.autoAttack=true;return}
+ if(k==='a'){if(!e.repeat)doAttack(true,null,true);return}
+ keys[e.key]=true;keys[k]=true;
+ if(e.code==='Space'){superHeld=true;e.preventDefault()}
+});
+window.addEventListener('keyup',e=>{
+ const k=e.key.toLowerCase();keys[e.key]=false;keys[k]=false;
+ if(k==='d')keys.autoAttack=false;
+});
 canvas.addEventListener('pointermove',e=>{if(e.pointerType==='mouse'){let r=canvas.getBoundingClientRect();mouse.x=(e.clientX-r.left)*960/r.width;mouse.y=(e.clientY-r.top)*600/r.height;mouse.active=true}});canvas.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse'){attackHeld=true;doAttack()}else{mouse.active=false}});window.addEventListener('pointerup',e=>{if(e.pointerType==='mouse')attackHeld=false});canvas.addEventListener('contextmenu',e=>e.preventDefault());
 const joy=$('moveJoy'),knob=joy.querySelector('.knob');let joyId=null;function joyUpdate(e){let r=joy.getBoundingClientRect(),x=e.clientX-(r.left+r.width/2),y=e.clientY-(r.top+r.height/2),n=norm(x,y),d=Math.min(Math.hypot(x,y),r.width*.32);move.x=n.x*d/(r.width*.32);move.y=n.y*d/(r.width*.32);knob.style.transform=`translate(${n.x*d}px,${n.y*d}px)`}joy.addEventListener('pointerdown',e=>{e.preventDefault();joyId=e.pointerId;joy.setPointerCapture(joyId);joyUpdate(e)});joy.addEventListener('pointermove',e=>{if(e.pointerId===joyId)joyUpdate(e)});function joyEnd(e){if(e.pointerId!==joyId)return;joyId=null;move={x:0,y:0};knob.style.transform=''}joy.addEventListener('pointerup',joyEnd);joy.addEventListener('pointercancel',joyEnd);
+$('gadgetBtn').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();useGadget(player)});
 const attackBtn=$('attackBtn');
 let attackPointer=null,attackStart=null,attackDragged=false;
 function aimDrag(e){
@@ -413,6 +1408,85 @@ superBtn.addEventListener('pointerdown',e=>{e.preventDefault();if(superPointer!=
 superBtn.addEventListener('pointermove',e=>{if(e.pointerId!==superPointer)return;e.preventDefault();let dx=e.clientX-superStart.x,dy=e.clientY-superStart.y;if(Math.hypot(dx,dy)>16){let n=norm(dx,dy);superAim={active:true,dx:n.x,dy:n.y};superDragged=true}});
 superBtn.addEventListener('pointerup',e=>{if(e.pointerId!==superPointer)return;e.preventDefault();if(playing&&!player.dead){if(superDragged)doAttack(true,{x:superAim.dx,y:superAim.dy});else doAttack(true)}superPointer=null;superStart=null;superAim.active=false});
 superBtn.addEventListener('pointercancel',()=>{superPointer=null;superStart=null;superAim.active=false});
-superBtn.addEventListener('lostpointercapture',()=>{superPointer=null;superStart=null;superAim.active=false});document.addEventListener('visibilitychange',()=>{if(document.hidden){attackHeld=false;attackPointer=null;touchAim.active=false;superPointer=null;superAim.active=false;move={x:0,y:0};keys={}}});render();
+superBtn.addEventListener('lostpointercapture',()=>{superPointer=null;superStart=null;superAim.active=false});document.addEventListener('visibilitychange',()=>{if(document.hidden){attackHeld=false;attackPointer=null;touchAim.active=false;superPointer=null;superAim.active=false;move={x:0,y:0};keys={}}});// Ver.90: Firebase REST based online duel prototype. Host owns simulation; guest submits controls.
+let od=null,odTimer=null,odBusy=false,odKeys={},odMove={x:0,y:0},odFire=false,odSuper=false,odGadget=false,odFrame=0;
+let odAttackAim=null,odSuperAim=null,odMouseAim=null,odMouseDown=false;
+let odAttackPointer=null,odSuperPointer=null,odAttackStart=null,odSuperStart=null,odAttackDragged=false,odSuperDragged=false;
+function odNormalizeAim(dx,dy){const d=Math.hypot(dx,dy);return d>0.001?{x:dx/d,y:dy/d}:null}
+function odAimFromCanvas(e){const rect=odEl('onlineCanvas').getBoundingClientRect(),me=od?.state?.players?.[od.role];if(!me)return null;return odNormalizeAim((e.clientX-rect.left)*720/rect.width-me.x,(e.clientY-rect.top)*420/rect.height-me.y)}
+function odFlick(e,start){return start&&odNormalizeAim(e.clientX-start.x,e.clientY-start.y)}
+const odEl=id=>document.getElementById(id);
+const odCode=()=>Array.from({length:6},()=> 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random()*32)]).join('');
+const odMsg=s=>{const el=odEl('onlineStatus');if(el)el.textContent=s;const notice=odEl('onlineNotice');if(notice)notice.textContent=s};
+async function odDb(method,path,payload){const token=await getCloudToken();return firebaseRequest(firebaseConfig.databaseURL.replace(/\/$/,'')+'/'+path+'.json?auth='+encodeURIComponent(token),{method,headers:{'Content-Type':'application/json'},...(payload===undefined?{}:{body:JSON.stringify(payload)})})}
+function odInitial(){return{round:1,score:[0,0],phase:'wait',startAt:0,players:[{x:95,y:210,hp:100},{x:625,y:210,hp:100}],shots:[],winner:-1,updatedAt:Date.now(),rewardAt:0}}
+async function onlineCreate(){if(!cloudReady)return odMsg('先にログインしてください。');if(od)return;try{const code=odCode();const room={host:cloudUid,hostName:cloudUserName,hostHero:data.selected,hostLevel:odLevel(data.selected),hostGadget:odEquip(data.selected,'gadget'),hostStar:odEquip(data.selected,'star'),createdAt:Date.now(),status:'waiting',state:odInitial()};await odDb('PUT','onlineDuelRooms/'+code,room);od={code,role:0,uid:cloudUid,state:room.state,guest:null,controls:[{x:0,y:0,fire:false},{x:0,y:0,fire:false}],lastSim:Date.now(),lastSend:0,lastRead:0,ending:false};odOpen();odMsg('ルームコード：'+code+'　友達にこのコードを伝えてください。');odStartTimer()}catch(e){odMsg('ルーム作成失敗：'+e.message)}}
+async function onlineJoin(codeOverride){if(!cloudReady)return odMsg('先にログインしてください。');if(od)return;const code=(codeOverride||odEl('onlineRoomCode')?.value||'').trim().toUpperCase();if(!/^[A-HJ-NP-Z2-9]{6}$/.test(code))return odMsg('6文字のルームコードを入力してください。');try{const room=await odDb('GET','onlineDuelRooms/'+code);if(!room||!room.host||room.host===cloudUid||room.guest||room.status!=='waiting')return odMsg('参加できないルームです。');await odDb('PUT','onlineDuelRooms/'+code+'/guest',{uid:cloudUid,name:cloudUserName,hero:data.selected,level:odLevel(data.selected),gadget:odEquip(data.selected,'gadget'),star:odEquip(data.selected,'star')});const check=await odDb('GET','onlineDuelRooms/'+code+'/guest');if(check?.uid!==cloudUid)return odMsg('別のプレイヤーが先に参加しました。');od={code,role:1,uid:cloudUid,state:room.state,controls:[{x:0,y:0,fire:false},{x:0,y:0,fire:false}],lastSim:Date.now(),lastSend:0,lastRead:0,ending:false};odOpen();odMsg('ルーム '+code+' に参加しました。対戦開始を待っています。');odStartTimer()}catch(e){odMsg('ルーム参加失敗：'+e.message)}}
+async function onlineRandom(){if(!cloudReady)return odMsg('先にログインしてください。');if(od)return;try{odMsg('ランダム対戦相手を検索中…');const queue=await odDb('GET','onlineDuelQueue');const now=Date.now();const available=Object.entries(queue||{}).filter(([uid,q])=>uid!==cloudUid&&q&&q.code&&q.at>now-45000).sort((a,b)=>a[1].at-b[1].at);for(const [uid,q] of available){const room=await odDb('GET','onlineDuelRooms/'+q.code);if(room?.host===uid&&!room.guest&&room.status==='waiting'){await onlineJoin(q.code);if(od)return;}}await onlineCreate();if(od){od.random=true;await odDb('PUT','onlineDuelQueue/'+cloudUid,{code:od.code,at:Date.now()});odMsg('ランダムマッチ待機中…（ルーム '+od.code+'）')}}catch(e){odMsg('マッチング失敗：'+e.message)}}
+function odOpen(){odEl('onlineDuelScreen').style.display='block';document.body.style.overflow='hidden';odDraw()}
+function odClose(){const old=od;od=null;clearInterval(odTimer);odTimer=null;odKeys={};odMove={x:0,y:0};odFire=false;odSuper=false;odGadget=false;odAttackAim=null;odSuperAim=null;odMouseAim=null;odMouseDown=false;odEl('onlineDuelScreen').style.display='none';document.body.style.overflow='';if(old){if(old.random)odDb('DELETE','onlineDuelQueue/'+old.uid).catch(()=>{});if(old.role===0)odDb('DELETE','onlineDuelRooms/'+old.code).catch(()=>{});else odDb('DELETE','onlineDuelRooms/'+old.code+'/guest').catch(()=>{})}odMsg('オンラインデュエルを終了しました。')}
+odEl('onlineExit').onclick=odClose;
+function odControl(){
+ // 通常戦闘と同様：矢印キー/W・Sで移動、Dで通常攻撃、A/Spaceで必殺、Fでガジェット。
+ let x=odMove.x+(odKeys.arrowright?1:0)-(odKeys.arrowleft?1:0);
+ let y=odMove.y+(odKeys.arrowdown||odKeys.s?1:0)-(odKeys.arrowup||odKeys.w?1:0);
+ const len=Math.hypot(x,y);
+ const fire=odFire||!!odKeys.d||odMouseDown;
+ const sup=odSuper||!!odKeys.a||!!odKeys[' '];
+ const aim=odAttackAim||(odMouseDown?odMouseAim:null);
+ const superAim=odSuperAim||odMouseAim;
+ return{x:x/Math.max(1,len),y:y/Math.max(1,len),fire,super:sup,gadget:odGadget||!!odKeys.f,
+   ...(aim?{aimX:aim.x,aimY:aim.y}:{}),
+   ...(superAim?{superX:superAim.x,superY:superAim.y}:{})};
+}
+window.addEventListener('keydown',e=>{if(!od)return;const k=e.key.toLowerCase();if(['arrowup','arrowdown','arrowleft','arrowright','w','a','s','d','f',' '].includes(k)){e.preventDefault();odKeys[k]=true}});
+window.addEventListener('keyup',e=>{if(od)odKeys[e.key.toLowerCase()]=false});
+const odJoy=odEl('onlineMove');
+function odJoySet(e){const r=odJoy.getBoundingClientRect(),x=e.clientX-(r.left+r.width/2),y=e.clientY-(r.top+r.height/2),d=Math.max(1,Math.hypot(x,y)),f=Math.min(1,d/55);odMove={x:x/d*f,y:y/d*f};odEl('onlineKnob').style.transform=`translate(${odMove.x*38}px,${odMove.y*38}px)`}
+odJoy.addEventListener('pointerdown',e=>{e.preventDefault();odJoy.setPointerCapture(e.pointerId);odJoySet(e)});
+odJoy.addEventListener('pointermove',e=>{if(odJoy.hasPointerCapture(e.pointerId))odJoySet(e)});
+function odJoyReset(){odMove={x:0,y:0};odEl('onlineKnob').style.transform=''}
+odJoy.addEventListener('pointerup',odJoyReset);odJoy.addEventListener('pointercancel',odJoyReset);
+const odFireBtn=odEl('onlineFire'),odSuperBtn=odEl('onlineSuper'),odGadgetBtn=odEl('onlineGadget');
+odFireBtn.addEventListener('pointerdown',e=>{e.preventDefault();if(odAttackPointer!==null)return;odAttackPointer=e.pointerId;odAttackStart={x:e.clientX,y:e.clientY};odAttackDragged=false;odAttackAim=null;odFireBtn.setPointerCapture(e.pointerId)});
+odFireBtn.addEventListener('pointermove',e=>{if(e.pointerId!==odAttackPointer)return;e.preventDefault();const dx=e.clientX-odAttackStart.x,dy=e.clientY-odAttackStart.y;if(Math.hypot(dx,dy)>16){odAttackDragged=true;odAttackAim=odFlick(e,odAttackStart);odFire=true}});
+function odEndFire(e){if(e.pointerId!==odAttackPointer)return;e.preventDefault();if(e.type==='pointerup'){odFire=true;odAttackAim=odAttackDragged?odFlick(e,odAttackStart):null;setTimeout(()=>{odFire=false;odAttackAim=null},190)}else{odFire=false;odAttackAim=null}odAttackPointer=null;odAttackStart=null;odAttackDragged=false}
+odFireBtn.addEventListener('pointerup',odEndFire);odFireBtn.addEventListener('pointercancel',odEndFire);
+odSuperBtn.addEventListener('pointerdown',e=>{e.preventDefault();if(odSuperPointer!==null)return;odSuperPointer=e.pointerId;odSuperStart={x:e.clientX,y:e.clientY};odSuperDragged=false;odSuperAim=null;odSuperBtn.setPointerCapture(e.pointerId)});
+odSuperBtn.addEventListener('pointermove',e=>{if(e.pointerId!==odSuperPointer)return;e.preventDefault();if(Math.hypot(e.clientX-odSuperStart.x,e.clientY-odSuperStart.y)>16){odSuperDragged=true;odSuperAim=odFlick(e,odSuperStart)}});
+function odEndSuper(e){if(e.pointerId!==odSuperPointer)return;e.preventDefault();if(e.type==='pointerup'){odSuperAim=odSuperDragged?odFlick(e,odSuperStart):null;odSuper=true;setTimeout(()=>{odSuper=false;odSuperAim=null},190)}else{odSuper=false;odSuperAim=null}odSuperPointer=null;odSuperStart=null;odSuperDragged=false}
+odSuperBtn.addEventListener('pointerup',odEndSuper);odSuperBtn.addEventListener('pointercancel',odEndSuper);
+odGadgetBtn.addEventListener('pointerdown',e=>{e.preventDefault();odGadget=true;setTimeout(()=>odGadget=false,190)});
+const odCanvas=odEl('onlineCanvas');
+odCanvas.addEventListener('pointermove',e=>{if(!od||e.pointerType!=='mouse')return;odMouseAim=odAimFromCanvas(e)});
+odCanvas.addEventListener('pointerdown',e=>{if(!od||e.pointerType!=='mouse')return;e.preventDefault();odMouseAim=odAimFromCanvas(e);odMouseDown=true;odCanvas.setPointerCapture(e.pointerId)});
+odCanvas.addEventListener('pointerup',()=>{odMouseDown=false});odCanvas.addEventListener('pointercancel',()=>{odMouseDown=false});
+odCanvas.addEventListener('contextmenu',e=>e.preventDefault());
+// Ver.91: Hero-based authoritative-host duel simulation. Firebase transport remains client-trust based.
+function odLevel(id){return Math.max(1,Math.min(11,Number(data.levels?.[id]||1)))}
+function odEquip(id,kind){return kind==='gadget'?equippedGadget(id):equippedStar(id)}
+function odHeroPlayer(i,hero,level=1,gadget=-1,star=-1){
+ hero=Math.max(0,Math.min(HEROES.length-1,Number(hero)||0));const h=HEROES[hero];const hp=Math.round(h.hp*(1+(level-1)*.06));
+ return{x:i?625:95,y:210,hp,maxhp:hp,hero,level,gadget,star,super:0,ammo:AMMO_CAP[hero],reload:0,charges:3,shieldUntil:0,slowUntil:0,poisonUntil:0,burnUntil:0,boostUntil:0,lastFire:0,lastSuper:false,lastGadget:false};
+}
+function odResetRound(st){const heroes=st.heroIds||[0,0],levels=st.levels||[1,1],gadgets=st.gadgets||[-1,-1],stars=st.stars||[-1,-1];st.players=[0,1].map(i=>odHeroPlayer(i,heroes[i],levels[i],gadgets[i],stars[i]));st.shots=[]}
+function odDamage(p,damage,source,now){if(!p||p.hp<=0)return;let d=damage;if(p.shieldUntil>now)d*=.6;if(p.star>=0&&STAR_TYPES[p.hero][p.star]==='armor')d*=.9;p.hp=Math.max(0,p.hp-damage*(d/damage));if(source)source.super=Math.min(100,source.super+Math.min(17,damage*.13));}
+function odSpawnShot(st,i,ang,superShot=false){const p=st.players[i],h=HEROES[p.hero],cfg=ATTACK_CONFIG[p.hero],count=superShot?Math.max(cfg[0],p.hero===20?13:cfg[0]+2):cfg[0],spread=superShot?cfg[1]*1.15:cfg[1];const baseDamage=h.damage*(1+(p.level-1)*.06)*(superShot?1.45:1)*(p.star>=0&&STAR_TYPES[p.hero][p.star]==='damage'?1.12:1);for(let k=0;k<count;k++){const a=ang+(k-(count-1)/2)*spread;st.shots.push({x:p.x,y:p.y,vx:Math.cos(a)*(superShot?460:420),vy:Math.sin(a)*(superShot?460:420),owner:i,damage:baseDamage,life:Math.max(.18,h.range/420),radius:superShot?8:5,slow:p.hero===1||p.hero===9,burn:p.hero===0||p.hero===14,poison:p.hero===16});}}
+function odSim(st,ctrl,dt){if(st.phase==='wait'||st.phase==='done')return;const now=Date.now();if(st.phase==='break'){if(now>=st.startAt){st.phase='play';odResetRound(st)}return}
+ for(let i=0;i<2;i++){const p=st.players[i],c=ctrl[i]||{},h=HEROES[p.hero],enemy=st.players[1-i];if(!p||p.hp<=0)continue;const slow=p.slowUntil>now?.72:1,boost=p.boostUntil>now?1.25:1;const speed=h.speed*75*slow*boost;p.x=Math.max(20,Math.min(700,p.x+(Number(c.x)||0)*speed*dt));p.y=Math.max(20,Math.min(400,p.y+(Number(c.y)||0)*speed*dt));p.reload=(p.reload||0)+dt;if(p.ammo<AMMO_CAP[p.hero]&&p.reload>=RELOAD_SEC[p.hero]){p.ammo++;p.reload=0}const ang=Math.atan2(enemy.y-p.y,enemy.x-p.x);const attackAng=Number.isFinite(c.aimX)&&Number.isFinite(c.aimY)?Math.atan2(c.aimY,c.aimX):ang;const specialAng=Number.isFinite(c.superX)&&Number.isFinite(c.superY)?Math.atan2(c.superY,c.superX):ang;
+ if(c.fire&&p.ammo>=1&&now-p.lastFire>h.cooldown){p.ammo--;p.lastFire=now;odSpawnShot(st,i,attackAng,false)}
+ if(c.super&&!p.lastSuper&&p.super>=100){p.super=0;if([3,8,13,18,20].includes(p.hero)){p.hp=Math.min(p.maxhp,p.hp+p.maxhp*.4)}else if([2,7,12,17].includes(p.hero)){p.boostUntil=now+4500}else{odSpawnShot(st,i,specialAng,true)}}p.lastSuper=!!c.super;
+ if(c.gadget&&!p.lastGadget&&p.charges>0&&p.gadget>=0){p.charges--;const type=GADGET_TYPES[p.hero][p.gadget];if(type==='heal'||type==='drain')p.hp=Math.min(p.maxhp,p.hp+p.maxhp*.3);else if(type==='shield')p.shieldUntil=now+3500;else if(type==='reload')p.ammo=AMMO_CAP[p.hero];else if(type==='supercharge')p.super=Math.min(100,p.super+40);else if(type==='cleanse'){p.slowUntil=0;p.burnUntil=0;p.poisonUntil=0}else if(type==='blast'){if(Math.hypot(enemy.x-p.x,enemy.y-p.y)<130)odDamage(enemy,h.damage*.9,p,now)}else if(type==='dash'){p.x=Math.max(20,Math.min(700,p.x+Math.cos(ang)*75));p.y=Math.max(20,Math.min(400,p.y+Math.sin(ang)*75))}else p.boostUntil=now+3500}p.lastGadget=!!c.gadget;
+ if(p.poisonUntil>now||p.burnUntil>now)odDamage(p,dt*7,null,now);
+ }
+ for(let j=st.shots.length-1;j>=0;j--){const b=st.shots[j];b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;const target=st.players[1-b.owner];if(target.hp>0&&Math.hypot(b.x-target.x,b.y-target.y)<HEROES[target.hero].bodySize+7){odDamage(target,b.damage,st.players[b.owner],now);if(b.slow)target.slowUntil=now+1300;if(b.burn)target.burnUntil=now+1600;if(b.poison)target.poisonUntil=now+1700;st.shots.splice(j,1)}else if(b.life<=0||b.x<0||b.x>720||b.y<0||b.y>420)st.shots.splice(j,1)}
+ const dead=st.players.map(p=>p.hp<=0);if(dead[0]||dead[1]){const victor=dead[0]?1:0;st.score[victor]++;if(st.score[victor]>=2){st.phase='done';st.winner=victor;st.rewardAt=now}else{st.phase='break';st.round++;st.startAt=now+3000}st.shots=[]}st.updatedAt=now;
+}
+async function odReward(session){if(!session||session.rewarded||session.state?.phase!=='done')return;session.rewarded=true;const id=session.code+'_'+(session.state.rewardAt||session.state.updatedAt);data.onlineDuelReceipts=data.onlineDuelReceipts||{};if(data.onlineDuelReceipts[id])return;data.onlineDuelReceipts[id]=true;const win=session.state.winner===session.role;data.trophies=Math.max(0,(Number(data.trophies)||0)+(win?30:-15));if(win)data.drops=(Number(data.drops)||0)+1;data.matches=(Number(data.matches)||0)+1;if(win)data.wins=(Number(data.wins)||0)+1;save();render();odMsg((win?'🏆 勝利：+30トロフィー・スタードロップ1個':'敗北：-15トロフィー')+'（報酬を保存しました）');}
+function odStartTimer(){clearInterval(odTimer);odTimer=setInterval(odTick,150)}
+async function odTick(){if(!od||odBusy)return;odBusy=true;const session=od;try{const now=Date.now();if(session.role===0){const room=await odDb('GET','onlineDuelRooms/'+session.code);if(od!==session)return;if(!room)return odClose();if(room.guest?.uid&&room.guest.uid!==session.uid){if(session.state.phase==='wait'){session.state.heroIds=[room.hostHero||0,room.guest.hero||0];session.state.levels=[room.hostLevel||1,room.guest.level||1];session.state.gadgets=[room.hostGadget??-1,room.guest.gadget??-1];session.state.stars=[room.hostStar??-1,room.guest.star??-1];session.state.phase='break';session.state.startAt=now+2000;await odDb('PUT','onlineDuelRooms/'+session.code+'/status','playing');if(session.random)odDb('DELETE','onlineDuelQueue/'+session.uid).catch(()=>{})}const guest=await odDb('GET','onlineDuelRooms/'+session.code+'/guestInput');if(guest&&guest.at>now-3500)session.controls[1]=guest;else session.controls[1]={x:0,y:0,fire:false};session.controls[0]=odControl();const dt=Math.min(.25,(now-session.lastSim)/1000);session.lastSim=now;odSim(session.state,session.controls,dt);await odDb('PUT','onlineDuelRooms/'+session.code+'/state',session.state)}else{session.lastSim=now;if(session.state.phase!=='wait'){odMsg('相手が退出しました。');odClose();return}if(session.random&&now-session.lastQueue>12000){session.lastQueue=now;odDb('PUT','onlineDuelQueue/'+session.uid,{code:session.code,at:now}).catch(()=>{})}}}else{await odDb('PUT','onlineDuelRooms/'+session.code+'/guestInput',{...odControl(),at:now});const room=await odDb('GET','onlineDuelRooms/'+session.code);if(od!==session)return;if(!room||room.guest?.uid!==session.uid){odMsg('ルームから切断されました。');odClose();return}session.state=room.state||session.state;}if(od!==session)return;odDraw();const st=session.state;if(st.phase==='done')odReward(session).catch(e=>odMsg('報酬保存エラー：'+e.message));if(st.phase==='wait')odMsg('ルーム '+session.code+'：対戦相手を待っています…');else if(st.phase==='break')odMsg('ラウンド '+st.round+' 開始まで '+Math.max(0,Math.ceil((st.startAt-now)/1000))+'秒　🔵 '+st.score[0]+' - '+st.score[1]+' 🔴');else if(st.phase==='done')odMsg((st.winner===session.role?'🏆 勝利！':'💥 敗北')+'　🔵 '+st.score[0]+' - '+st.score[1]+' 🔴（オンライン報酬あり）');else odMsg('ラウンド '+st.round+'　🔵 '+st.score[0]+' - '+st.score[1]+' 🔴');}catch(e){if(od===session)odMsg('通信エラー：'+e.message)}finally{odBusy=false}}
+function odDraw(){const c=odEl('onlineCanvas'),ctx=c.getContext('2d');ctx.clearRect(0,0,720,420);ctx.fillStyle='#172c43';ctx.fillRect(0,0,720,420);ctx.strokeStyle='#2c506a';for(let x=40;x<720;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,420);ctx.stroke()}for(let y=40;y<420;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(720,y);ctx.stroke()}if(!od)return;const st=od.state;ctx.font='bold 18px system-ui';ctx.textAlign='center';(st.players||[]).forEach((p,i)=>{ctx.fillStyle=i===0?'#68b9ff':'#ff7987';ctx.beginPath();ctx.arc(p.x,p.y,18,0,Math.PI*2);ctx.fill();ctx.fillStyle='white';ctx.fillText((HEROES[p.hero]?.name||'キャラ')+' '+(i===od.role?'あなた':i===0?'ホスト':'ゲスト'),p.x,p.y-28);ctx.fillStyle='#5b1520';ctx.fillRect(p.x-23,p.y+23,46,6);ctx.fillStyle='#83f7a4';ctx.fillRect(p.x-23,p.y+23,46*Math.max(0,p.hp)/(p.maxhp||100),6)});for(const b of st.shots||[]){ctx.fillStyle=b.owner===0?'#7ed4ff':'#ffa2a2';ctx.beginPath();ctx.arc(b.x,b.y,6,0,Math.PI*2);ctx.fill()}ctx.fillStyle='white';ctx.textAlign='center';ctx.fillText('🔵 '+st.score[0]+'  -  '+st.score[1]+' 🔴',360,25);const me=st.players?.[od.role];if(me){ctx.font='14px system-ui';ctx.fillText('HP '+Math.ceil(me.hp)+' / '+(me.maxhp||100)+'   弾 '+(me.ammo??'-')+'   必殺 '+Math.floor(me.super||0)+'%   ガジェット '+(me.charges??0),360,48)}}
+
+render();
 })();
 </script></body></html>
