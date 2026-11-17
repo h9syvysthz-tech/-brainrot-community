@@ -68,12 +68,12 @@ body.playing #battleExit{display:block}
 <input id="saveFile" type="file" accept=".json,application/json" style="display:none">
 <small style="width:100%;color:#c4d4ee">Googleサイトの埋め込みでは保存が消える場合があります。更新前にバックアップしてください。</small>
 </div><nav class="tabs"><button data-tab="home" class="active">ホーム</button><button data-tab="battle">バトル</button><button data-tab="heroes">キャラ</button><button data-tab="shop">ショップ</button><button data-tab="ranking">ランク</button><button data-tab="missions">ミッション</button><button data-tab="events">イベント</button><button data-tab="news">ニュース</button><button data-tab="feedback">フィードバック</button></nav><div id="view"></div></div><div id="gameArea"><div class="row"><button class="btn red" id="leave">退出</button><span id="modeName" class="pill"></span><span id="status"></span></div><div id="battleStage"><button id="battleExit" type="button" aria-label="バトルから退出">退出</button><canvas id="gameCanvas" width="960" height="600"></canvas><div id="touchUI"><div id="moveJoy" class="joy"><div class="knob"></div></div><div class="actions"><button id="gadgetBtn" class="action gadget" aria-label="ガジェット">🟢3</button><button id="superBtn" class="action super">⚡</button><button id="attackBtn" class="action" aria-label="通常攻撃">🎯</button></div></div></div><p class="small">PC：矢印キーで移動／Dで自動照準攻撃（長押し連射）／Aで自動照準必殺技／マウスで照準・クリックで攻撃／スペースで必殺技／Fでガジェット。スマホ：画面左下のスティックで移動。攻撃ボタンをタップすると自動照準、ドラッグして離すと指定方向へ攻撃。</p></div></div><div id="overlay"><div id="result"></div></div><div id="starDropScreen" role="dialog" aria-modal="true" aria-label="スタードロップ開封"><div class="drop-wrap" id="starDropContent"></div></div><div id="heroDetail" role="dialog" aria-modal="true" aria-label="キャラクター詳細"><div class="detail-panel" id="detailPanel"></div></div>
-<div id="onlineDuelScreen" style="display:none;position:fixed;inset:0;z-index:3000;background:#0b1427;color:white;overflow:auto;padding:12px;box-sizing:border-box"><div style="max-width:750px;margin:auto"><div style="display:flex;gap:10px;justify-content:space-between;align-items:center"><h2>⚔️ オンラインデュエル</h2><button class="btn red" id="onlineExit">退出</button></div><p id="onlineStatus" style="min-height:40px"></p><canvas id="onlineCanvas" width="720" height="420" style="width:100%;background:#15283d;border:2px solid #6aa6da;border-radius:12px;touch-action:none"></canvas><div style="display:flex;justify-content:space-between;gap:12px;margin-top:12px;touch-action:none"><div id="onlineMove" style="width:145px;height:145px;border:2px solid #7391b7;border-radius:50%;position:relative;background:#213653;touch-action:none"><div id="onlineKnob" style="position:absolute;width:54px;height:54px;left:44px;top:44px;border-radius:50%;background:#7bc6ff;pointer-events:none"></div></div><div style="display:flex;gap:8px;align-items:center"><button id="onlineFire" class="btn orange" style="height:90px;width:95px;touch-action:none">🎯 攻撃</button><button id="onlineSuper" class="btn" style="height:75px;touch-action:none">💥 必殺</button><button id="onlineGadget" class="btn green" style="height:75px;touch-action:none">⚡ ガジェット</button></div></div><p class="small">PC：矢印キーまたはW・Sで移動、Dキーで通常攻撃、Aキー／スペースで必殺技、Fキーでガジェット。マウスで照準を合わせてクリックで攻撃。スマホ：左スティックで移動、攻撃・必殺ボタンはタップで自動照準、フリックで手動照準。オンライン報酬はクライアント判定のため不正対策に限界があります。</p></div></div><div id="cloudGate"><div id="cloudPanel"><h2>☁️ STAR ARENA オンラインセーブ</h2><p style="font-size:14px">ユーザー名とパスワードで登録・ログインできます。ユーザー名は半角英数字・_・- の3〜20文字。クラウドからの読み込みが完了するまでゲームは開始できません。</p><label>ユーザー名<input id="cloudUsername" type="text" autocomplete="username" maxlength="20" placeholder="例：player123"></label><label>パスワード（6文字以上）<input id="cloudPassword" type="password" autocomplete="current-password" placeholder="6文字以上"></label><div class="cloudActions"><button id="cloudLogin" class="btn green" type="button">ログイン</button><button id="cloudRegister" class="btn orange" type="button">新規登録</button></div><div id="cloudMessage" role="status">Firebaseに接続しています…</div></div></div>
+<div id="cloudGate"><div id="cloudPanel"><h2>☁️ STAR ARENA オンラインセーブ</h2><p style="font-size:14px">ユーザー名とパスワードで登録・ログインできます。ユーザー名は半角英数字・_・- の3〜20文字。クラウドからの読み込みが完了するまでゲームは開始できません。</p><label>ユーザー名<input id="cloudUsername" type="text" autocomplete="username" maxlength="20" placeholder="例：player123"></label><label>パスワード（6文字以上）<input id="cloudPassword" type="password" autocomplete="current-password" placeholder="6文字以上"></label><div class="cloudActions"><button id="cloudLogin" class="btn green" type="button">ログイン</button><button id="cloudRegister" class="btn orange" type="button">新規登録</button></div><div id="cloudMessage" role="status">Firebaseに接続しています…</div></div></div>
 <script>
 (()=>{'use strict';
-const NAMES=['ブレイズ','フロスト','ボルト','リーフ','シャドウ','ルナ','タイタン','スパーク','ウェーブ','ロック','ファング','コメット','ネオン','ミスト','フェニックス','ギア','ヴァイパー','スター','ゴーレム','ノヴァ','パンプキン'];
-const ICONS=['🔥','❄️','⚡','🌿','🥷','🌙','🛡️','💫','🌊','🪨','🐺','☄️','🌈','🌫️','🦅','🤖','🐍','⭐','🗿','🌌','🎃'];
-const COLORS=['#ff6d3c','#7cdaff','#ffe359','#74d995','#ab80ff','#e2a6ff','#a0b8d9','#ffbe59','#53b9ee','#bb8d64','#f58377','#ff995e','#f76dcc','#b2d6df','#ffb138','#8ca4ce','#9fe75e','#ffe280','#a4a9ae','#c581ff','#ed8a37'];
+const NAMES=['ブレイズ','フロスト','ボルト','リーフ','シャドウ','ルナ','タイタン','スパーク','ウェーブ','ロック','ファング','コメット','ネオン','ミスト','フェニックス','ギア','ヴァイパー','スター','ゴーレム','ノヴァ','パンプキン','スノーベル'];
+const ICONS=['🔥','❄️','⚡','🌿','🥷','🌙','🛡️','💫','🌊','🪨','🐺','☄️','🌈','🌫️','🦅','🤖','🐍','⭐','🗿','🌌','🎃','🔔'];
+const COLORS=['#ff6d3c','#7cdaff','#ffe359','#74d995','#ab80ff','#e2a6ff','#a0b8d9','#ffbe59','#53b9ee','#bb8d64','#f58377','#ff995e','#f76dcc','#b2d6df','#ffb138','#8ca4ce','#9fe75e','#ffe280','#a4a9ae','#c581ff','#ed8a37','#a8f0ff'];
 // キャラクターのレアリティはキャラIDに固定し、セーブデータの互換性を保つ。
 const HERO_RARITIES=[
  {name:'ノーマル',icon:'🟦',color:'#65b5ff'},
@@ -82,11 +82,11 @@ const HERO_RARITIES=[
  {name:'ウルトラレア',icon:'🟨',color:'#ffd66e'},
  {name:'レジェンド',icon:'🌟',color:'#ffb96c'}
 ];
-const HERO_RARITY_IDS=[0,0,0,0,0,1,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4];
-const heroRarity=i=>HERO_RARITIES[HERO_RARITY_IDS[i]];
+const HERO_RARITY_IDS=[0,0,0,0,0,1,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4];
+const heroRarity=i=>HERO_RARITIES[HERO_RARITY_IDS[i]??4];
 // キャラ抽選の重み。高レアリティほど同じ候補数でも当たりにくい。
 const HERO_DRAW_WEIGHTS=[55,25,12,6,2];
-const SHOP_ONLY_HERO_IDS=[20];
+const SHOP_ONLY_HERO_IDS=[20,21];
 const randomUnlockableHeroIds=()=>HEROES.map((_,i)=>i).filter(i=>!SHOP_ONLY_HERO_IDS.includes(i)&&!data.owned.includes(i));
 function weightedHeroDraw(ids){
  // ショップ限定キャラは、呼び出し元が誤って候補に含めても抽選対象外。
@@ -98,13 +98,14 @@ function weightedHeroDraw(ids){
  return ids[ids.length-1];
 }
 
-const ownsHero=i=>i===20?(data.pumpkinPurchased===true||data.owned.includes(20)):data.owned.includes(i);
+const ownsHero=i=>i===20?(data.pumpkinPurchased===true||data.owned.includes(20)):i===21?(data.xmas2026Claimed===true||data.owned.includes(21)):data.owned.includes(i);
 const ensurePumpkinOwnership=()=>{if(data.pumpkinPurchased===true&&!data.owned.includes(20))data.owned.push(20);if(data.owned.includes(20))data.pumpkinPurchased=true;};
 const rarityTag=i=>`<span class="hero-rarity" style="--rarity-color:${heroRarity(i).color}">${heroRarity(i).icon} ${heroRarity(i).name}</span>`;
-const HEROES=NAMES.map((name,i)=>({name,icon:ICONS[i],color:COLORS[i],hp:[290, 125, 215, 180, 285, 125, 390, 170, 325, 375, 235, 155, 300, 185, 245, 175, 280, 120, 475, 160, 350][i],speed:[2.12, 1.62, 2.05, 1.88, 2.72, 1.52, 1.94, 1.91, 2.47, 1.58, 2.25, 1.78, 2.35, 1.64, 2.0, 1.83, 2.44, 1.49, 1.20, 1.7, 1.58][i],bodySize:i===18?23:11+(i*5%8),damage:[33, 61, 25, 30, 51, 76, 34, 32, 49, 72, 36, 52, 43, 64, 33, 34, 45, 83, 55, 105, 204][i],range:[76, 540, 225, 310, 105, 610, 195, 345, 90, 500, 165, 410, 65, 565, 205, 365, 112, 650, 205, 450,280][i],cooldown:[330, 990, 490, 550, 345, 1120, 520, 610, 310, 1040, 430, 840, 335, 980, 520, 580, 340, 1200, 700, 1060, 950][i],superType:i%5}));
-const ROLE_NAMES=['近距離ファイター','長距離スナイパー','中距離バランス','中〜長距離アタッカー'];const ROLE_DESCS=['近距離で5発の散弾を放つ。近づくほど強力。','細くて高速な狙撃弾を遠距離まで飛ばす。接近戦は苦手。','射程と火力のバランスが良い。','中距離を保ちつつ牽制するタイプ。'];const ATTACKS=['灼熱散弾','氷結狙撃','電撃連鎖弾','葉の3連射','影の近距離連撃','月光貫通狙撃','重装破砕弾','流星2連射','水流散弾','岩石狙撃','牙の3連射','彗星加速弾','虹の8連散弾','霧の4連射','不死鳥の炎弾','機械2連射','猛毒散弾','星屑高速狙撃','巨岩範囲弾','宇宙貫通2連射','呪いの15連集中散弾'];
-const SUPERS=['火炎の7連散弾','氷結吹雪','電撃加速','自然の癒やし','影の貫通突撃','月光貫通砲','重装ノックバック','流星加速','水流の回復波','岩石の貫通砲','牙の9連散弾','彗星吹き飛ばし','虹の超加速','霧の全体回復','不死鳥の巨大炎弾','機械の連続砲撃','猛毒衝撃波','星屑の超加速','巨岩の回復波','宇宙貫通大砲','かぼちゃの生命回復'];
-const SPECIAL=['炎上','減速','連鎖','3連射','近距離連撃','貫通','高威力','2連射','散弾','減速','3連射','高速','散弾','4連射','炎上','2連射','毒','高速','範囲','貫通','集中散弾'];
+const HEROES=NAMES.map((name,i)=>({name,icon:ICONS[i],color:COLORS[i],hp:[290, 125, 215, 180, 285, 125, 390, 170, 325, 375, 235, 155, 300, 185, 245, 175, 280, 120, 475, 160, 350,255][i],speed:[2.12, 1.62, 2.05, 1.88, 2.72, 1.52, 1.94, 1.91, 2.47, 1.58, 2.25, 1.78, 2.35, 1.64, 2.0, 1.83, 2.44, 1.49, 1.20, 1.7, 1.58,2.08][i],bodySize:i===21?15:i===18?23:11+(i*5%8),damage:[33, 61, 25, 30, 51, 76, 34, 32, 49, 72, 36, 52, 43, 64, 33, 34, 45, 83, 55, 105, 204,42][i],range:[76, 540, 225, 310, 105, 610, 195, 345, 90, 500, 165, 410, 65, 565, 205, 365, 112, 650, 205, 450,280,330][i],cooldown:[330, 990, 490, 550, 345, 1120, 520, 610, 310, 1040, 430, 840, 335, 980, 520, 580, 340, 1200, 700, 1060, 950,590][i],superType:i===21?2:i%5}));
+// スノーベルはNAMESからID 21として1体だけ生成。
+const ROLE_NAMES=['近距離ファイター','長距離スナイパー','中距離バランス','中〜長距離アタッカー'];const ROLE_DESCS=['近距離で5発の散弾を放つ。近づくほど強力。','細くて高速な狙撃弾を遠距離まで飛ばす。接近戦は苦手。','射程と火力のバランスが良い。','中距離を保ちつつ牽制するタイプ。'];const ATTACKS=['灼熱散弾','氷結狙撃','電撃連鎖弾','葉の3連射','影の近距離連撃','月光貫通狙撃','重装破砕弾','流星2連射','水流散弾','岩石狙撃','牙の3連射','彗星加速弾','虹の8連散弾','霧の4連射','不死鳥の炎弾','機械2連射','猛毒散弾','星屑高速狙撃','巨岩範囲弾','宇宙貫通2連射','呪いの15連集中散弾','氷晶ベルの3連射'];
+const SUPERS=['火炎の7連散弾','氷結吹雪','電撃加速','自然の癒やし','影の貫通突撃','月光貫通砲','重装ノックバック','流星加速','水流の回復波','岩石の貫通砲','牙の9連散弾','彗星吹き飛ばし','虹の超加速','霧の全体回復','不死鳥の巨大炎弾','機械の連続砲撃','猛毒衝撃波','星屑の超加速','巨岩の回復波','宇宙貫通大砲','かぼちゃの生命回復','聖夜のスノードーム'];
+const SPECIAL=['炎上','減速','連鎖','3連射','近距離連撃','貫通','高威力','2連射','散弾','減速','3連射','高速','散弾','4連射','炎上','2連射','毒','高速','範囲','貫通','集中散弾','命中時に敵を減速・氷の印を付与。3回命中で追加氷結ダメージ'];
 const ATTACK_CONFIG=[
 [6,.19,.31,6.6,5,0],[1,0,1.16,16,2.5,0],[1,0,.92,8.4,5,0],[3,.11,.62,10,4,0],
 [4,.23,.39,9,5,0],[1,0,1.05,15,3,2],[1,0,1.45,6.2,10,0],[2,.10,.82,11,5,0],
@@ -112,17 +113,18 @@ const ATTACK_CONFIG=[
 [8,.17,.24,7.3,4,0],[4,.08,.52,10,4,0],[1,0,1.32,7.6,9,0],[2,.075,.78,13,4,0],
 [5,.20,.35,7,5,0],[1,0,1.08,19,2.5,0],[1,0,1.65,6.5,10,0],[2,.09,.82,12,5,2],[13,.135,.48,8.5,6,0]
 ];
-const BOSS_NAME='👹 深淵の覇王';const BOSS_TYPES=[{id:'abyss',name:'👹 深淵の覇王',description:'高HPの重量級。メテオ・直線ビーム・衝撃波を使い、時間経過で怒りが増す。',hp:1,damage:1,speed:.95,cooldown:1},{id:'storm',name:'⚡ 雷霆の支配者',description:'深淵の覇王よりHPは低いが、移動が速く、高速落雷・扇状雷ビーム・雷の円環・追尾雷雨・十字雷撃・稲妻の壁・雷の迷路・雷嵐を使う。攻撃力はやや高い。',hp:.72,damage:1.25,speed:1.34,cooldown:.78}];let bossType='abyss';const selectedBoss=()=>BOSS_TYPES.find(b=>b.id===bossType)||BOSS_TYPES[0];const BOSS_DIFFICULTIES=[
+ATTACK_CONFIG.push([3,.11,.62,10,4,0]);
+const BOSS_NAME='👹 深淵の覇王';const BOSS_TYPES=[{id:'abyss',name:'👹 深淵の覇王',description:'高HPの重量級。メテオ・直線ビーム・衝撃波を使い、時間経過で怒りが増す。',hp:1,damage:1,speed:.95,cooldown:1},{id:'xmas',name:'❄️ 氷冠の魔王',description:'雪の衝撃波・氷結ビーム・吹雪を繰り出すクリスマス限定ボス。',hp:.83,damage:.94,speed:1.05,cooldown:1.06},{id:'storm',name:'⚡ 雷霆の支配者',description:'深淵の覇王よりHPは低いが、移動が速く、高速落雷・扇状雷ビーム・雷の円環・追尾雷雨・十字雷撃・稲妻の壁・雷の迷路・雷嵐を使う。攻撃力はやや高い。',hp:.72,damage:1.25,speed:1.34,cooldown:.78}];let bossType='abyss';const selectedBoss=()=>BOSS_TYPES.find(b=>b.id===bossType)||BOSS_TYPES[0];const BOSS_DIFFICULTIES=[
 {name:'ビギナー',lv:3,hp:.65,damage:.60,interval:1.35,warning:1.30,rage:[85,135,170]},
 {name:'ノーマル',lv:7,hp:.85,damage:.82,interval:1.20,warning:1.18,rage:[70,115,155]},
 {name:'ハード',lv:12,hp:1.10,damage:1.05,interval:1.08,warning:1.08,rage:[55,100,140]},
 {name:'エキスパート',lv:19,hp:1.45,damage:1.35,interval:.97,warning:1.0,rage:[45,85,130]},
 {name:'ナイトメア',lv:27,hp:1.90,damage:1.75,interval:.88,warning:.96,rage:[35,75,115]}
 ];let bossDifficulty=1;document.addEventListener('change',e=>{if(e.target?.id==='bossDifficultySelect')bossDifficulty=Math.max(0,Math.min(4,Number(e.target.value)||0));if(e.target?.id==='bossTypeSelect'){bossType=e.target.value;render()}});
-const KEY='starArenaSave_v1';const freshData=()=>({coins:450,trophies:0,selected:0,owned:[0,1,2],levels:{},wins:0,matches:0,best:0,drops:0,redeemedCodes:{},unlockedTitles:{},selectedTitle:"rookie"});let data;try{data=JSON.parse(localStorage.getItem(KEY)||sessionStorage.getItem(KEY))}catch(e){}if(!data||!Array.isArray(data.owned)){data=freshData()};if(data.pumpkinPurchased===true&&!data.owned.includes(20))data.owned.push(20);if(data.owned.includes(20))data.pumpkinPurchased=true;if(!Number.isInteger(data.drops)||data.drops<0)data.drops=0;const $=id=>document.getElementById(id);let tab='home',mode='royale',playing=false,raf=0,entities=[],shots=[],walls=[],bushes=[],particles=[],player=null,elapsed=0,spawnTimer=0,kills=0,score=0,last=0,mouse={x:480,y:300,active:false},keys={},move={x:0,y:0},attackHeld=false,superHeld=false,touchAim={active:false,dx:1,dy:0},gameTime=90,matchOver=false,teamScore=[0,0],effects=[],worldW=960,worldH=600,camX=0,camY=0,gasInset=0,gasPhase=0,bossWarnings=[],bossCooldown=0,bossPattern=0,bossRageStage=0,bossRageMessageUntil=0,killFeed=[];
+const KEY='starArenaSave_v1';const freshData=()=>({coins:450,trophies:0,selected:0,owned:[0,1,2],levels:{},wins:0,matches:0,best:0,drops:0,redeemedCodes:{},unlockedTitles:{},selectedTitle:"rookie"});let data;try{data=JSON.parse(localStorage.getItem(KEY)||sessionStorage.getItem(KEY))}catch(e){}if(!data||!Array.isArray(data.owned)){data=freshData()};if(data.pumpkinPurchased===true&&!data.owned.includes(20))data.owned.push(20);if(data.owned.includes(20))data.pumpkinPurchased=true;if(data.xmas2026Claimed===true&&!data.owned.includes(21))data.owned.push(21);if(!Number.isInteger(data.drops)||data.drops<0)data.drops=0;const $=id=>document.getElementById(id);let tab='home',mode='royale',playing=false,raf=0,entities=[],shots=[],walls=[],bushes=[],particles=[],player=null,elapsed=0,spawnTimer=0,kills=0,score=0,last=0,mouse={x:480,y:300,active:false},keys={},move={x:0,y:0},attackHeld=false,superHeld=false,touchAim={active:false,dx:1,dy:0},gameTime=90,matchOver=false,teamScore=[0,0],effects=[],worldW=960,worldH=600,camX=0,camY=0,gasInset=0,gasPhase=0,bossWarnings=[],bossCooldown=0,bossPattern=0,bossRageStage=0,bossRageMessageUntil=0,killFeed=[];
 // キャラ別の弾数と1発のリロード時間（秒）
-const AMMO_CAP=[3,3,4,3,2,3,4,3,3,4,3,2,3,4,3,3,4,3,4,2,1];
-const RELOAD_SEC=[1.35, 2.65, 1.35, 1.5, 0.72, 2.95, 1.45, 1.65, 0.78, 2.75, 1.12, 2.25, 0.65, 2.6, 1.5, 1.6, 0.82, 3.1, 1.48, 2.9,3.3];
+const AMMO_CAP=[3,3,4,3,2,3,4,3,3,4,3,2,3,4,3,3,4,3,4,2,1,3];
+const RELOAD_SEC=[1.35, 2.65, 1.35, 1.5, 0.72, 2.95, 1.45, 1.65, 0.78, 2.75, 1.12, 2.25, 0.65, 2.6, 1.5, 1.6, 0.82, 3.1, 1.48, 2.9,3.3,1.8];
 
 // キャラクターごとの装備。効果は同じ系統でも倍率や対象がキャラによって異なる。
 const GADGET_EFFECTS=['heal','dash','shield','blast','reload','haste','stealth','drain','supercharge','cleanse'];
@@ -132,7 +134,7 @@ const GADGET_TITLES=[
  ['影隠れ','影の急襲'],['月光の治癒','月の加護'],['鋼鉄防壁','強化装填'],['流星加速','星屑補給'],
  ['潮の癒やし','激流の衝撃'],['岩盤シールド','大地の再生'],['野生の疾走','牙の衝撃'],['彗星ダッシュ','天体装填'],
  ['虹色の疾走','七色の防壁'],['霧の潜伏','霧の回復'],['不死鳥の再生','炎の咆哮'],['機械式装填','オーバークロック'],
- ['猛毒の隠れ身','毒の吸収'],['星の祝福','星光チャージ'],['石像の防壁','岩の衝撃'],['銀河の転移','宇宙エネルギー'],['呪いの治癒','かぼちゃの守護']
+ ['猛毒の隠れ身','毒の吸収'],['星の祝福','星光チャージ'],['石像の防壁','岩の衝撃'],['銀河の転移','宇宙エネルギー'],['呪いの治癒','かぼちゃの守護'],['雪の結界','氷の補給']
 ];
 const STAR_TITLES=[
  ['灼熱の威力','不屈の炎'],['極寒の射程','氷の集中'],['電撃増幅','雷の加速'],['森の生命','自然回復'],
@@ -140,19 +142,19 @@ const STAR_TITLES=[
  ['海の生命','激流加速'],['岩石の装甲','遠距離照準'],['野生の回復','牙の威力'],['彗星の射程','加速装填'],
  ['虹の俊足','虹色の猛攻'],['霧の回復','霧の装甲'],['不死鳥の生命','炎の威力'],['機械の装填','連続射撃'],
  ['毒牙の威力','毒の再生'],['星の射程','星光の集中'],['巨岩の生命','不動の装甲'],['銀河の射程','宇宙装填'],
- ['闇夜の強化','かぼちゃの再生']
+ ['闇夜の強化','かぼちゃの再生'],['氷鈴の集中','雪原の加速']
 ];
 const GADGET_TYPES=[
  ['heal','blast'],['shield','reload'],['dash','supercharge'],['heal','shield'],['stealth','dash'],
  ['heal','shield'],['shield','reload'],['haste','reload'],['heal','blast'],['shield','heal'],
  ['haste','blast'],['dash','reload'],['haste','shield'],['stealth','heal'],['heal','blast'],
- ['reload','haste'],['stealth','drain'],['heal','supercharge'],['shield','blast'],['dash','supercharge'],['heal','shield']
+ ['reload','haste'],['stealth','drain'],['heal','supercharge'],['shield','blast'],['dash','supercharge'],['heal','shield'],['shield','reload']
 ];
 const STAR_TYPES=[
  ['damage','hp'],['range','damage'],['damage','speed'],['hp','regen'],['speed','damage'],
  ['range','regen'],['hp','armor'],['reload','damage'],['hp','speed'],['armor','range'],
  ['regen','damage'],['range','reload'],['speed','damage'],['regen','armor'],['hp','damage'],
- ['reload','ammo'],['damage','regen'],['range','supergain'],['hp','armor'],['range','reload'],['damage','regen']
+ ['reload','ammo'],['damage','regen'],['range','supergain'],['hp','armor'],['range','reload'],['damage','regen'],['damage','speed']
 ];
 const GADGET_DESC={heal:'最大HPの35%を即時回復',dash:'4秒間移動速度が45%上昇',shield:'3秒間被ダメージを50%軽減',blast:'周囲の敵にダメージとノックバック',reload:'弾薬を全回復し次の攻撃を強化',haste:'5秒間移動・リロード速度が上昇',stealth:'3秒間草むら外でも敵から見えなくなる',drain:'周囲の敵からHPを吸収',supercharge:'必殺技ゲージを50%獲得',cleanse:'状態異常を解除しHPを回復'};
 const STAR_DESC={hp:'最大HPが15%上昇',damage:'通常攻撃力が12%上昇',speed:'移動速度が12%上昇',reload:'リロードが20%高速化',armor:'受けるダメージを12%軽減',range:'通常攻撃の射程が12%上昇',regen:'自然回復の開始が早まり回復量も増加',supergain:'攻撃時の必殺技ゲージ獲得量が増加',ammo:'最大弾数が1発増加',execute:'HPが低い敵へのダメージ増加'};
@@ -240,7 +242,7 @@ function showDropScreen(){
  }else{
   const p=currentDropPrize;
   const heading=p.type==='title'?'限定称号獲得！':p.type==='hero'?'新キャラクター獲得！':p.type==='ability'?(p.abilityType==='gadget'?'ガジェット獲得！':'スターパワー獲得！'):'コイン獲得！';
-  const icon=p.type==='title'?titleById(p.titleId).icon:p.type==='hero'?h(p.id).icon:p.type==='ability'?(p.abilityType==='gadget'?'🟢':'⭐'):'🪙';
+  const icon=p.type==='title'?titleById(p.titleId).icon:p.type==='hero'?heroArtSVG(p.id,110):p.type==='ability'?(p.abilityType==='gadget'?'🟢':'⭐'):'🪙';
   const title=p.type==='title'?titleById(p.titleId).name:p.type==='hero'?h(p.id).name:p.type==='ability'?p.title:p.amount.toLocaleString('ja-JP')+' コイン';
   const desc=p.type==='title'?'🏅 レアな称号を獲得！ランク画面で装備するとランキングの名前の横に表示されます。':p.type==='ability'?`対象キャラクター：${h(p.id).icon} ${h(p.id).name}<br>${level(p.id)<p.need?'🔒 Lv.'+p.need+'に到達したら使えます！':'✅ キャラクター詳細から装備できます！'}`:p.type==='hero'?'新しいキャラクターが使用可能になりました！':'コインを受け取りました！';
   content.innerHTML=`<div class="drop-heading">🎉 開封結果</div><div class="drop-tier">${tier.icon} ${tier.name} スタードロップ</div><div class="drop-prize"><div class="drop-prize-icon">${icon}</div><div class="drop-prize-title">${heading}</div><div class="drop-prize-title" style="color:var(--drop-color);margin-top:9px">${title}</div><p class="drop-prize-desc">${desc}</p></div><button class="btn orange drop-action" id="dropNext">受け取る</button>`;
@@ -285,6 +287,7 @@ let cloudIdToken=null,cloudRefreshToken=null,cloudExpiresAt=0,cloudUserName='';
 const ADMIN_UID='WpwlLr6DFpcBDoOcx1nYvfgOXgW2';const isAdmin=()=>cloudReady&&cloudUid===ADMIN_UID;let adminPanelOpen=false,adminBusy=false;
 // 称号コレクション：条件を満たすと獲得し、装備した1つだけランキングで公開。
 const TITLES=[
+ {id:'xmas2026',name:'聖夜の守護者',icon:'🎄',rarity:'限定',color:'#9de9ff',desc:'クリスマス全体討伐ミッション達成報酬',test:()=>false},
  {id:'admin',name:'管理者',icon:'👑',rarity:'限定',color:'#ffdc69',desc:'運営者専用',test:()=>false},
  {id:'rookie',name:'はじまりの挑戦者',icon:'🌱',rarity:'ノーマル',color:'#b9d4ed',desc:'最初から所持',test:()=>true},
  {id:'firstwin',name:'勝利の第一歩',icon:'⚔️',rarity:'ノーマル',color:'#b9d4ed',desc:'1勝する',test:()=>data.wins>=1},
@@ -599,8 +602,9 @@ $('importSave').onclick=()=>$('saveFile').click();
 $('saveFile').onchange=async(e)=>{const file=e.target.files?.[0];if(!file)return;try{const payload=JSON.parse(await file.text());const restored=payload?.format==='star-arena-save'?payload.data:payload;if(!validateSave(restored))throw Error('STAR ARENAのセーブデータではありません');if(!confirm('現在のセーブデータを読み込んだデータで上書きしますか？'))return;if(!cloudReady)throw Error('先にログインしてください');data=normalizeSave(restored);save();await flushCloud();render();refresh();alert('セーブデータを読み込みました。クラウドの保存状態も確認してください。')}catch(err){alert('読み込みに失敗しました: '+err.message)}finally{e.target.value=''}};
 const level=i=>Math.max(1,Number(data.levels[i])||1);const rank=()=>data.trophies<100?'ブロンズ':data.trophies<300?'シルバー':data.trophies<650?'ゴールド':data.trophies<1100?'ダイヤ':data.trophies<1800?'マスター':'レジェンド';const refresh=()=>{$('coins').textContent='🪙 '+data.coins;$('trophies').textContent='🏆 '+data.trophies};const btn=(label,fn,klass='')=>`<button class="btn ${klass}" data-act="${fn}">${label}</button>`;const h=i=>HEROES[i];const HERO_ART_SHAPES=['flame','crystal','bolt','leaf','shuriken','crescent','shield','star','wave','rock','claw','comet','prism','mist','phoenix','gear','fang','orb','tower','galaxy','pumpkin'];
 function heroArtSVG(i,size=62){
- const c=HEROES[i],k=i%21,shape=HERO_ART_SHAPES[k];
+ const c=HEROES[i],k=i%21,shape=i===21?'snowbell':HERO_ART_SHAPES[k];
  const motifs={
+ snowbell:'<path d="M32 7 L38 17 Q49 22 49 41 L54 48 H10 L15 41 Q15 22 26 17Z"/><circle cx="32" cy="53" r="5"/><path d="M32 13 V6 M22 30 L42 30 M32 20 V41"/>',
  flame:'<path d="M32 7 Q48 25 36 34 Q47 29 48 45 Q46 60 32 60 Q15 59 16 43 Q17 32 26 26 Q24 39 32 36 Q39 26 32 7Z"/>',
  crystal:'<path d="M32 6 L51 23 L45 49 L32 60 L19 49 L13 23Z"/><path d="M32 6 V60 M13 23 H51"/>',
  bolt:'<path d="M36 5 L14 35 H29 L24 59 L52 25 H36Z"/>',
@@ -653,7 +657,7 @@ function drawHeroArt(ctx,e){
 }
 const speedLabel=i=>h(i).speed>=2.32?'速い':h(i).speed>=1.96?'普通':'遅い';const sizeLabel=i=>h(i).bodySize>=24?'大型':h(i).bodySize>=19?'中型':'小型';const heroCard=i=>{let own=ownsHero(i);return `<button type="button" class="hero-tile ${data.selected===i?'current':''} ${own?'':'locked'}" data-act="detail:${i}" aria-label="${h(i).name}のステータスを見る"><span class="avatar">${heroArtSVG(i,62)}</span><b>${h(i).name}</b>${rarityTag(i)}<span class="small">Lv.${level(i)} ${own?'':'🔒 未解放'}</span>${data.selected===i?'<span class="badge">✓ 選択中</span>':''}</button>`};
 const attackLabel=i=>[0,8,12,16].includes(i)?'超広範囲の必殺散弾':[5,17,19].includes(i)?'超長距離貫通狙撃':[4,10].includes(i)?'無敵突撃':[6,18].includes(i)?'防御シールド＋自己回復':SUPERS[h(i).superType];
-function showHeroDetail(i){if(!Number.isInteger(i)||i<0||i>=HEROES.length)return;const c=h(i),own=ownsHero(i),selected=data.selected===i;const role=c.range<=120?'超短射程':c.range<=205?'短〜中射程':c.range>=540?'超長射程':c.range>=400?'長射程':'中射程';const description=c.range<=120?'高速で接近して高火力を出す近距離特化。':c.range>=400?'遠距離から高威力で狙撃する。近づかれると不利。':'弾数・攻撃の広がり・貫通を活かして戦う。';$('detailPanel').innerHTML=`<button class="detail-close" data-detail="close" aria-label="閉じる">✕</button><div class="detail-top"><div class="detail-portrait">${heroArtSVG(i,96)}</div><div><div class="detail-name">${c.name}</div>${rarityTag(i)}<div class="detail-tag">${role}</div><div class="small" style="margin-top:8px">Lv.${level(i)}　${own?'解放済み':'🔒 未解放'}</div></div></div><p class="muted">${description}</p><div class="detail-stats"><div class="detail-stat">❤️ 最大HP<strong>${c.hp+level(i)*12}</strong></div><div class="detail-stat">💥 攻撃力<strong>${c.damage+level(i)*3}</strong></div><div class="detail-stat">🎯 1回の攻撃弾数<strong>${ATTACK_CONFIG[i][0]} 発</strong></div><div class="detail-stat">📏 キャラサイズ<strong>${c.bodySize}（${sizeLabel(i)}）</strong></div><div class="detail-stat">🎯 射程<strong>${c.range}</strong></div><div class="detail-stat">👟 移動速度<strong>${c.speed.toFixed(2)}</strong></div><div class="detail-stat">🔋 最大弾数<strong>${AMMO_CAP[i]} 発</strong></div><div class="detail-stat">⏱️ リロード<strong>${RELOAD_SEC[i]} 秒/発</strong></div></div><div class="detail-move"><b>🎯 通常攻撃：${ATTACKS[i]}</b><p class="small">特徴：${SPECIAL[i]}</p></div><div class="detail-move"><b>⚡ 必殺技：${attackLabel(i)}</b></div>${gadgetPanel(i)}<div class="detail-actions">${own?(selected?'<button class="btn green" disabled>✓ 選択中</button>':`<button class="btn green" data-detail="choose:${i}">このキャラを選択</button>`):'<button class="btn" disabled>🔒 未解放</button>'}<button class="btn red" data-detail="close">戻る</button></div>`;$('heroDetail').classList.add('open');}
+function showHeroDetail(i){if(!Number.isInteger(i)||i<0||i>=HEROES.length)return;const c=h(i),own=ownsHero(i),selected=data.selected===i;const role=c.range<=120?'超短射程':c.range<=205?'短〜中射程':c.range>=540?'超長射程':c.range>=400?'長射程':'中射程';const description=c.range<=120?'高速で接近して高火力を出す近距離特化。':c.range>=400?'遠距離から高威力で狙撃する。近づかれると不利。':'弾数・攻撃の広がり・貫通を活かして戦う。';$('detailPanel').innerHTML=`<button class="detail-close" data-detail="close" aria-label="閉じる">✕</button><div class="detail-top"><div class="detail-portrait">${heroArtSVG(i,96)}</div><div><div class="detail-name">${c.name}</div>${rarityTag(i)}<div class="detail-tag">${role}</div><div class="small" style="margin-top:8px">Lv.${level(i)}　${own?'解放済み':'🔒 未解放'}</div></div></div><p class="muted">${i===21?'🔔 クリスマス限定：氷晶弾が敵を減速し、3回命中すると氷結追加ダメージ！必殺技は周囲の敵にダメージと減速を与え、味方のHPを32%回復＆3.5秒間の防護シールドを付与する。':description}</p><div class="detail-stats"><div class="detail-stat">❤️ 最大HP<strong>${c.hp+level(i)*12}</strong></div><div class="detail-stat">💥 攻撃力<strong>${c.damage+level(i)*3}</strong></div><div class="detail-stat">🎯 1回の攻撃弾数<strong>${ATTACK_CONFIG[i][0]} 発</strong></div><div class="detail-stat">📏 キャラサイズ<strong>${c.bodySize}（${sizeLabel(i)}）</strong></div><div class="detail-stat">🎯 射程<strong>${c.range}</strong></div><div class="detail-stat">👟 移動速度<strong>${c.speed.toFixed(2)}</strong></div><div class="detail-stat">🔋 最大弾数<strong>${AMMO_CAP[i]} 発</strong></div><div class="detail-stat">⏱️ リロード<strong>${RELOAD_SEC[i]} 秒/発</strong></div></div><div class="detail-move"><b>🎯 通常攻撃：${ATTACKS[i]}</b><p class="small">特徴：${SPECIAL[i]}</p></div><div class="detail-move"><b>⚡ 必殺技：${attackLabel(i)}</b></div>${gadgetPanel(i)}<div class="detail-actions">${own?(selected?'<button class="btn green" disabled>✓ 選択中</button>':`<button class="btn green" data-detail="choose:${i}">このキャラを選択</button>`):'<button class="btn" disabled>🔒 未解放</button>'}<button class="btn red" data-detail="close">戻る</button></div>`;$('heroDetail').classList.add('open');}
 function closeHeroDetail(){pendingAbilityPurchase=null;$('heroDetail').classList.remove('open')}
 $('heroDetail').addEventListener('click',e=>{
  const b=e.target.closest('[data-ability-action]');if(!b)return;
@@ -735,17 +739,68 @@ async function sendAdminGift(){if(!isAdmin()||!adminPanelOpen||adminBusy)return;
 let giftClaimBusy=false;
 async function claimAdminGifts(){if(!cloudReady||!cloudUid||giftClaimBusy)return;giftClaimBusy=true;const uid=cloudUid,gen=cloudGeneration;try{const gifts=await giftCall('GET','adminGifts/'+encodeURIComponent(uid));if(!gifts||typeof gifts!=='object')return;for(const [id,g] of Object.entries(gifts)){if(gen!==cloudGeneration||uid!==cloudUid)return;if(!/^g[a-z0-9_]+$/.test(id)||!g||!['coins','drops','trophies'].includes(g.type)||!Number.isSafeInteger(g.amount)||g.amount===0||Math.abs(g.amount)>100000)continue; // 先にギフトを消費し、二重受け取りを防ぐ
  await giftCall('DELETE','adminGifts/'+encodeURIComponent(uid)+'/'+encodeURIComponent(id));data[g.type]=Math.max(0,(Number(data[g.type])||0)+g.amount);save();}if(gen===cloudGeneration)render();}catch(e){console.warn('ギフト受取エラー',e)}finally{giftClaimBusy=false}}
+
+// Christmas event 2026. Participation records live in Firebase under eventXmas2026/<uid>.
+// Client-side battle validation is not tamper-resistant; server-authoritative verification is required for competitive rewards.
+const XMAS_START=Date.parse('2026-11-17T00:00:00+09:00'),XMAS_END=Date.parse('2026-12-26T00:00:00+09:00');
+const XMAS_GOALS=[30,150,500];
+let snowGifts=[],snowGiftCollected=0,snowStormPhase=0;
+let xmasRun='',xmasLoading=false,xmasEntries={},xmasError='',xmasSynced=false;
+const xmasActive=()=>Date.now()>=XMAS_START&&Date.now()<XMAS_END;
+const xmasCount=()=>Object.values(xmasEntries).reduce((n,v)=>n+Math.max(0,Math.min(10000,Number(v?.bossKills)||0)),0);
+const xmasParticipant=()=>xmasEntries[cloudUid]||{};
+async function xmasDb(method,path,payload,etag){
+ const token=await getCloudToken();const url=firebaseConfig.databaseURL.replace(/\/$/,'')+'/eventXmas2026'+(path?'/'+path:'')+'.json?auth='+encodeURIComponent(token);
+ const headers={'Content-Type':'application/json',...(etag?{'if-match':etag}:{})};
+ const r=await fetch(url,{method,headers,...(payload===undefined?{}:{body:JSON.stringify(payload)}),cache:'no-store'});
+ if(!r.ok)throw Error('イベント通信 HTTP '+r.status);
+ return r.json();
+}
+async function loadXmas(){if(!cloudReady||xmasLoading)return;xmasLoading=true;xmasError='';try{
+ const v=await xmasDb('GET','');xmasEntries=v&&typeof v==='object'?v:{};xmasSynced=true;
+ }catch(e){xmasError='全サーバー集計を読み込めません。Firebaseルールのイベント設定を確認してください。';xmasSynced=false;console.warn(e)}finally{xmasLoading=false;if(tab==='events')render()}}
+async function xmasAddBossKill(){if(!cloudReady||!xmasActive())return;
+ try{
+ const uid=cloudUid,token=await getCloudToken(),url=firebaseConfig.databaseURL.replace(/\/$/,'')+'/eventXmas2026/'+encodeURIComponent(uid)+'.json?auth='+encodeURIComponent(token);
+ for(let i=0;i<5;i++){
+  const r=await fetch(url,{headers:{'X-Firebase-ETag':'true'},cache:'no-store'});if(!r.ok)throw Error('参加記録の取得に失敗');
+  const etag=r.headers.get('ETag');if(!etag)throw Error('更新識別子がありません');
+  const prev=await r.json()||{};const next={bossKills:Math.min(10000,(Number(prev.bossKills)||0)+1),joined:true};
+  const put=await fetch(url,{method:'PUT',headers:{'Content-Type':'application/json','if-match':etag},body:JSON.stringify(next)});
+  if(put.status===412)continue;if(!put.ok)throw Error('参加記録の保存に失敗');await loadXmas();return;
+ }throw Error('同時更新により再試行が必要です');
+ }catch(e){console.warn('イベント討伐集計',e);alert('ボスは倒しましたが全サーバー集計への反映に失敗しました。通信とFirebaseルールを確認してください。')}}
+async function claimXmas(){if(!cloudReady||!xmasSynced)return alert('全サーバー進捗を読み込んでください');
+ if(!xmasParticipant().bossKills)return alert('イベントボスを1体以上討伐して参加してください');
+ if(xmasCount()<XMAS_GOALS[2])return alert('全サーバー目標がまだ達成されていません');
+ if(data.xmas2026Claimed)return alert('受け取り済みです');
+ data.xmas2026Claimed=true;data.unlockedTitles??={};data.unlockedTitles.xmas2026=true;
+ if(!data.owned.includes(21))data.owned.push(21);
+ data.coins+=12000;data.drops+=35;save();render();alert('🎄 全体達成報酬！限定称号「聖夜の守護者」・限定キャラ「スノーベル」・12000コイン・スタードロップ35個を獲得！');
+}
+function xmasEventHTML(){const n=xmasCount(),joined=Number(xmasParticipant().bossKills)||0;
+ return `<section class="panel" style="border:2px solid #8de4ee;background:linear-gradient(135deg,#173d52,#19233d)"><h2>🎄 聖夜の星祭り 2026</h2><p>開催：2026年11月17日〜12月25日（日本時間・26日0時終了）</p><p class="pill">${xmasActive()?'🎁 開催中':'📅 開催期間外'}</p><p>クリスマス限定ボスを討伐し、全サーバーのプレイヤーと協力して限定報酬を解放しよう！</p></section>
+ <section class="panel"><h2>👹 限定ボス：氷冠の魔王</h2><p>雪の衝撃波・氷結ビーム・吹雪を繰り出すクリスマス限定ボス。味方AI2人と協力して180秒以内に倒そう！</p><p>専用の氷色デザインと攻撃演出。通常ボスより少し低HPで、回避重視のバトルです。</p>${btn('❄️ 氷冠の魔王に挑戦','xmasBoss','orange')}</section>
+ <section class="panel"><h2>☃️ 限定モード：スノーサバイバル</h2><p>雪嵐が一定時間ごとに発生！ 雪嵐の中では移動速度が低下します。マップに出現するプレゼントを拾うとHP回復・移動加速・弾薬補充のいずれかを獲得。10人で生き残りを競い、1〜4位ならスタードロップを追加で1個獲得！</p>${btn('☃️ スノーサバイバルを遊ぶ','xmasSnow','green')}</section>
+ <section class="panel"><h2>🌐 全サーバー共通ミッション</h2><p>全員で「氷冠の魔王」を合計500体討伐！ 1体以上討伐した参加者全員が、全体達成後に報酬を受け取れます。</p><div class="big">${xmasSynced?n.toLocaleString('ja-JP'):'—'} / ${XMAS_GOALS[2]} 体</div><div style="height:15px;background:#0c1a30;border-radius:20px;overflow:hidden"><div style="height:100%;width:${Math.min(100,n/XMAS_GOALS[2]*100)}%;background:linear-gradient(90deg,#64c8fa,#b3fbe7)"></div></div><p class="small">あなたの討伐：${joined}体</p><p>🎯 30体：第1目標 ／ 🎯 150体：第2目標 ／ 🎯 500体：最終目標</p><p>🏅 限定称号「聖夜の守護者」<br>🔔 限定キャラ「スノーベル」<br>🪙 12,000コイン<br>🌟 スタードロップ35個</p><p class="small">報酬は最終目標達成後、参加したアカウントが各自1回受け取れます。</p>${btn('🔄 全体進捗を更新','xmasRefresh')} ${btn(data.xmas2026Claimed?'✓ 受け取り済み':'🎁 全体達成報酬を受け取る','xmasClaim','orange')}<p class="small">${xmasError||'※Firebaseで全プレイヤーの討伐数を合算します。新しいFirebaseルールの追加が必要です。ブラウザ側の討伐判定には不正対策の限界があります。'}</p></section>`;
+}
+
 function render(){refresh();document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x.dataset.tab===tab));let v=$('view');if(tab==='home'){v.innerHTML=`<section class="panel hero"><div class="portrait">${heroArtSVG(data.selected,104)}</div><div><div class="big">${h(data.selected).name} ${rarityTag(data.selected)} <span class="badge">Lv.${level(data.selected)}</span></div><p class="muted">勝利 ${data.wins}回 ／ 対戦 ${data.matches}回 ／ 最高スコア ${data.best}</p>${btn('▶ バトルへ','tab:battle','orange')} ${btn('キャラクター変更','tab:heroes')}<p>🌟 スタードロップ：${data.drops}個（スーパーレア以上はキャラや特殊能力も出現！ ウルトラレア以上からは限定称号も超低確率で出現）</p>${btn('🌟 スタードロップを開封','openDrop','orange')}<p class="small">🟢 ガジェット Lv.7で購入（1000コイン） ／ ⭐ スターパワー Lv.9で購入（2000コイン）。ドロップでも入手可能！</p></div></section><section class="panel"><h3>🎟️ アイテムコード</h3><p class="muted">特別なコードを入力するとアイテムを受け取れます。各コードは1アカウントにつき1回だけ使用可能です。</p><div style="display:flex;gap:8px;flex-wrap:wrap"><input id="itemCodeInput" type="text" maxlength="32" autocomplete="off" spellcheck="false" placeholder="アイテムコードを入力" style="flex:1;min-width:140px;padding:12px;border-radius:10px;border:1px solid #64748b;background:#101c36;color:white"><button type="button" class="btn" data-act="redeemCode" id="redeemCodeButton">🎁 受け取る</button></div><p class="small" id="redeemCodeMessage">※ログイン中のアカウントに付与します。</p></section>${isAdmin()&&adminPanelOpen?adminPanelHTML():''}<section class="panel"><h3>⌨️ パソコンの操作方法</h3><p><strong>移動：</strong>矢印キー（↑ ↓ ← →）または W・S（上下）</p><p><strong>Dキー：</strong>自動照準で通常攻撃（長押しで連射）</p><p><strong>Aキー：</strong>自動照準で必殺技</p><p><strong>マウス：</strong>照準を合わせてクリックで攻撃</p><p><strong>スペースキー：</strong>必殺技</p><p><strong>Fキー：</strong>ガジェットを使用（1試合3回）</p><p class="small">自動照準では近くの敵やパワーキューブの箱を狙います。</p></section><section class="panel"><h3>🎮 遊び方</h3><p>ボス・3vs3ノックアウト勝利でトロフィー+30とスタードロップ1個、敗北で-15。バトルロイヤルは順位ごとに報酬が変わります。ホーム画面で開封するとコインを獲得できます。スーパーレア以上からは低確率で未解放キャラクターやガジェット・スターパワー、ウルトラレア以上からは限定称号も登場します。敗北時はスタードロップを獲得できません。 キャラごとに弾数とリロード時間が異なり、弾は1発ずつ自動装填されます。草むらから攻撃すると1.2秒間、攻撃を受けると1秒間姿が見えます。 攻撃を当てると必殺技ゲージがたまります。最後にダメージを受けるか、自分が攻撃してから5秒経つと、最大HPの約16%を毎秒自動回復します。攻撃すると自動回復は中断されます。</p><p class="small">※このゲームはオリジナル作品です。通常バトルはCPU対戦です。オンラインデュエル試験版は専用アリーナで対人対戦できます。</p></section>`}
-else if(tab==='battle'){const modeCards=[['boss','👹 ボスバトル','味方AI2人と協力して180秒以内にボスを討伐。仲間が生存していれば20秒後に復活できます。'],['royale','👑 バトルロイヤル','10人で生き残りを競います。箱からパワーキューブを集め、縮小する毒ガスを避けて戦おう。'],['team','🔵 3vs3ノックアウト','味方AI2人と敵チーム3人で対戦。ラウンド中は復活なし。先に2ラウンド勝利したチームの勝ち。'],['duel','⚔️ デュエル（1vs1）','自分と敵AIの一騎打ち。3ラウンド制で先に2勝した側の勝ち。']];const info=modeCards.find(x=>x[0]===mode)||modeCards[0];v.innerHTML=`<section class="panel"><h2>⚔️ バトルモードを選択</h2><p class="muted">遊びたいモードを押すと、ルールや設定が表示されます。</p><div class="grid">${modeCards.map(m=>`<button type="button" class="hero-tile ${mode===m[0]?'current':''}" data-act="chooseMode:${m[0]}" style="min-height:100px;cursor:pointer"><span class="avatar">${m[1].split(' ')[0]}</span><b>${m[1]}</b><span class="small">${mode===m[0]?'✓ 選択中':'詳細を見る'}</span></button>`).join('')}</div><div class="panel" style="margin-top:15px;border:2px solid #7ea8ff"><h2>${info[1]}</h2><p>${info[2]}</p><p class="small">${mode==='royale'?'順位に応じてトロフィーとスタードロップを獲得。1〜4位は報酬あり。':'勝利：🏆 +30・🌟 1個 ／ 敗北：🏆 −15・ドロップなし'}</p>${mode==='boss'?`<h3>👹 戦うボスを選択</h3><div class="grid">${BOSS_TYPES.map(b=>`<button type="button" class="hero-tile ${bossType===b.id?'current':''}" data-act="chooseBoss:${b.id}" style="cursor:pointer"><span class="avatar" style="display:inline-flex;align-items:center;justify-content:center;width:112px;height:112px;background:#0e1d36;border-radius:14px"><img src="${bossPortrait(b.id)}" alt="${b.name}のバトル中の姿" style="width:108px;height:108px;object-fit:contain"></span><b>${b.name}</b><span class="small">${bossType===b.id?'✓ 選択中':'このボスと戦う'}</span></button>`).join('')}</div><p>${selectedBoss().description}</p><p class="small">HP倍率：${selectedBoss().hp}倍 ／ 攻撃力倍率：${selectedBoss().damage}倍 ／ 攻撃頻度：${selectedBoss().cooldown<1?'高い':'標準'}</p><h3>🎚️ 難易度を選択</h3><select id="bossDifficultySelect" style="width:100%;padding:12px;background:#101c36;color:white;border:1px solid #a78bfa;border-radius:9px">${BOSS_DIFFICULTIES.map((d,i)=>`<option value="${i}" ${bossDifficulty===i?'selected':''}>${i+1}. ${d.name}</option>`).join('')}</select><p class="small">ボスのHP・攻撃力・攻撃間隔・怒りになる時間が難易度で大きく変化します。プレイヤーのレベルは変更されません。</p>`:''}${btn('▶ '+info[1]+'を開始','start','orange')}</div><div class="panel" style="margin-top:15px;border:1px solid #67b5ff"><h3>🌐 オンラインデュエル（試験版）</h3><p class="small">別端末のプレイヤーと1vs1。ランダムマッチ／ルームコード対応。オンライン専用の簡易アリーナです。</p>${btn('🌐 ランダムマッチ','onlineRandom','orange')} ${btn('🔑 ルーム作成','onlineCreate')}<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap"><input id="onlineRoomCode" placeholder="6桁のルームコード" maxlength="6" style="padding:10px;min-width:130px;flex:1;background:#101c36;color:white;border:1px solid #64748b;border-radius:8px">${btn('ルーム参加','onlineJoin')}</div><p id="onlineNotice" class="small">ログインしてから参加してください。</p></div></section>`}
-else if(tab==='heroes'){v.innerHTML=`<section class="panel"><h2>👥 キャラクター（${new Set([...data.owned,...(ownsHero(20)?[20]:[])]).size}/${HEROES.length}）</h2><p class="muted">レアリティ：🟦 ノーマル ／ 🟩 レア ／ 🟪 スーパーレア ／ 🟨 ウルトラレア ／ 🌟 レジェンド</p><p class="muted">キャラクターをタップすると、ステータス・ガジェット2種類・スターパワー2種類を確認して装備できます。詳細画面から選択するか、戻るかを決められます。購入済みの🎃パンプキンもここから選択できます。</p>${btn('選択キャラを強化：'+(150*level(data.selected))+'🪙','upgrade','green')}<p class="small">現在：${h(data.selected).name} Lv.${level(data.selected)}</p><div class="grid">${HEROES.map((_,i)=>heroCard(i)).join('')}</div></section>`}
+else if(tab==='battle'){const modeCards=[['boss','👹 ボスバトル','味方AI2人と協力して180秒以内にボスを討伐。仲間が生存していれば20秒後に復活できます。'],['royale','👑 バトルロイヤル','10人で生き残りを競います。箱からパワーキューブを集め、縮小する毒ガスを避けて戦おう。'],['team','🔵 3vs3ノックアウト','味方AI2人と敵チーム3人で対戦。ラウンド中は復活なし。先に2ラウンド勝利したチームの勝ち。'],['duel','⚔️ デュエル（1vs1）','自分と敵AIの一騎打ち。3ラウンド制で先に2勝した側の勝ち。']];const info=modeCards.find(x=>x[0]===mode)||modeCards[0];v.innerHTML=`<section class="panel"><h2>⚔️ バトルモードを選択</h2><p class="muted">遊びたいモードを押すと、ルールや設定が表示されます。</p><div class="grid">${modeCards.map(m=>`<button type="button" class="hero-tile ${mode===m[0]?'current':''}" data-act="chooseMode:${m[0]}" style="min-height:100px;cursor:pointer"><span class="avatar">${m[1].split(' ')[0]}</span><b>${m[1]}</b><span class="small">${mode===m[0]?'✓ 選択中':'詳細を見る'}</span></button>`).join('')}</div><div class="panel" style="margin-top:15px;border:2px solid #7ea8ff"><h2>${info[1]}</h2><p>${info[2]}</p><p class="small">${mode==='royale'?'順位に応じてトロフィーとスタードロップを獲得。1〜4位は報酬あり。':'勝利：🏆 +30・🌟 1個 ／ 敗北：🏆 −15・ドロップなし'}</p>${mode==='boss'?`<h3>👹 戦うボスを選択</h3><div class="grid">${BOSS_TYPES.filter(b=>b.id!=='xmas').map(b=>`<button type="button" class="hero-tile ${bossType===b.id?'current':''}" data-act="chooseBoss:${b.id}" style="cursor:pointer"><span class="avatar" style="display:inline-flex;align-items:center;justify-content:center;width:112px;height:112px;background:#0e1d36;border-radius:14px"><img src="${bossPortrait(b.id)}" alt="${b.name}のバトル中の姿" style="width:108px;height:108px;object-fit:contain"></span><b>${b.name}</b><span class="small">${bossType===b.id?'✓ 選択中':'このボスと戦う'}</span></button>`).join('')}</div><p>${selectedBoss().description}</p><p class="small">HP倍率：${selectedBoss().hp}倍 ／ 攻撃力倍率：${selectedBoss().damage}倍 ／ 攻撃頻度：${selectedBoss().cooldown<1?'高い':'標準'}</p><h3>🎚️ 難易度を選択</h3><select id="bossDifficultySelect" style="width:100%;padding:12px;background:#101c36;color:white;border:1px solid #a78bfa;border-radius:9px">${BOSS_DIFFICULTIES.map((d,i)=>`<option value="${i}" ${bossDifficulty===i?'selected':''}>${i+1}. ${d.name}</option>`).join('')}</select><p class="small">ボスのHP・攻撃力・攻撃間隔・怒りになる時間が難易度で大きく変化します。プレイヤーのレベルは変更されません。</p>`:''}${btn('▶ '+info[1]+'を開始','start','orange')}</div></section>`}
+else if(tab==='heroes'){v.innerHTML=`<section class="panel"><h2>👥 キャラクター（${new Set([...(Array.isArray(data.owned)?data.owned:[]),...(ownsHero(20)?[20]:[])]).size}/${HEROES.length}）</h2><p class="muted">レアリティ：🟦 ノーマル ／ 🟩 レア ／ 🟪 スーパーレア ／ 🟨 ウルトラレア ／ 🌟 レジェンド</p><p class="muted">キャラクターをタップすると、ステータス・ガジェット2種類・スターパワー2種類を確認して装備できます。詳細画面から選択するか、戻るかを決められます。購入済みの🎃パンプキンもここから選択できます。</p>${btn('選択キャラを強化：'+(150*level(data.selected))+'🪙','upgrade','green')}<p class="small">現在：${h(data.selected).name} Lv.${level(data.selected)}</p><div class="grid">${HEROES.map((_,i)=>heroCard(i)).join('')}</div></section>`}
 else if(tab==='shop'){v.innerHTML=`<section class="panel"><h2>🛒 ショップ</h2><p>所持コイン：🪙 ${data.coins}</p><div class="grid"><div class="card"><div class="avatar">🎁</div><b>ヒーローボックス</b><p class="small">未解放キャラを1体獲得。高レアほど出にくい・重複なし。</p>${btn('1000🪙 で開封','gacha','orange')}</div><div class="card"><div class="avatar">⬆️</div><b>キャラ強化</b><p class="small">${h(data.selected).name} Lv.${level(data.selected)}</p>${btn((150*level(data.selected))+'🪙 で強化','upgrade','green')}</div><h3 style="margin:24px 0 12px">🎃❄️ 期間限定キャラクター</h3><p class="muted">ハロウィン限定キャラは販売中！ クリスマス限定キャラは近日公開です。</p><div class="grid"><div class="card" style="border:2px solid #f19a49;background:linear-gradient(145deg,#443049,#28253f)"><div class="avatar" style="font-size:48px">🎃</div><b>🎃 パンプキン</b>${rarityTag(20)}<p class="small">HP${h(20).hp} / 攻撃力${h(20).damage} / ${ATTACK_CONFIG[20][0]}発の集中散弾・中射程・まとまりのある弾道 / 弾数1 / リロード3.3秒 / 低速 / 必殺技：自身のHPを65%回復</p>${data.owned.includes(20)?(data.selected===20?'<button class="btn green" disabled>✓ 使用中</button>':btn('✓ 購入済み・使用キャラに設定','choosePumpkin','green')):btn('5000🪙 で購入','buyHalloween','orange')}</div><div class="card" style="border:2px solid #85d6f1;background:linear-gradient(145deg,#264b62,#293349)"><div class="avatar" style="font-size:48px">🎄</div><b>🎄 クリスマス限定キャラ</b><p class="small">クリスマス限定の特別なキャラクターが登場予定！</p><button class="btn" type="button" disabled style="opacity:.65;cursor:not-allowed;width:100%;background:#416c80">🔒 近日公開・購入不可</button></div></div></section>`}
 else if(tab==='missions'){v.innerHTML=missionsHTML()}
-else if(tab==='events'){v.innerHTML=`<section class="panel"><div class="row" style="justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px"><h2 style="margin:0">🎪 イベント</h2><span class="pill">📅 開催準備中</span></div><p class="muted">期間限定イベントの専用ページです。開催期間・参加条件・報酬はイベント公開時にお知らせします。</p><div class="grid"><div class="card" style="text-align:left"><div class="avatar">🌐</div><h3>🌐 全サーバー共通の大型ミッション</h3><p>全プレイヤーで協力して目標達成を目指すイベントを予定しています。</p><p class="small">予定内容：全体の撃破数・勝利数などを合算し、達成段階に応じた報酬を開放</p><p class="pill">🔒 準備中・現在は集計なし</p><button class="btn" disabled>開催をお待ちください</button></div><div class="card" style="text-align:left"><div class="avatar">👹</div><h3>👹 イベント限定ボス</h3><p>開催期間中だけ登場する特別なボスとのバトルを予定しています。</p><p class="small">予定内容：イベント専用の攻撃パターン・難易度・限定報酬</p><p class="pill">🔒 準備中・現在は挑戦不可</p><button class="btn" disabled>開催をお待ちください</button></div></div></section><section class="panel"><h3>📢 イベントのお知らせ</h3><p>現在開催中のイベントはありません。開催日や報酬は今後のアップデートで発表します。</p><p class="small">※ 全サーバー共通進捗にはFirebase側の集計・不正対策が必要です。今回のバージョンでは、イベント用の画面のみ追加しています。</p>${btn('📰 更新ニュースを見る','tab:news')}</section>`}
+else if(tab==='events'){v.innerHTML=xmasEventHTML()}
 
 else if(tab==='feedback'){v.innerHTML=feedbackHTML()}
 else if(tab==='news'){
 // 次回以降は先頭に最新更新を追加すると最新ニュースと過去5件が自動で切り替わる。
 const updates=[
+{ver:108,title:'🔔 スノーベルに限定専用能力を追加',detail:'通常攻撃に氷晶の減速と3ヒット追加ダメージを追加。必殺技「聖夜のスノードーム」で範囲内の敵を攻撃・減速し、味方を回復して3.5秒間のシールドを付与。',date:'2026年11月17日（日本時間）'},
+{ver:107,title:'🔔 スノーベル重複と詳細画面を修正',detail:'スノーベルがキャラ一覧に2体表示される問題を解消し、22体に統一。限定キャラのステータス・攻撃・装備画面を正常に表示できるよう修正。',date:'2026年11月17日（日本時間）'},
+{ver:106,title:'👥 キャラクター選択画面の表示不具合を修正',detail:'クリスマス限定キャラ「スノーベル」追加時にレアリティ情報が不足し、キャラクタータブが表示できなくなる問題を修正。既存のセーブデータとイベント内容は維持。',date:'2026年11月17日（日本時間）'},
+{ver:105,title:'☃️ スノーサバイバル強化＆イベント期間変更',detail:'32秒周期の吹雪による移動速度低下、回復・加速・弾薬補充のプレゼントを追加。全サーバー討伐目標を30/150/500体に引き上げ。開催終了を2026年12月26日0時（日本時間）に変更。',date:'2026年11月17日（日本時間）'},
+{ver:104,title:'🎄 クリスマスイベント開催＆キャラ獲得演出統一',detail:'スタードロップのキャラ獲得画面に選択画面と同じ専用アートを採用。オンラインデュエルの入口を撤去。クリスマス限定ボス「氷冠の魔王」、スノーサバイバル、Firebase全サーバー共通討伐ミッション、限定称号と限定キャラ「スノーベル」の報酬を追加。',date:'2026年11月17日（日本時間）'},
 {ver:103,title:'👹 ボス選択画面とバトル中の姿を統一',detail:'深淵の覇王と雷霆の支配者の選択画面に、実際のバトルで使われる同じ描画処理のボス画像を表示。見た目を完全統一。',date:'2026年11月16日（日本時間）'},
 {ver:102,title:'🎨 キャラクターの見た目を完全統一',detail:'キャラクター選択画面のオリジナルSVGデザインを、通常バトル中にもそのまま使用するよう変更。21体すべての形・色・装飾を統一。',date:'2026年11月16日（日本時間）'},
 {ver:101,title:'🎨 21体のキャラデザイン刷新＆ボス再調整',detail:'21体のキャラクターを絵文字から専用の幾何学アバターに変更。ボスの攻撃範囲と頻度をVer.100より少し戻し、難易度差を緩やかに調整。Ver.100のニュース表示不具合も修正。',date:'2026年11月16日（日本時間）'},
@@ -810,9 +865,9 @@ const historyHtml=history.map(n=>`<article class="card" style="margin-top:12px;t
 v.innerHTML=`<section class="panel news-panel"><div class="row" style="justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><h2 style="margin:0">📰 最新ニュース</h2><span class="pill">Ver.${latest.ver}</span></div><p class="muted">最終アップデート：${latest.date}</p><div class="card" style="margin-top:16px;text-align:left"><h3>✨ ${latest.title}</h3><p>${latest.detail}</p></div><div style="margin-top:18px"><button type="button" class="btn" data-act="toggleHistory" aria-expanded="${newsHistoryOpen}" aria-controls="newsHistory">${newsHistoryOpen?'▲ 過去のアップデートを閉じる':'📜 過去のアップデートを見る'}</button></div><div id="newsHistory" ${newsHistoryOpen?'':'hidden'} style="margin-top:14px"><h3>📚 過去のアップデート（10件）</h3>${historyHtml}</div></section>`;
 }
 else{v.innerHTML=`<section class="panel"><h2>🏆 ランク</h2><div class="big">${rank()}</div><p>現在のトロフィー：${data.trophies} 🏆</p><p class="muted">ブロンズ 0 ／ シルバー 100 ／ ゴールド 300 ／ ダイヤ 650 ／ マスター 1100 ／ レジェンド 1800</p><p>勝利数：${data.wins} ／ 対戦数：${data.matches}</p></section><section class="panel"><div class="row" style="justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><h2 style="margin:0">🏅 称号コレクション</h2><button type="button" class="btn" data-act="toggleTitles" aria-expanded="${titleCollectionOpen}">${titleCollectionOpen?'▲ 閉じる':'🏅 称号を表示・選択'}</button></div><p class="muted">装備中：${equippedTitlesHTML()}</p>${titleCollectionOpen?titleCollectionHTML():''}</section>${leaderboardHTML()}`}}
-document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{tab=b.dataset.tab;render();if(tab==='feedback')loadFeedback()});
+document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{tab=b.dataset.tab;render();if(tab==='feedback')loadFeedback();if(tab==='events')loadXmas()});
 $('view').addEventListener('change',e=>{if(e.target.name==='mode'){mode=e.target.value;render()}});
-$('view').addEventListener('click',e=>{let b=e.target.closest('[data-act]');if(!b)return;let a=b.dataset.act;if(a.startsWith('chooseMode:')){mode=a.split(':')[1];render()}else if(a.startsWith('chooseBoss:')){bossType=a.split(':')[1];render()}else if(a==='onlineRandom'){onlineRandom()}else if(a==='onlineCreate'){onlineCreate()}else if(a==='onlineJoin'){onlineJoin()}else if(a==='sendFeedback'){sendFeedback()}else if(a==='refreshFeedback'){loadFeedback()}else if(['likeFeedback','replyFeedback','deleteFeedback','deleteReply'].includes(a)){feedbackAction(a,b)}else if(a==='redeemCode'){redeemItemCode()}else if(a==='sendGift'){sendAdminGift()}else if(a==='closeAdmin'){adminPanelOpen=false;pendingAdminAction='';render()}else if(a.startsWith('equipTitle2:')){if(!isAdmin())return;const id=a.split(':')[1];unlockTitles();if(id!=='none'&&(!data.unlockedTitles[id]||!titleById(id)||id===data.selectedTitle))return;data.selectedTitle2=id==='none'?null:id;leaderboardPublished=null;save();publishLeaderboard().then(()=>{if(tab==='ranking')loadLeaderboard()});render()}else if(a.startsWith('claimMission:')){claimMission(a.split(':')[1])}else if(a.startsWith('equipTitle:')){const id=a.split(':')[1];unlockTitles();if(!data.unlockedTitles[id]||!titleById(id))return alert('未獲得の称号です');data.selectedTitle=id;leaderboardPublished=null;save();publishLeaderboard().then(()=>{if(tab==='ranking')loadLeaderboard()});render()}else if(a==='refreshLeaderboard'){if(!leaderboardLoading)loadLeaderboard()}else if(a==='toggleTitles'){titleCollectionOpen=!titleCollectionOpen;render()}else if(a==='toggleHistory'){newsHistoryOpen=!newsHistoryOpen;render()}else if(a==='start')start();else if(a==='openDrop')openDrop();else if(a.startsWith('tab:')){tab=a.split(':')[1];render();if(tab==='ranking')loadLeaderboard();if(tab==='feedback')loadFeedback()}else if(a.startsWith('detail:')){showHeroDetail(+a.split(':')[1])}else if(a.startsWith('select:')){data.selected=+a.split(':')[1];save();render()}else if(a==='upgrade'){let cost=150*level(data.selected);if(data.coins<cost)return alert('コインが足りません');if(level(data.selected)>=20)return alert('最大レベルです');data.coins-=cost;data.levels[data.selected]=level(data.selected)+1;save();render()}else if(a==='choosePumpkin'){if(!data.owned.includes(20)&&data.pumpkinPurchased===true)data.owned.push(20);if(!data.owned.includes(20))return alert('パンプキンの購入情報が見つかりません。Firebaseの所持キャラ一覧を確認してください。');data.selected=20;save();render();alert('🎃 パンプキンを使用キャラに設定しました！')}else if(a==='buyHalloween'){if(data.owned.includes(20))return alert('すでに購入済みです');if(data.coins<5000)return alert('コインが足りません（5000コイン必要）');if(!confirm('🎃 パンプキンを5000コインで購入しますか？'))return;data.coins-=5000;data.owned.push(20);data.pumpkinPurchased=true;data.selected=20;save();alert('🎉 🎃 パンプキンを購入し、使用キャラに設定しました！');render()}else if(a==='gacha'){let locked=randomUnlockableHeroIds();if(!locked.length)return alert('ヒーローボックスで解放できるキャラは全員解放済みです！ ショップ限定キャラはショップから購入してください。');if(data.coins<1000)return alert('コインが足りません');data.coins-=1000;let i=weightedHeroDraw(locked);data.owned.push(i);save();alert('🎉 '+h(i).icon+' '+h(i).name+' を獲得！');render()}});
+$('view').addEventListener('click',e=>{let b=e.target.closest('[data-act]');if(!b)return;let a=b.dataset.act;if(a.startsWith('chooseMode:')){mode=a.split(':')[1];if(bossType==='xmas')bossType='abyss';render()}else if(a.startsWith('chooseBoss:')){bossType=a.split(':')[1];render()}else if(a==='xmasBoss'){if(!xmasActive())return alert('開催期間外です');xmasRun='boss';mode='boss';bossType='xmas';bossDifficulty=1;start()}else if(a==='xmasSnow'){if(!xmasActive())return alert('開催期間外です');xmasRun='snow';mode='royale';start()}else if(a==='xmasRefresh'){loadXmas()}else if(a==='xmasClaim'){claimXmas()}else if(a==='sendFeedback'){sendFeedback()}else if(a==='refreshFeedback'){loadFeedback()}else if(['likeFeedback','replyFeedback','deleteFeedback','deleteReply'].includes(a)){feedbackAction(a,b)}else if(a==='redeemCode'){redeemItemCode()}else if(a==='sendGift'){sendAdminGift()}else if(a==='closeAdmin'){adminPanelOpen=false;pendingAdminAction='';render()}else if(a.startsWith('equipTitle2:')){if(!isAdmin())return;const id=a.split(':')[1];unlockTitles();if(id!=='none'&&(!data.unlockedTitles[id]||!titleById(id)||id===data.selectedTitle))return;data.selectedTitle2=id==='none'?null:id;leaderboardPublished=null;save();publishLeaderboard().then(()=>{if(tab==='ranking')loadLeaderboard()});render()}else if(a.startsWith('claimMission:')){claimMission(a.split(':')[1])}else if(a.startsWith('equipTitle:')){const id=a.split(':')[1];unlockTitles();if(!data.unlockedTitles[id]||!titleById(id))return alert('未獲得の称号です');data.selectedTitle=id;leaderboardPublished=null;save();publishLeaderboard().then(()=>{if(tab==='ranking')loadLeaderboard()});render()}else if(a==='refreshLeaderboard'){if(!leaderboardLoading)loadLeaderboard()}else if(a==='toggleTitles'){titleCollectionOpen=!titleCollectionOpen;render()}else if(a==='toggleHistory'){newsHistoryOpen=!newsHistoryOpen;render()}else if(a==='start'){xmasRun='';start();}else if(a==='openDrop')openDrop();else if(a.startsWith('tab:')){tab=a.split(':')[1];render();if(tab==='ranking')loadLeaderboard();if(tab==='feedback')loadFeedback()}else if(a.startsWith('detail:')){showHeroDetail(+a.split(':')[1])}else if(a.startsWith('select:')){data.selected=+a.split(':')[1];save();render()}else if(a==='upgrade'){let cost=150*level(data.selected);if(data.coins<cost)return alert('コインが足りません');if(level(data.selected)>=20)return alert('最大レベルです');data.coins-=cost;data.levels[data.selected]=level(data.selected)+1;save();render()}else if(a==='choosePumpkin'){if(!data.owned.includes(20)&&data.pumpkinPurchased===true)data.owned.push(20);if(!data.owned.includes(20))return alert('パンプキンの購入情報が見つかりません。Firebaseの所持キャラ一覧を確認してください。');data.selected=20;save();render();alert('🎃 パンプキンを使用キャラに設定しました！')}else if(a==='buyHalloween'){if(data.owned.includes(20))return alert('すでに購入済みです');if(data.coins<5000)return alert('コインが足りません（5000コイン必要）');if(!confirm('🎃 パンプキンを5000コインで購入しますか？'))return;data.coins-=5000;data.owned.push(20);data.pumpkinPurchased=true;data.selected=20;save();alert('🎉 🎃 パンプキンを購入し、使用キャラに設定しました！');render()}else if(a==='gacha'){let locked=randomUnlockableHeroIds();if(!locked.length)return alert('ヒーローボックスで解放できるキャラは全員解放済みです！ ショップ限定キャラはショップから購入してください。');if(data.coins<1000)return alert('コインが足りません');data.coins-=1000;let i=weightedHeroDraw(locked);data.owned.push(i);save();alert('🎉 '+h(i).icon+' '+h(i).name+' を獲得！');render()}});
 const canvas=$('gameCanvas'),ctx=canvas.getContext('2d');const rand=(a,b)=>a+Math.random()*(b-a);const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);const norm=(x,y)=>{let d=Math.hypot(x,y)||1;return{x:x/d,y:y/d}};function circleRect(x,y,r,w){let cx=clamp(x,w.x,w.x+w.w),cy=clamp(y,w.y,w.y+w.h);return (x-cx)**2+(y-cy)**2<r*r}
 function blocked(x,y,r=17){return x<r||y<r||x>worldW-r||y>worldH-r||walls.some(w=>circleRect(x,y,r,w))}
 function pos(radius=28){for(let k=0;k<350;k++){let p={x:rand(65,worldW-65),y:rand(65,worldH-65)};if(!blocked(p.x,p.y,radius+10)&&entities.every(e=>dist(e,p)>e.r+radius+48))return p}for(let y=65;y<worldH-65;y+=35)for(let x=65;x<worldW-65;x+=35){let p={x,y};if(!blocked(x,y,radius+10)&&entities.every(e=>dist(e,p)>e.r+radius+25))return p}return{x:worldW/2,y:worldH/2}}
@@ -852,7 +907,7 @@ function cameraUpdate(){let focus=mode==='boss'&&player.dead?entities.find(e=>e.
 function gasState(){let phase=Math.floor(elapsed/30),progress=clamp((elapsed%30-10)/20,0,1);return{phase,inset:Math.min(worldW*.43,phase*165+progress*165)}}
 function inGas(e){return e.x<gasInset+e.r||e.y<gasInset+e.r||e.x>worldW-gasInset-e.r||e.y>worldH-gasInset-e.r}
 let knockoutRound=1,roundBreak=0;
-function start(){if(mode==='boss'){const difficultySelect=$('bossDifficultySelect');if(difficultySelect)bossDifficulty=Math.max(0,Math.min(4,Number(difficultySelect.value)||0));}powerCubes=[];powerBoxes=[];cancelAnimationFrame(raf);playing=true;matchOver=false;entities=[];shots=[];particles=[];effects=[];elapsed=0;spawnTimer=0;kills=0;score=0;teamScore=[0,0];gasInset=0;gasPhase=0;bossWarnings=[];bossCooldown=3.2;bossPattern=0;bossRageStage=0;bossRageMessageUntil=0;killFeed=[];knockoutRound=1;roundBreak=0;last=performance.now();mapBuild();player=create(data.selected,0,false,{x:worldW/2,y:worldH/2}); if(blocked(player.x,player.y,player.r+20)){let safe=pos(player.r);player.x=safe.x;player.y=safe.y;}applyStar(player);entities.push(player);let count=mode==='royale'?9:mode==='team'?5:mode==='duel'?1:0;for(let i=0;i<count;i++){let team=mode==='team'?(i<2?0:1):1;let id=Math.floor(rand(0,HEROES.length)),r=h(id).bodySize,p=null;for(let attempt=0;attempt<450;attempt++){let candidate={x:rand(110,worldW-110),y:rand(110,worldH-110)};if(!blocked(candidate.x,candidate.y,r+15)&&entities.every(e=>dist(e,candidate)>=Math.max(mode==='royale'?500:290,e.r+r+80))){p=candidate;break}}p??=pos(r);let bot=create(id,team,true,p);
+function start(){if(mode==='boss'){const difficultySelect=$('bossDifficultySelect');if(difficultySelect)bossDifficulty=Math.max(0,Math.min(4,Number(difficultySelect.value)||0));}powerCubes=[];powerBoxes=[];snowGifts=[];snowGiftCollected=0;snowStormPhase=0;cancelAnimationFrame(raf);playing=true;matchOver=false;entities=[];shots=[];particles=[];effects=[];elapsed=0;spawnTimer=0;kills=0;score=0;teamScore=[0,0];gasInset=0;gasPhase=0;bossWarnings=[];bossCooldown=3.2;bossPattern=0;bossRageStage=0;bossRageMessageUntil=0;killFeed=[];knockoutRound=1;roundBreak=0;last=performance.now();mapBuild();player=create(data.selected,0,false,{x:worldW/2,y:worldH/2}); if(blocked(player.x,player.y,player.r+20)){let safe=pos(player.r);player.x=safe.x;player.y=safe.y;}applyStar(player);entities.push(player);let count=mode==='royale'?9:mode==='team'?5:mode==='duel'?1:0;for(let i=0;i<count;i++){let team=mode==='team'?(i<2?0:1):1;let id=Math.floor(rand(0,21)),r=h(id).bodySize,p=null;for(let attempt=0;attempt<450;attempt++){let candidate={x:rand(110,worldW-110),y:rand(110,worldH-110)};if(!blocked(candidate.x,candidate.y,r+15)&&entities.every(e=>dist(e,candidate)>=Math.max(mode==='royale'?500:290,e.r+r+80))){p=candidate;break}}p??=pos(r);let bot=create(id,team,true,p);
 // ノックアウトの味方AIも敵AIと同様、各試合で固有能力をランダム装備。
 if(mode==='team'&&team===0){
  bot.gadgetIndex=bot.lv>=7?Math.floor(Math.random()*2):-1;
@@ -864,12 +919,12 @@ if(mode==='royale'){for(let i=0;i<17;i++){let p=pos(32);if(!powerBoxes.some(c=>d
 if(mode==='boss'){
 let boss=create(18,1,true,{x:worldW/2+310,y:worldH/2});
 if(blocked(boss.x,boss.y,48)){let q=pos(48);boss.x=q.x;boss.y=q.y}
-boss.isBoss=true;boss.gadgetIndex=-1;boss.starIndex=-1;boss.gadgetCharges=0;boss.star=null;boss.lv=BOSS_DIFFICULTIES[bossDifficulty].lv;boss.difficulty=bossDifficulty;boss.bossName=selectedBoss().name;boss.bossType=bossType;boss.r=bossType==='storm'?39:46;
+boss.isBoss=true;boss.gadgetIndex=-1;boss.starIndex=-1;boss.gadgetCharges=0;boss.star=null;boss.lv=BOSS_DIFFICULTIES[bossDifficulty].lv;boss.difficulty=bossDifficulty;boss.bossName=selectedBoss().name;boss.bossType=bossType;boss.r=bossType==='storm'?39:bossType==='xmas'?43:46;
 boss.maxhp=Math.round((8200+boss.lv*550)*selectedBoss().hp*BOSS_DIFFICULTIES[bossDifficulty].hp);boss.hp=boss.maxhp;
-boss.damage=Math.round((52+boss.lv*6)*selectedBoss().damage*BOSS_DIFFICULTIES[bossDifficulty].damage);boss.speed=selectedBoss().speed;boss.range=bossType==='storm'?480:420;boss.cooldown*=selectedBoss().cooldown;boss.baseBossDamage=boss.damage;boss.baseBossSpeed=boss.speed;boss.baseBossCooldown=boss.cooldown;
+boss.damage=Math.round((52+boss.lv*6)*selectedBoss().damage*BOSS_DIFFICULTIES[bossDifficulty].damage);boss.speed=selectedBoss().speed;boss.range=bossType==='storm'?480:bossType==='xmas'?440:420;boss.cooldown*=selectedBoss().cooldown;boss.baseBossDamage=boss.damage;boss.baseBossSpeed=boss.speed;boss.baseBossCooldown=boss.cooldown;
 boss.ammo=AMMO_CAP[boss.id];boss.lastShot=0;entities.push(boss);
-for(let i=0;i<2;i++){let ally=create(Math.floor(rand(0,HEROES.length)),0,true,{x:player.x+(i===0?-85:85),y:player.y+75});if(blocked(ally.x,ally.y,ally.r+5)){let q=pos(ally.r);ally.x=q.x;ally.y=q.y}ally.isBossAlly=true;applyStar(ally);entities.push(ally)}
-}if(mode==='duel'||mode==='team')beginKnockoutRound();$('menu').style.display='none';$('gameArea').style.display='block';$('modeName').textContent={boss:'👹 ボスバトル',royale:'👑 バトルロイヤル',team:'🔵 3vs3ノックアウト',duel:'⚔️ デュエル（1vs1）'}[mode];document.body.classList.add('playing');$('overlay').style.display='none';updateGadgetButton();raf=requestAnimationFrame(loop)}
+for(let i=0;i<2;i++){let ally=create(Math.floor(rand(0,21)),0,true,{x:player.x+(i===0?-85:85),y:player.y+75});if(blocked(ally.x,ally.y,ally.r+5)){let q=pos(ally.r);ally.x=q.x;ally.y=q.y}ally.isBossAlly=true;applyStar(ally);entities.push(ally)}
+}if(xmasRun==='snow')spawnSnowGifts(9);if(mode==='duel'||mode==='team')beginKnockoutRound();$('menu').style.display='none';$('gameArea').style.display='block';$('modeName').textContent={boss:(xmasRun==='boss'?'❄️ 氷冠の魔王':'👹 ボスバトル'),royale:(xmasRun==='snow'?'☃️ スノーサバイバル':'👑 バトルロイヤル'),team:'🔵 3vs3ノックアウト',duel:'⚔️ デュエル（1vs1）'}[mode];document.body.classList.add('playing');$('overlay').style.display='none';updateGadgetButton();raf=requestAnimationFrame(loop)}
 function beginKnockoutRound(){
  shots=[];particles=[];effects=[];killFeed=[];mapBuild();
  const allyY=[worldH/2,worldH/2-155,worldH/2+155];
@@ -909,6 +964,19 @@ e.revealedUntil=Math.max(e.revealedUntil,elapsed+1.2);e.stealthUntil=0;
 let n=norm(dx,dy),id=e.id,kind=id%5;e.dir=Math.atan2(n.y,n.x);
 if(superShot){e.super=0;
 if(id===20){e.hp=Math.min(e.maxhp,e.hp+e.maxhp*.65);effects.push({x:e.x,y:e.y,r:22,max:165,life:38,color:'#ffb35c'});return;}
+if(id===21){ // スノーベル専用：聖夜のスノードーム
+ const radius=220;
+ effects.push({x:e.x,y:e.y,r:24,max:radius,life:62,color:'#a6f6ff'});
+ for(const ally of entities){if(ally.dead||ally.team!==e.team||dist(e,ally)>radius)continue;
+  ally.hp=Math.min(ally.maxhp,ally.hp+ally.maxhp*.32);
+  ally.gadgetShieldUntil=Math.max(ally.gadgetShieldUntil,elapsed+3.5);
+  for(let k=0;k<9;k++){const a=k*Math.PI*2/9;particles.push({x:ally.x+Math.cos(a)*23,y:ally.y+Math.sin(a)*23,vx:Math.cos(a)*.8,vy:Math.sin(a)*.8,life:32,color:'#bffaff'})}
+ }
+ for(const enemy of entities){if(enemy.dead||enemy.team===e.team||dist(e,enemy)>radius)continue;
+  hit(enemy,e.damage*2.1,e);enemy.slowUntil=Math.max(enemy.slowUntil,elapsed+3.2);
+ }
+ return;
+}
 // キャラクター固有の追加必殺技
 if([0,8,12,16].includes(id)){
  const bursts=id===12?13:10,spread=id===12?.19:.14;
@@ -969,7 +1037,7 @@ function doAttack(superShot=false,manualDirection=null,forceAuto=false){
  let v=manualDirection||(!forceAuto&&mouse.active?{x:mouse.x+camX-player.x,y:mouse.y+camY-player.y}:target?{x:target.x-player.x,y:target.y-player.y}:{x:Math.cos(player.dir),y:Math.sin(player.dir)});
  shoot(player,v.x,v.y,superShot);
 }
-function moveEntity(e,dx,dy,step){let v=norm(dx,dy),s=e.speed*step;if(Math.hypot(dx,dy)<.01)return;let nx=e.x+v.x*s,ny=e.y+v.y*s;if(!blocked(nx,e.y,e.r))e.x=nx;if(!blocked(e.x,ny,e.r))e.y=ny}
+function moveEntity(e,dx,dy,step){let v=norm(dx,dy),s=e.speed*step*(e.snowSlowUntil>elapsed?.78:1);if(Math.hypot(dx,dy)<.01)return;let nx=e.x+v.x*s,ny=e.y+v.y*s;if(!blocked(nx,e.y,e.r))e.x=nx;if(!blocked(e.x,ny,e.r))e.y=ny}
 // Ver.81: camera-independent AI navigation. Grid A* routes around walls.
 function aiClearPath(x1,y1,x2,y2,r){
  const d=Math.hypot(x2-x1,y2-y1),steps=Math.max(1,Math.ceil(d/20));
@@ -1027,7 +1095,7 @@ function bossAttack(boss){
  const victim=living[Math.floor(Math.random()*living.length)];
  const stormPatterns=[9,10,11,12,13,14,15,16];
  const stormAvailable=bossRageStage>=2?8:bossRageStage>=1?7:6;
- const kind=boss.bossType==='storm'?stormPatterns[(bossPattern++)%stormAvailable]:bossPattern++%(5+(bossRageStage>=1?2:0)+(bossRageStage>=2?2:0));
+ const kind=boss.bossType==='xmas'?[9,10,11,12,13,14][(bossPattern++)%6]:boss.bossType==='storm'?stormPatterns[(bossPattern++)%stormAvailable]:bossPattern++%(5+(bossRageStage>=1?2:0)+(bossRageStage>=2?2:0));
  const delay=([1.0,.9,1.1,1.0,1.1,1.05,1.0,.95,1.05,.72,.85,.9,1.05,.95,1.1,1.0,1.15][kind]||1)*Math.max(.82,1-bossRageStage*.05)*BOSS_DIFFICULTIES[bossDifficulty].warning*1.17;
  const common={kind,delay,full:delay,damage:Math.round((49+boss.lv*4.4)*(1+bossRageStage*.20)*(boss.bossType==='storm'?1.25:1)*BOSS_DIFFICULTIES[bossDifficulty].damage)};
  const warningStart=bossWarnings.length;
@@ -1135,7 +1203,52 @@ function drawBossWarnings(){
   ctx.fill(Number.isFinite(w.inner)?'evenodd':'nonzero');ctx.stroke();ctx.restore();
  }
 }
+function spawnSnowGifts(amount){
+ for(let i=0;i<amount;i++){
+  let p=pos(25);
+  if(entities.some(e=>dist(e,p)<95))continue;
+  snowGifts.push({x:p.x,y:p.y,type:i%3,phase:Math.random()*6.28});
+ }
+}
+function updateSnowEvent(dt){
+ if(xmasRun!=='snow'||mode!=='royale')return;
+ const phase=Math.floor(elapsed/32);
+ if(phase!==snowStormPhase){snowStormPhase=phase;spawnSnowGifts(4)}
+ const blizzard=(elapsed%32)>=18 && (elapsed%32)<27;
+ for(const e of entities){
+  if(e.dead)continue;
+  if(blizzard)e.snowSlowUntil=elapsed+.18;
+  for(let i=snowGifts.length-1;i>=0;i--){
+   const g=snowGifts[i];if(dist(e,g)>e.r+20)continue;
+   if(g.type===0)e.hp=Math.min(e.maxhp,e.hp+Math.round(e.maxhp*.32));
+   if(g.type===1)e.boostUntil=Math.max(e.boostUntil||0,elapsed+7);
+   if(g.type===2){e.ammo=maxAmmo(e);e.reloadProgress=0}
+   if(e===player)snowGiftCollected++;
+   particles.push(...Array.from({length:12},()=>({x:g.x,y:g.y,vx:rand(-3,3),vy:rand(-3,3),life:28,color:'#ffdb79'})));
+   snowGifts.splice(i,1);
+  }
+ }
+}
+function drawSnowEvent(){
+ if(xmasRun!=='snow'||mode!=='royale')return;
+ for(const g of snowGifts){
+  ctx.save();ctx.translate(g.x,g.y+Math.sin(elapsed*3+g.phase)*4);
+  ctx.shadowColor='#ffe6a4';ctx.shadowBlur=15;
+  ctx.fillStyle=['#e75567','#56bbf0','#a879ef'][g.type];ctx.fillRect(-15,-13,30,26);
+  ctx.shadowBlur=0;ctx.fillStyle='#ffe6a4';ctx.fillRect(-3,-13,6,26);ctx.fillRect(-15,-3,30,6);
+  ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.strokeRect(-15,-13,30,26);ctx.restore();
+ }
+ if((elapsed%32)>=18&&(elapsed%32)<27){
+  ctx.fillStyle='rgba(211,240,255,.13)';ctx.fillRect(0,0,worldW,worldH);
+  ctx.fillStyle='rgba(255,255,255,.58)';
+  for(let i=0;i<90;i++){
+   let x=(i*239+elapsed*110)%worldW,y=(i*173+elapsed*155)%worldH;
+   ctx.beginPath();ctx.arc(x,y,2+(i%3),0,Math.PI*2);ctx.fill();
+  }
+ }
+}
 function update(dt){let step=dt*60;elapsed+=dt;if(mode==='boss'&&elapsed>=180){finish(false);return;}if((mode==='team'||mode==='duel')&&roundBreak>0){roundBreak-=dt;if(roundBreak<=0)beginKnockoutRound();return;}cameraUpdate();if(mode==='royale'){let g=gasState();gasInset=g.inset;gasPhase=g.phase}if(!player.dead){let dx=(keys.ArrowRight?1:0)-(keys.ArrowLeft?1:0)+move.x,dy=(keys.s||keys.ArrowDown?1:0)-(keys.w||keys.ArrowUp?1:0)+move.y;moveEntity(player,dx,dy,step*(player.slowUntil>elapsed?.7:1)*(player.boostUntil>elapsed?1.4:1));if(attackHeld)doAttack();if(keys.autoAttack)doAttack(false,null,true);if(superHeld){doAttack(true);superHeld=false}}
+updateSnowEvent(dt);
 if(mode==='royale'){
  for(let i=powerCubes.length-1;i>=0;i--){let cube=powerCubes[i];if(elapsed<cube.spawn)continue;
   let collector=entities.find(e=>!e.dead&&dist(e,cube)<e.r+20);
@@ -1217,7 +1330,15 @@ moveEntity(e,mx,my,step*.87*(e.slowUntil>elapsed?.7:1)*(e.boostUntil>elapsed?1.4
 }}
 for(let i=shots.length-1;i>=0;i--){let b=shots[i];if(b.role===1){b.trail.push({x:b.x,y:b.y});if(b.trail.length>6)b.trail.shift()}b.x+=b.vx*step;b.y+=b.vy*step;b.life-=step;if(b.x<0||b.y<0||b.x>worldW||b.y>worldH){shots.splice(i,1);continue}let boxHit=mode==='royale'?powerBoxes.find(box=>Math.hypot(box.x-b.x,box.y-b.y)<box.r+b.r):null;
 if(boxHit){damagePowerBox(boxHit,b.damage,b.owner);shots.splice(i,1);continue}
-let victim=entities.find(e=>!e.dead&&e!==b.owner&&e.team!==b.owner.team&&!b.hitIds.has(e)&&dist(e,b)<e.r+b.r);if(victim){b.hitIds.add(victim);hit(victim,b.damage,b.owner);if([1,8,9].includes(b.owner.id))victim.slowUntil=elapsed+([1,9].includes(b.owner.id)?1.6:2);if([0,14,16].includes(b.owner.id)){victim.poisonUntil=elapsed+3;victim.poisonOwner=b.owner}if(b.owner.id===18){let splash=entities.filter(e=>e!==victim&&e!==b.owner&&!e.dead&&e.team!==b.owner.team&&dist(e,victim)<75);for(let e of splash)hit(e,b.damage*.45,b.owner)}if(b.owner.id===2){let extra=entities.filter(e=>e!==victim&&e!==b.owner&&!e.dead&&e.team!==b.owner.team&&dist(e,victim)<105).slice(0,2);for(let e of extra)hit(e,b.damage*.4,b.owner)}if(b.pierce>0)b.pierce--;else shots.splice(i,1)}else if(b.life<=0||blocked(b.x,b.y,b.r))shots.splice(i,1)}
+let victim=entities.find(e=>!e.dead&&e!==b.owner&&e.team!==b.owner.team&&!b.hitIds.has(e)&&dist(e,b)<e.r+b.r);if(victim){b.hitIds.add(victim);hit(victim,b.damage,b.owner);if([1,8,9].includes(b.owner.id))victim.slowUntil=elapsed+([1,9].includes(b.owner.id)?1.6:2);
+if(b.owner.id===21){
+ victim.slowUntil=Math.max(victim.slowUntil,elapsed+1.9);
+ if(victim.snowbellMarkUntil<elapsed)victim.snowbellMarks=0;
+ victim.snowbellMarks=(victim.snowbellMarks||0)+1;victim.snowbellMarkUntil=elapsed+5;
+ if(victim.snowbellMarks>=3){victim.snowbellMarks=0;hit(victim,b.owner.damage*1.05,b.owner);
+ effects.push({x:victim.x,y:victim.y,r:10,max:66,life:26,color:'#b6faff'});
+ }
+}if([0,14,16].includes(b.owner.id)){victim.poisonUntil=elapsed+3;victim.poisonOwner=b.owner}if(b.owner.id===18){let splash=entities.filter(e=>e!==victim&&e!==b.owner&&!e.dead&&e.team!==b.owner.team&&dist(e,victim)<75);for(let e of splash)hit(e,b.damage*.45,b.owner)}if(b.owner.id===2){let extra=entities.filter(e=>e!==victim&&e!==b.owner&&!e.dead&&e.team!==b.owner.team&&dist(e,victim)<105).slice(0,2);for(let e of extra)hit(e,b.damage*.4,b.owner)}if(b.pierce>0)b.pierce--;else shots.splice(i,1)}else if(b.life<=0||blocked(b.x,b.y,b.r))shots.splice(i,1)}
 for(let i=effects.length-1;i>=0;i--){effects[i].life-=step;if(effects[i].life<=0)effects.splice(i,1)}for(let i=particles.length-1;i>=0;i--){let p=particles[i];p.x+=p.vx*step;p.y+=p.vy*step;p.life-=step;if(p.life<=0)particles.splice(i,1)}
 if(mode==='boss'){
 updateBossAttacks(dt);if(!playing)return;
@@ -1227,13 +1348,13 @@ else if(elapsed>=180)finish(false);
 }else if(mode==='team'||mode==='duel'){knockoutCheck()}else if(mode==='royale'){if(entities.filter(e=>!e.dead).length<=1)finish(!player.dead)}}
 function drawBossAppearance(e,bossCtx=ctx){
  bossCtx.save();bossCtx.translate(e.x,e.y);
- const storm=e.bossType==='storm',t=elapsed*2;
- bossCtx.shadowBlur=19;bossCtx.shadowColor=storm?'#4eeaff':'#b563ff';
- bossCtx.fillStyle=storm?'#123c70':'#42204d';bossCtx.strokeStyle=storm?'#70ecff':'#ffb66c';bossCtx.lineWidth=4;
+ const storm=e.bossType==='storm',winter=e.bossType==='xmas',t=elapsed*2;
+ bossCtx.shadowBlur=19;bossCtx.shadowColor=winter?'#e9ffff':storm?'#4eeaff':'#b563ff';
+ bossCtx.fillStyle=winter?'#39728c':storm?'#123c70':'#42204d';bossCtx.strokeStyle=winter?'#d6faff':storm?'#70ecff':'#ffb66c';bossCtx.lineWidth=4;
  bossCtx.beginPath();
  for(let i=0;i<8;i++){let a=i*Math.PI/4+t*.08,r=e.r*(i%2?.95:1.22);if(i===0)bossCtx.moveTo(Math.cos(a)*r,Math.sin(a)*r);else bossCtx.lineTo(Math.cos(a)*r,Math.sin(a)*r)}
  bossCtx.closePath();bossCtx.fill();bossCtx.stroke();bossCtx.shadowBlur=0;
- if(storm){
+ if(winter){bossCtx.fillStyle='#f7ffff';bossCtx.beginPath();bossCtx.moveTo(-25,-15);bossCtx.lineTo(-20,-40);bossCtx.lineTo(-7,-23);bossCtx.lineTo(0,-48);bossCtx.lineTo(7,-23);bossCtx.lineTo(20,-40);bossCtx.lineTo(25,-15);bossCtx.closePath();bossCtx.fill();bossCtx.fillStyle='#a9ecff';bossCtx.fillRect(-22,-8,14,7);bossCtx.fillRect(8,-8,14,7);bossCtx.strokeStyle='#f5ffff';bossCtx.lineWidth=3;for(let i=0;i<6;i++){let a=i*Math.PI/3;bossCtx.beginPath();bossCtx.moveTo(Math.cos(a)*8,Math.sin(a)*8+16);bossCtx.lineTo(Math.cos(a)*19,Math.sin(a)*19+16);bossCtx.stroke()}}else if(storm){
   bossCtx.fillStyle='#76eaff';bossCtx.beginPath();bossCtx.moveTo(-11,-28);bossCtx.lineTo(3,-8);bossCtx.lineTo(-5,3);bossCtx.lineTo(15,8);bossCtx.lineTo(-4,29);bossCtx.lineTo(1,10);bossCtx.lineTo(-15,4);bossCtx.closePath();bossCtx.fill();
   bossCtx.fillStyle='#e5fbff';bossCtx.fillRect(-24,-8,12,6);bossCtx.fillRect(13,-8,12,6);
  }else{
@@ -1249,7 +1370,7 @@ function bossPortrait(id){
  drawBossAppearance({x:62,y:66,r:id==='storm'?39:46,bossType:id},p);
  return c.toDataURL('image/png');
 }
-function draw(){cameraUpdate();ctx.clearRect(0,0,960,600);ctx.save();ctx.translate(-camX,-camY);let bg=ctx.createLinearGradient(0,0,960,600);bg.addColorStop(0,'#387f75');bg.addColorStop(1,'#215b64');ctx.fillStyle=bg;ctx.fillRect(0,0,worldW,worldH);ctx.strokeStyle='#ffffff0d';ctx.lineWidth=2;for(let x=0;x<worldW;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,worldH);ctx.stroke()}for(let y=0;y<worldH;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(worldW,y);ctx.stroke()}for(let b of bushes){ctx.fillStyle='#277e3b';ctx.fillRect(b.x,b.y,b.w,b.h);ctx.fillStyle='#40a44e';for(let x=b.x+9;x<b.x+b.w;x+=20)for(let y=b.y+10;y<b.y+b.h;y+=22){ctx.beginPath();ctx.arc(x,y,8,0,7);ctx.fill()}}for(let w of walls){ctx.fillStyle='#34476b';ctx.fillRect(w.x+5,w.y+7,w.w,w.h);ctx.fillStyle='#9b7a58';ctx.fillRect(w.x,w.y,w.w,w.h);ctx.strokeStyle='#d7b68c';ctx.lineWidth=4;ctx.strokeRect(w.x+2,w.y+2,w.w-4,w.h-4)}
+function draw(){cameraUpdate();ctx.clearRect(0,0,960,600);ctx.save();ctx.translate(-camX,-camY);let bg=ctx.createLinearGradient(0,0,960,600);bg.addColorStop(0,xmasRun?'#86b6d3':'#387f75');bg.addColorStop(1,xmasRun?'#3c6f9c':'#215b64');ctx.fillStyle=bg;ctx.fillRect(0,0,worldW,worldH);ctx.strokeStyle='#ffffff0d';ctx.lineWidth=2;for(let x=0;x<worldW;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,worldH);ctx.stroke()}for(let y=0;y<worldH;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(worldW,y);ctx.stroke()}for(let b of bushes){ctx.fillStyle=xmasRun?'#9cdaed':'#277e3b';ctx.fillRect(b.x,b.y,b.w,b.h);ctx.fillStyle=xmasRun?'#e5faff':'#40a44e';for(let x=b.x+9;x<b.x+b.w;x+=20)for(let y=b.y+10;y<b.y+b.h;y+=22){ctx.beginPath();ctx.arc(x,y,8,0,7);ctx.fill()}}for(let w of walls){ctx.fillStyle='#34476b';ctx.fillRect(w.x+5,w.y+7,w.w,w.h);ctx.fillStyle=xmasRun?'#d4eefa':'#9b7a58';ctx.fillRect(w.x,w.y,w.w,w.h);ctx.strokeStyle=xmasRun?'#f5ffff':'#d7b68c';ctx.lineWidth=4;ctx.strokeRect(w.x+2,w.y+2,w.w-4,w.h-4)}
 if(mode==='royale')for(let box of powerBoxes){
 ctx.save();ctx.translate(box.x,box.y);
 ctx.fillStyle='#6d4524';ctx.fillRect(-27,-27,54,54);
@@ -1263,7 +1384,7 @@ let boxHpLabel=Math.max(0,Math.ceil(box.hp))+' / '+box.maxhp;
 ctx.strokeText(boxHpLabel,0,-52);ctx.fillText(boxHpLabel,0,-52);
 ctx.restore();}
 if(mode==='royale')for(let cube of powerCubes){if(elapsed<cube.spawn)continue;ctx.save();ctx.translate(cube.x,cube.y);let bob=Math.sin(elapsed*4+cube.x)*3;ctx.translate(0,bob);ctx.shadowColor='#9aff39';ctx.shadowBlur=15;ctx.fillStyle='#a4f53c';ctx.strokeStyle='#e6ff8e';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(0,-15);ctx.lineTo(15,-7);ctx.lineTo(15,10);ctx.lineTo(0,17);ctx.lineTo(-15,10);ctx.lineTo(-15,-7);ctx.closePath();ctx.fill();ctx.stroke();ctx.shadowBlur=0;ctx.fillStyle='#356f20';ctx.font='bold 18px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('⚡',0,1);ctx.restore()}
-for(let ef of effects){ctx.beginPath();ctx.strokeStyle=ef.color;ctx.globalAlpha=Math.max(0,ef.life/35);ctx.lineWidth=7;ctx.arc(ef.x,ef.y,ef.max*(1-ef.life/35),0,7);ctx.stroke()}ctx.globalAlpha=1;
+drawSnowEvent();for(let ef of effects){ctx.beginPath();ctx.strokeStyle=ef.color;ctx.globalAlpha=Math.max(0,ef.life/35);ctx.lineWidth=7;ctx.arc(ef.x,ef.y,ef.max*(1-ef.life/35),0,7);ctx.stroke()}ctx.globalAlpha=1;
 drawBossWarnings();
 for(let b of shots){if(b.role===1&&b.trail.length){ctx.beginPath();ctx.moveTo(b.trail[0].x,b.trail[0].y);for(let t of b.trail)ctx.lineTo(t.x,t.y);ctx.lineTo(b.x,b.y);ctx.strokeStyle=b.color;ctx.globalAlpha=.52;ctx.lineWidth=2;ctx.stroke();ctx.globalAlpha=1}ctx.beginPath();ctx.fillStyle=b.superShot?'#fff067':b.color;ctx.shadowBlur=13;ctx.shadowColor=ctx.fillStyle;if(b.role===1){ctx.save();ctx.translate(b.x,b.y);ctx.rotate(Math.atan2(b.vy,b.vx));ctx.fillRect(-9,-2,18,4);ctx.restore()}else{ctx.arc(b.x,b.y,b.r,0,7);ctx.fill()}ctx.shadowBlur=0}
 for(let e of entities){if(e.dead||e!==player&&!canSee(player,e))continue;
@@ -1321,7 +1442,7 @@ if(mode==='royale'){
  const alive=entities.filter(e=>!e.dead).length;
  ctx.fillStyle='rgba(9,18,42,.86)';ctx.fillRect(feedX,143,220,38);
  ctx.textAlign='left';ctx.font='bold 21px system-ui';ctx.fillStyle='#ffe17a';
- ctx.fillText('👑 残り '+alive+' 人',feedX+12,169);
+ ctx.fillText('👑 残り '+alive+' 人',feedX+12,169);if(xmasRun==='snow'){ctx.font='bold 15px system-ui';ctx.fillStyle='#fff';ctx.fillText('🎁 '+snowGiftCollected+'個  '+((elapsed%32)>=18&&(elapsed%32)<27?'❄ 吹雪発生中':'❄ 次の吹雪 '+Math.ceil(18-elapsed%32>0?18-elapsed%32:32-elapsed%32+18)+'秒'),feedX+2,132)}
 }
 let visibleFeed=killFeed.filter(item=>elapsed-item.time<7).slice(0,4);
 for(let i=0;i<visibleFeed.length;i++){
@@ -1348,6 +1469,9 @@ if(mode==='royale'){
  trophyDelta=win?30:-15;dropReward=win?1:0;
 }
 matchOver=true;playing=false;cancelAnimationFrame(raf);attackHeld=false;superHeld=false;keys.autoAttack=false;
+if(xmasRun==='snow'&&win&&xmasActive())dropReward+=1;
+if(xmasRun==='boss'&&win&&xmasActive())xmasAddBossKill();
+xmasRun='';
 data.drops=(data.drops||0)+dropReward;
 data.trophies=Math.max(0,data.trophies+trophyDelta);
 data.matches++;if(win)data.wins++;data.best=Math.max(data.best,score);save();
@@ -1357,7 +1481,7 @@ $('overlay').style.display='flex';
 $('result').innerHTML=`<div style="font-size:55px">${win?'🏆':'🏁'}</div><h1>${resultTitle}</h1>${mode==='royale'?`<p>順位：${placement}位 / 10人</p>`:''}<p>撃破数：${kills} ／ スコア：${score}</p><h2>🏆 トロフィー ${trophyLabel}　🌟 スタードロップ +${dropReward}</h2><p>${dropReward?'ホーム画面からスタードロップを開封できます。':'今回のスタードロップ報酬はありません。'}${trophyDelta<0?'（トロフィーは0未満になりません）':''}</p>${btn('ホームに戻る','back','orange')}`;
 $('result').querySelector('button').onclick=back;document.body.classList.remove('playing')}
 
-function back(){playing=false;cancelAnimationFrame(raf);$('overlay').style.display='none';$('gameArea').style.display='none';$('menu').style.display='block';document.body.classList.remove('playing');attackHeld=false;superHeld=false;keys.autoAttack=false;mouse.active=false;render()}
+function back(){xmasRun='';playing=false;cancelAnimationFrame(raf);$('overlay').style.display='none';$('gameArea').style.display='none';$('menu').style.display='block';document.body.classList.remove('playing');attackHeld=false;superHeld=false;keys.autoAttack=false;mouse.active=false;render()}
 $('leave').onclick=()=>{if(confirm('バトルを退出しますか？ 報酬は獲得できません。'))back()};$('battleExit').onclick=()=>{$('leave').click()};
 window.addEventListener('keydown',e=>{
  if(!playing)return;
@@ -1409,84 +1533,6 @@ superBtn.addEventListener('pointermove',e=>{if(e.pointerId!==superPointer)return
 superBtn.addEventListener('pointerup',e=>{if(e.pointerId!==superPointer)return;e.preventDefault();if(playing&&!player.dead){if(superDragged)doAttack(true,{x:superAim.dx,y:superAim.dy});else doAttack(true)}superPointer=null;superStart=null;superAim.active=false});
 superBtn.addEventListener('pointercancel',()=>{superPointer=null;superStart=null;superAim.active=false});
 superBtn.addEventListener('lostpointercapture',()=>{superPointer=null;superStart=null;superAim.active=false});document.addEventListener('visibilitychange',()=>{if(document.hidden){attackHeld=false;attackPointer=null;touchAim.active=false;superPointer=null;superAim.active=false;move={x:0,y:0};keys={}}});// Ver.90: Firebase REST based online duel prototype. Host owns simulation; guest submits controls.
-let od=null,odTimer=null,odBusy=false,odKeys={},odMove={x:0,y:0},odFire=false,odSuper=false,odGadget=false,odFrame=0;
-let odAttackAim=null,odSuperAim=null,odMouseAim=null,odMouseDown=false;
-let odAttackPointer=null,odSuperPointer=null,odAttackStart=null,odSuperStart=null,odAttackDragged=false,odSuperDragged=false;
-function odNormalizeAim(dx,dy){const d=Math.hypot(dx,dy);return d>0.001?{x:dx/d,y:dy/d}:null}
-function odAimFromCanvas(e){const rect=odEl('onlineCanvas').getBoundingClientRect(),me=od?.state?.players?.[od.role];if(!me)return null;return odNormalizeAim((e.clientX-rect.left)*720/rect.width-me.x,(e.clientY-rect.top)*420/rect.height-me.y)}
-function odFlick(e,start){return start&&odNormalizeAim(e.clientX-start.x,e.clientY-start.y)}
-const odEl=id=>document.getElementById(id);
-const odCode=()=>Array.from({length:6},()=> 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random()*32)]).join('');
-const odMsg=s=>{const el=odEl('onlineStatus');if(el)el.textContent=s;const notice=odEl('onlineNotice');if(notice)notice.textContent=s};
-async function odDb(method,path,payload){const token=await getCloudToken();return firebaseRequest(firebaseConfig.databaseURL.replace(/\/$/,'')+'/'+path+'.json?auth='+encodeURIComponent(token),{method,headers:{'Content-Type':'application/json'},...(payload===undefined?{}:{body:JSON.stringify(payload)})})}
-function odInitial(){return{round:1,score:[0,0],phase:'wait',startAt:0,players:[{x:95,y:210,hp:100},{x:625,y:210,hp:100}],shots:[],winner:-1,updatedAt:Date.now(),rewardAt:0}}
-async function onlineCreate(){if(!cloudReady)return odMsg('先にログインしてください。');if(od)return;try{const code=odCode();const room={host:cloudUid,hostName:cloudUserName,hostHero:data.selected,hostLevel:odLevel(data.selected),hostGadget:odEquip(data.selected,'gadget'),hostStar:odEquip(data.selected,'star'),createdAt:Date.now(),status:'waiting',state:odInitial()};await odDb('PUT','onlineDuelRooms/'+code,room);od={code,role:0,uid:cloudUid,state:room.state,guest:null,controls:[{x:0,y:0,fire:false},{x:0,y:0,fire:false}],lastSim:Date.now(),lastSend:0,lastRead:0,ending:false};odOpen();odMsg('ルームコード：'+code+'　友達にこのコードを伝えてください。');odStartTimer()}catch(e){odMsg('ルーム作成失敗：'+e.message)}}
-async function onlineJoin(codeOverride){if(!cloudReady)return odMsg('先にログインしてください。');if(od)return;const code=(codeOverride||odEl('onlineRoomCode')?.value||'').trim().toUpperCase();if(!/^[A-HJ-NP-Z2-9]{6}$/.test(code))return odMsg('6文字のルームコードを入力してください。');try{const room=await odDb('GET','onlineDuelRooms/'+code);if(!room||!room.host||room.host===cloudUid||room.guest||room.status!=='waiting')return odMsg('参加できないルームです。');await odDb('PUT','onlineDuelRooms/'+code+'/guest',{uid:cloudUid,name:cloudUserName,hero:data.selected,level:odLevel(data.selected),gadget:odEquip(data.selected,'gadget'),star:odEquip(data.selected,'star')});const check=await odDb('GET','onlineDuelRooms/'+code+'/guest');if(check?.uid!==cloudUid)return odMsg('別のプレイヤーが先に参加しました。');od={code,role:1,uid:cloudUid,state:room.state,controls:[{x:0,y:0,fire:false},{x:0,y:0,fire:false}],lastSim:Date.now(),lastSend:0,lastRead:0,ending:false};odOpen();odMsg('ルーム '+code+' に参加しました。対戦開始を待っています。');odStartTimer()}catch(e){odMsg('ルーム参加失敗：'+e.message)}}
-async function onlineRandom(){if(!cloudReady)return odMsg('先にログインしてください。');if(od)return;try{odMsg('ランダム対戦相手を検索中…');const queue=await odDb('GET','onlineDuelQueue');const now=Date.now();const available=Object.entries(queue||{}).filter(([uid,q])=>uid!==cloudUid&&q&&q.code&&q.at>now-45000).sort((a,b)=>a[1].at-b[1].at);for(const [uid,q] of available){const room=await odDb('GET','onlineDuelRooms/'+q.code);if(room?.host===uid&&!room.guest&&room.status==='waiting'){await onlineJoin(q.code);if(od)return;}}await onlineCreate();if(od){od.random=true;await odDb('PUT','onlineDuelQueue/'+cloudUid,{code:od.code,at:Date.now()});odMsg('ランダムマッチ待機中…（ルーム '+od.code+'）')}}catch(e){odMsg('マッチング失敗：'+e.message)}}
-function odOpen(){odEl('onlineDuelScreen').style.display='block';document.body.style.overflow='hidden';odDraw()}
-function odClose(){const old=od;od=null;clearInterval(odTimer);odTimer=null;odKeys={};odMove={x:0,y:0};odFire=false;odSuper=false;odGadget=false;odAttackAim=null;odSuperAim=null;odMouseAim=null;odMouseDown=false;odEl('onlineDuelScreen').style.display='none';document.body.style.overflow='';if(old){if(old.random)odDb('DELETE','onlineDuelQueue/'+old.uid).catch(()=>{});if(old.role===0)odDb('DELETE','onlineDuelRooms/'+old.code).catch(()=>{});else odDb('DELETE','onlineDuelRooms/'+old.code+'/guest').catch(()=>{})}odMsg('オンラインデュエルを終了しました。')}
-odEl('onlineExit').onclick=odClose;
-function odControl(){
- // 通常戦闘と同様：矢印キー/W・Sで移動、Dで通常攻撃、A/Spaceで必殺、Fでガジェット。
- let x=odMove.x+(odKeys.arrowright?1:0)-(odKeys.arrowleft?1:0);
- let y=odMove.y+(odKeys.arrowdown||odKeys.s?1:0)-(odKeys.arrowup||odKeys.w?1:0);
- const len=Math.hypot(x,y);
- const fire=odFire||!!odKeys.d||odMouseDown;
- const sup=odSuper||!!odKeys.a||!!odKeys[' '];
- const aim=odAttackAim||(odMouseDown?odMouseAim:null);
- const superAim=odSuperAim||odMouseAim;
- return{x:x/Math.max(1,len),y:y/Math.max(1,len),fire,super:sup,gadget:odGadget||!!odKeys.f,
-   ...(aim?{aimX:aim.x,aimY:aim.y}:{}),
-   ...(superAim?{superX:superAim.x,superY:superAim.y}:{})};
-}
-window.addEventListener('keydown',e=>{if(!od)return;const k=e.key.toLowerCase();if(['arrowup','arrowdown','arrowleft','arrowright','w','a','s','d','f',' '].includes(k)){e.preventDefault();odKeys[k]=true}});
-window.addEventListener('keyup',e=>{if(od)odKeys[e.key.toLowerCase()]=false});
-const odJoy=odEl('onlineMove');
-function odJoySet(e){const r=odJoy.getBoundingClientRect(),x=e.clientX-(r.left+r.width/2),y=e.clientY-(r.top+r.height/2),d=Math.max(1,Math.hypot(x,y)),f=Math.min(1,d/55);odMove={x:x/d*f,y:y/d*f};odEl('onlineKnob').style.transform=`translate(${odMove.x*38}px,${odMove.y*38}px)`}
-odJoy.addEventListener('pointerdown',e=>{e.preventDefault();odJoy.setPointerCapture(e.pointerId);odJoySet(e)});
-odJoy.addEventListener('pointermove',e=>{if(odJoy.hasPointerCapture(e.pointerId))odJoySet(e)});
-function odJoyReset(){odMove={x:0,y:0};odEl('onlineKnob').style.transform=''}
-odJoy.addEventListener('pointerup',odJoyReset);odJoy.addEventListener('pointercancel',odJoyReset);
-const odFireBtn=odEl('onlineFire'),odSuperBtn=odEl('onlineSuper'),odGadgetBtn=odEl('onlineGadget');
-odFireBtn.addEventListener('pointerdown',e=>{e.preventDefault();if(odAttackPointer!==null)return;odAttackPointer=e.pointerId;odAttackStart={x:e.clientX,y:e.clientY};odAttackDragged=false;odAttackAim=null;odFireBtn.setPointerCapture(e.pointerId)});
-odFireBtn.addEventListener('pointermove',e=>{if(e.pointerId!==odAttackPointer)return;e.preventDefault();const dx=e.clientX-odAttackStart.x,dy=e.clientY-odAttackStart.y;if(Math.hypot(dx,dy)>16){odAttackDragged=true;odAttackAim=odFlick(e,odAttackStart);odFire=true}});
-function odEndFire(e){if(e.pointerId!==odAttackPointer)return;e.preventDefault();if(e.type==='pointerup'){odFire=true;odAttackAim=odAttackDragged?odFlick(e,odAttackStart):null;setTimeout(()=>{odFire=false;odAttackAim=null},190)}else{odFire=false;odAttackAim=null}odAttackPointer=null;odAttackStart=null;odAttackDragged=false}
-odFireBtn.addEventListener('pointerup',odEndFire);odFireBtn.addEventListener('pointercancel',odEndFire);
-odSuperBtn.addEventListener('pointerdown',e=>{e.preventDefault();if(odSuperPointer!==null)return;odSuperPointer=e.pointerId;odSuperStart={x:e.clientX,y:e.clientY};odSuperDragged=false;odSuperAim=null;odSuperBtn.setPointerCapture(e.pointerId)});
-odSuperBtn.addEventListener('pointermove',e=>{if(e.pointerId!==odSuperPointer)return;e.preventDefault();if(Math.hypot(e.clientX-odSuperStart.x,e.clientY-odSuperStart.y)>16){odSuperDragged=true;odSuperAim=odFlick(e,odSuperStart)}});
-function odEndSuper(e){if(e.pointerId!==odSuperPointer)return;e.preventDefault();if(e.type==='pointerup'){odSuperAim=odSuperDragged?odFlick(e,odSuperStart):null;odSuper=true;setTimeout(()=>{odSuper=false;odSuperAim=null},190)}else{odSuper=false;odSuperAim=null}odSuperPointer=null;odSuperStart=null;odSuperDragged=false}
-odSuperBtn.addEventListener('pointerup',odEndSuper);odSuperBtn.addEventListener('pointercancel',odEndSuper);
-odGadgetBtn.addEventListener('pointerdown',e=>{e.preventDefault();odGadget=true;setTimeout(()=>odGadget=false,190)});
-const odCanvas=odEl('onlineCanvas');
-odCanvas.addEventListener('pointermove',e=>{if(!od||e.pointerType!=='mouse')return;odMouseAim=odAimFromCanvas(e)});
-odCanvas.addEventListener('pointerdown',e=>{if(!od||e.pointerType!=='mouse')return;e.preventDefault();odMouseAim=odAimFromCanvas(e);odMouseDown=true;odCanvas.setPointerCapture(e.pointerId)});
-odCanvas.addEventListener('pointerup',()=>{odMouseDown=false});odCanvas.addEventListener('pointercancel',()=>{odMouseDown=false});
-odCanvas.addEventListener('contextmenu',e=>e.preventDefault());
-// Ver.91: Hero-based authoritative-host duel simulation. Firebase transport remains client-trust based.
-function odLevel(id){return Math.max(1,Math.min(11,Number(data.levels?.[id]||1)))}
-function odEquip(id,kind){return kind==='gadget'?equippedGadget(id):equippedStar(id)}
-function odHeroPlayer(i,hero,level=1,gadget=-1,star=-1){
- hero=Math.max(0,Math.min(HEROES.length-1,Number(hero)||0));const h=HEROES[hero];const hp=Math.round(h.hp*(1+(level-1)*.06));
- return{x:i?625:95,y:210,hp,maxhp:hp,hero,level,gadget,star,super:0,ammo:AMMO_CAP[hero],reload:0,charges:3,shieldUntil:0,slowUntil:0,poisonUntil:0,burnUntil:0,boostUntil:0,lastFire:0,lastSuper:false,lastGadget:false};
-}
-function odResetRound(st){const heroes=st.heroIds||[0,0],levels=st.levels||[1,1],gadgets=st.gadgets||[-1,-1],stars=st.stars||[-1,-1];st.players=[0,1].map(i=>odHeroPlayer(i,heroes[i],levels[i],gadgets[i],stars[i]));st.shots=[]}
-function odDamage(p,damage,source,now){if(!p||p.hp<=0)return;let d=damage;if(p.shieldUntil>now)d*=.6;if(p.star>=0&&STAR_TYPES[p.hero][p.star]==='armor')d*=.9;p.hp=Math.max(0,p.hp-damage*(d/damage));if(source)source.super=Math.min(100,source.super+Math.min(17,damage*.13));}
-function odSpawnShot(st,i,ang,superShot=false){const p=st.players[i],h=HEROES[p.hero],cfg=ATTACK_CONFIG[p.hero],count=superShot?Math.max(cfg[0],p.hero===20?13:cfg[0]+2):cfg[0],spread=superShot?cfg[1]*1.15:cfg[1];const baseDamage=h.damage*(1+(p.level-1)*.06)*(superShot?1.45:1)*(p.star>=0&&STAR_TYPES[p.hero][p.star]==='damage'?1.12:1);for(let k=0;k<count;k++){const a=ang+(k-(count-1)/2)*spread;st.shots.push({x:p.x,y:p.y,vx:Math.cos(a)*(superShot?460:420),vy:Math.sin(a)*(superShot?460:420),owner:i,damage:baseDamage,life:Math.max(.18,h.range/420),radius:superShot?8:5,slow:p.hero===1||p.hero===9,burn:p.hero===0||p.hero===14,poison:p.hero===16});}}
-function odSim(st,ctrl,dt){if(st.phase==='wait'||st.phase==='done')return;const now=Date.now();if(st.phase==='break'){if(now>=st.startAt){st.phase='play';odResetRound(st)}return}
- for(let i=0;i<2;i++){const p=st.players[i],c=ctrl[i]||{},h=HEROES[p.hero],enemy=st.players[1-i];if(!p||p.hp<=0)continue;const slow=p.slowUntil>now?.72:1,boost=p.boostUntil>now?1.25:1;const speed=h.speed*75*slow*boost;p.x=Math.max(20,Math.min(700,p.x+(Number(c.x)||0)*speed*dt));p.y=Math.max(20,Math.min(400,p.y+(Number(c.y)||0)*speed*dt));p.reload=(p.reload||0)+dt;if(p.ammo<AMMO_CAP[p.hero]&&p.reload>=RELOAD_SEC[p.hero]){p.ammo++;p.reload=0}const ang=Math.atan2(enemy.y-p.y,enemy.x-p.x);const attackAng=Number.isFinite(c.aimX)&&Number.isFinite(c.aimY)?Math.atan2(c.aimY,c.aimX):ang;const specialAng=Number.isFinite(c.superX)&&Number.isFinite(c.superY)?Math.atan2(c.superY,c.superX):ang;
- if(c.fire&&p.ammo>=1&&now-p.lastFire>h.cooldown){p.ammo--;p.lastFire=now;odSpawnShot(st,i,attackAng,false)}
- if(c.super&&!p.lastSuper&&p.super>=100){p.super=0;if([3,8,13,18,20].includes(p.hero)){p.hp=Math.min(p.maxhp,p.hp+p.maxhp*.4)}else if([2,7,12,17].includes(p.hero)){p.boostUntil=now+4500}else{odSpawnShot(st,i,specialAng,true)}}p.lastSuper=!!c.super;
- if(c.gadget&&!p.lastGadget&&p.charges>0&&p.gadget>=0){p.charges--;const type=GADGET_TYPES[p.hero][p.gadget];if(type==='heal'||type==='drain')p.hp=Math.min(p.maxhp,p.hp+p.maxhp*.3);else if(type==='shield')p.shieldUntil=now+3500;else if(type==='reload')p.ammo=AMMO_CAP[p.hero];else if(type==='supercharge')p.super=Math.min(100,p.super+40);else if(type==='cleanse'){p.slowUntil=0;p.burnUntil=0;p.poisonUntil=0}else if(type==='blast'){if(Math.hypot(enemy.x-p.x,enemy.y-p.y)<130)odDamage(enemy,h.damage*.9,p,now)}else if(type==='dash'){p.x=Math.max(20,Math.min(700,p.x+Math.cos(ang)*75));p.y=Math.max(20,Math.min(400,p.y+Math.sin(ang)*75))}else p.boostUntil=now+3500}p.lastGadget=!!c.gadget;
- if(p.poisonUntil>now||p.burnUntil>now)odDamage(p,dt*7,null,now);
- }
- for(let j=st.shots.length-1;j>=0;j--){const b=st.shots[j];b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;const target=st.players[1-b.owner];if(target.hp>0&&Math.hypot(b.x-target.x,b.y-target.y)<HEROES[target.hero].bodySize+7){odDamage(target,b.damage,st.players[b.owner],now);if(b.slow)target.slowUntil=now+1300;if(b.burn)target.burnUntil=now+1600;if(b.poison)target.poisonUntil=now+1700;st.shots.splice(j,1)}else if(b.life<=0||b.x<0||b.x>720||b.y<0||b.y>420)st.shots.splice(j,1)}
- const dead=st.players.map(p=>p.hp<=0);if(dead[0]||dead[1]){const victor=dead[0]?1:0;st.score[victor]++;if(st.score[victor]>=2){st.phase='done';st.winner=victor;st.rewardAt=now}else{st.phase='break';st.round++;st.startAt=now+3000}st.shots=[]}st.updatedAt=now;
-}
-async function odReward(session){if(!session||session.rewarded||session.state?.phase!=='done')return;session.rewarded=true;const id=session.code+'_'+(session.state.rewardAt||session.state.updatedAt);data.onlineDuelReceipts=data.onlineDuelReceipts||{};if(data.onlineDuelReceipts[id])return;data.onlineDuelReceipts[id]=true;const win=session.state.winner===session.role;data.trophies=Math.max(0,(Number(data.trophies)||0)+(win?30:-15));if(win)data.drops=(Number(data.drops)||0)+1;data.matches=(Number(data.matches)||0)+1;if(win)data.wins=(Number(data.wins)||0)+1;save();render();odMsg((win?'🏆 勝利：+30トロフィー・スタードロップ1個':'敗北：-15トロフィー')+'（報酬を保存しました）');}
-function odStartTimer(){clearInterval(odTimer);odTimer=setInterval(odTick,150)}
-async function odTick(){if(!od||odBusy)return;odBusy=true;const session=od;try{const now=Date.now();if(session.role===0){const room=await odDb('GET','onlineDuelRooms/'+session.code);if(od!==session)return;if(!room)return odClose();if(room.guest?.uid&&room.guest.uid!==session.uid){if(session.state.phase==='wait'){session.state.heroIds=[room.hostHero||0,room.guest.hero||0];session.state.levels=[room.hostLevel||1,room.guest.level||1];session.state.gadgets=[room.hostGadget??-1,room.guest.gadget??-1];session.state.stars=[room.hostStar??-1,room.guest.star??-1];session.state.phase='break';session.state.startAt=now+2000;await odDb('PUT','onlineDuelRooms/'+session.code+'/status','playing');if(session.random)odDb('DELETE','onlineDuelQueue/'+session.uid).catch(()=>{})}const guest=await odDb('GET','onlineDuelRooms/'+session.code+'/guestInput');if(guest&&guest.at>now-3500)session.controls[1]=guest;else session.controls[1]={x:0,y:0,fire:false};session.controls[0]=odControl();const dt=Math.min(.25,(now-session.lastSim)/1000);session.lastSim=now;odSim(session.state,session.controls,dt);await odDb('PUT','onlineDuelRooms/'+session.code+'/state',session.state)}else{session.lastSim=now;if(session.state.phase!=='wait'){odMsg('相手が退出しました。');odClose();return}if(session.random&&now-session.lastQueue>12000){session.lastQueue=now;odDb('PUT','onlineDuelQueue/'+session.uid,{code:session.code,at:now}).catch(()=>{})}}}else{await odDb('PUT','onlineDuelRooms/'+session.code+'/guestInput',{...odControl(),at:now});const room=await odDb('GET','onlineDuelRooms/'+session.code);if(od!==session)return;if(!room||room.guest?.uid!==session.uid){odMsg('ルームから切断されました。');odClose();return}session.state=room.state||session.state;}if(od!==session)return;odDraw();const st=session.state;if(st.phase==='done')odReward(session).catch(e=>odMsg('報酬保存エラー：'+e.message));if(st.phase==='wait')odMsg('ルーム '+session.code+'：対戦相手を待っています…');else if(st.phase==='break')odMsg('ラウンド '+st.round+' 開始まで '+Math.max(0,Math.ceil((st.startAt-now)/1000))+'秒　🔵 '+st.score[0]+' - '+st.score[1]+' 🔴');else if(st.phase==='done')odMsg((st.winner===session.role?'🏆 勝利！':'💥 敗北')+'　🔵 '+st.score[0]+' - '+st.score[1]+' 🔴（オンライン報酬あり）');else odMsg('ラウンド '+st.round+'　🔵 '+st.score[0]+' - '+st.score[1]+' 🔴');}catch(e){if(od===session)odMsg('通信エラー：'+e.message)}finally{odBusy=false}}
-function odDraw(){const c=odEl('onlineCanvas'),ctx=c.getContext('2d');ctx.clearRect(0,0,720,420);ctx.fillStyle='#172c43';ctx.fillRect(0,0,720,420);ctx.strokeStyle='#2c506a';for(let x=40;x<720;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,420);ctx.stroke()}for(let y=40;y<420;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(720,y);ctx.stroke()}if(!od)return;const st=od.state;ctx.font='bold 18px system-ui';ctx.textAlign='center';(st.players||[]).forEach((p,i)=>{ctx.fillStyle=i===0?'#68b9ff':'#ff7987';ctx.beginPath();ctx.arc(p.x,p.y,18,0,Math.PI*2);ctx.fill();ctx.fillStyle='white';ctx.fillText((HEROES[p.hero]?.name||'キャラ')+' '+(i===od.role?'あなた':i===0?'ホスト':'ゲスト'),p.x,p.y-28);ctx.fillStyle='#5b1520';ctx.fillRect(p.x-23,p.y+23,46,6);ctx.fillStyle='#83f7a4';ctx.fillRect(p.x-23,p.y+23,46*Math.max(0,p.hp)/(p.maxhp||100),6)});for(const b of st.shots||[]){ctx.fillStyle=b.owner===0?'#7ed4ff':'#ffa2a2';ctx.beginPath();ctx.arc(b.x,b.y,6,0,Math.PI*2);ctx.fill()}ctx.fillStyle='white';ctx.textAlign='center';ctx.fillText('🔵 '+st.score[0]+'  -  '+st.score[1]+' 🔴',360,25);const me=st.players?.[od.role];if(me){ctx.font='14px system-ui';ctx.fillText('HP '+Math.ceil(me.hp)+' / '+(me.maxhp||100)+'   弾 '+(me.ammo??'-')+'   必殺 '+Math.floor(me.super||0)+'%   ガジェット '+(me.charges??0),360,48)}}
-
 render();
 })();
 </script></body></html>
