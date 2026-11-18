@@ -673,7 +673,7 @@ const HERO_SKIN_PALETTES=[
  ['#f06b6d','#ffd08b','#fff1cb','#8d324c'],['#ffae48','#f9efae','#fff4dc','#a24248'],
  ['#a4a9b7','#f9c86d','#ffffff','#48526a'],['#e3b4a0','#fff0d4','#ffffff','#7a354f'],
  ['#7b95e3','#b5ffe8','#f0faff','#2d3e7b'],['#d1a36b','#f6dfaa','#fff6d9','#775346'],
- ['#8f73d6','#ffb7f2','#e9f9ff','#392567'],['#91d8f2','#ffffff','#d9ffff','#326ba0']
+ ['#f58a21','#ffd35c','#fff0b0','#8f3b12'],['#91d8f2','#ffffff','#d9ffff','#326ba0']
 ];
 const HERO_SKINS=HERO_SKIN_PALETTES.map((colors,i)=>({
  default:{id:'default',name:'オリジナル',colors}
@@ -686,28 +686,28 @@ function getHeroSkin(i){
 function heroArtSVG(i,size=62){
  const c=HEROES[i],k=i%21,shape=i===21?'snowbell':HERO_ART_SHAPES[k];
  const motifs={
- snowbell:'<path d="M32 7 L38 17 Q49 22 49 41 L54 48 H10 L15 41 Q15 22 26 17Z"/><circle cx="32" cy="53" r="5"/><path d="M32 13 V6 M22 30 L42 30 M32 20 V41"/>',
+ snowbell:'<path d="M32 7 L38 17 Q49 22 49 41 L54 48 H10 L15 41 Q15 22 26 17Z"/>',
  flame:'<path d="M32 7 Q48 25 36 34 Q47 29 48 45 Q46 60 32 60 Q15 59 16 43 Q17 32 26 26 Q24 39 32 36 Q39 26 32 7Z"/>',
- crystal:'<path d="M32 6 L51 23 L45 49 L32 60 L19 49 L13 23Z"/><path d="M32 6 V60 M13 23 H51"/>',
+ crystal:'<path d="M32 6 L51 23 L45 49 L32 60 L19 49 L13 23Z"/>',
  bolt:'<path d="M36 5 L14 35 H29 L24 59 L52 25 H36Z"/>',
- leaf:'<path d="M11 48 Q8 11 53 10 Q57 51 18 54Z"/><path d="M18 53 Q31 29 49 17"/>',
+ leaf:'<path d="M11 48 Q8 11 53 10 Q57 51 18 54Z"/>',
  shuriken:'<path d="M32 7 L41 23 L57 17 L49 33 L58 46 L39 43 L32 59 L23 43 L6 46 L15 31 L7 17 L24 23Z"/>',
  crescent:'<path d="M43 7 A26 26 0 1 0 55 49 A23 23 0 0 1 43 7Z"/>',
- shield:'<path d="M32 5 L54 15 V36 Q51 52 32 60 Q13 52 10 36 V15Z"/><path d="M32 14 V51 M18 29 H46"/>',
+ shield:'<path d="M32 5 L54 15 V36 Q51 52 32 60 Q13 52 10 36 V15Z"/>',
  star:'<path d="M32 5 L39 23 L58 25 L43 38 L48 57 L32 46 L16 57 L21 38 L6 25 L25 23Z"/>',
  wave:'<path d="M5 36 Q15 13 28 32 Q40 51 59 27 L59 45 Q42 63 26 46 Q13 33 5 53Z"/>',
- rock:'<path d="M18 10 L44 8 L58 30 L46 57 L17 55 L6 30Z"/><path d="M18 10 L29 32 L17 55 M44 8 L29 32 L46 57"/>',
+ rock:'<path d="M18 10 L44 8 L58 30 L46 57 L17 55 L6 30Z"/>',
  claw:'<path d="M14 9 L25 31 L29 8 L37 31 L50 10 L45 46 L32 58 L18 46Z"/>',
- comet:'<path d="M5 56 L28 19 L45 9 L57 21 L46 38Z"/><circle cx="43" cy="22" r="9"/>',
- prism:'<path d="M32 5 L56 28 L45 55 L19 55 L8 28Z"/><path d="M32 5 L32 55 M8 28 H56"/>',
- mist:'<path d="M8 25 Q15 10 28 22 Q42 3 53 23 Q63 40 48 46 H16 Q4 43 8 25Z"/><path d="M16 55 H47"/>',
+ comet:'<path d="M5 56 L28 19 L45 9 L57 21 L46 38Z"/>',
+ prism:'<path d="M32 5 L56 28 L45 55 L19 55 L8 28Z"/>',
+ mist:'<path d="M8 25 Q15 10 28 22 Q42 3 53 23 Q63 40 48 46 H16 Q4 43 8 25Z"/>',
  phoenix:'<path d="M32 7 Q51 18 48 33 L58 23 Q61 50 38 57 L32 48 L26 57 Q3 50 6 23 L16 33 Q13 18 32 7Z"/>',
- gear:'<path d="M26 6 H38 L41 15 L50 12 L57 22 L50 29 L58 36 L52 48 L42 47 L38 58 H26 L22 47 L12 48 L6 36 L14 29 L7 22 L14 12 L23 15Z"/><circle cx="32" cy="32" r="12"/>',
+ gear:'<path d="M26 6 H38 L41 15 L50 12 L57 22 L50 29 L58 36 L52 48 L42 47 L38 58 H26 L22 47 L12 48 L6 36 L14 29 L7 22 L14 12 L23 15Z"/>',
  fang:'<path d="M12 8 L26 27 L32 9 L38 27 L52 8 L49 51 L38 59 L32 45 L26 59 L15 51Z"/>',
- orb:'<circle cx="32" cy="32" r="24"/><circle cx="32" cy="32" r="13"/><path d="M8 32 H56 M32 8 V56"/>',
- tower:'<path d="M13 12 L24 12 L24 5 L40 5 L40 12 L51 12 L51 56 L13 56Z"/><path d="M20 24 H44 M20 36 H44 M26 56 V44 H38 V56"/>',
+ orb:'<circle cx="32" cy="32" r="24"/>',
+ tower:'<path d="M13 12 L24 12 L24 5 L40 5 L40 12 L51 12 L51 56 L13 56Z"/>',
  galaxy:'<path d="M9 30 Q12 6 39 13 Q59 20 50 42 Q39 60 20 47 Q9 37 25 27 Q38 20 42 35 Q40 46 30 41"/>',
- pumpkin:'<path d="M32 14 Q9 7 7 32 Q6 57 32 57 Q58 57 57 32 Q55 7 32 14Z"/><path d="M32 15 L36 5 M22 29 L29 36 L15 36Z M42 29 L35 36 L49 36Z M21 46 Q32 54 43 46"/>'
+ pumpkin:'<path d="M32 14 Q9 7 7 32 Q6 57 32 57 Q58 57 57 32 Q55 7 32 14Z"/>'
  };
  const skin=getHeroSkin(i);
  const [base,accent,light,dark]=skin.colors;
@@ -720,26 +720,13 @@ function heroArtSVG(i,size=62){
  '<path d="M14 20 L32 9 L50 20 L46 48 L18 48Z"/>',
  '<path d="M12 44 Q19 13 32 14 Q45 13 52 44 L39 54 H25Z"/>'
  ][i%7];
- const details=[
- '<path d="M20 45 L44 45 M32 15 V48"/>',
- '<path d="M17 30 H47 M21 38 H43"/>',
- '<path d="M18 25 L32 38 L46 25"/>',
- '<circle cx="32" cy="33" r="10"/>',
- '<path d="M16 41 L26 29 L34 38 L46 21"/>',
- '<path d="M21 20 L32 30 L43 20 M21 43 L32 34 L43 43"/>',
- '<path d="M15 31 L25 25 L32 36 L41 25 L50 31"/>'
- ][Math.floor(i/3)%7];
  const id=`ha${i}_${skin.id}`;
  return `<svg class="hero-art-svg" width="${size}" height="${size}" viewBox="0 0 64 64" role="img" aria-label="${c.name}の${skin.name}スキン" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="${id}bg" cx="32%" cy="25%"><stop stop-color="${light}"/><stop offset=".55" stop-color="${base}"/><stop offset="1" stop-color="${dark}"/></radialGradient><linearGradient id="${id}metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="${light}"/><stop offset=".52" stop-color="${accent}"/><stop offset="1" stop-color="${dark}"/></linearGradient></defs>
  <circle cx="32" cy="32" r="30" fill="${dark}" stroke="${accent}" stroke-width="3"/>
  <circle cx="32" cy="32" r="26" fill="url(#${id}bg)" stroke="${light}" stroke-width=".9"/>
  <path d="M8 48 Q32 32 56 48 L52 57 Q32 65 12 57Z" fill="${dark}" opacity=".8"/>
- <g fill="url(#${id}metal)" stroke="${dark}" stroke-width="2" stroke-linejoin="round">${ornament}</g>
- <g fill="${base}" stroke="${light}" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round">${motifs[shape]}</g>
- <g fill="none" stroke="${dark}" stroke-width="2.4" stroke-linecap="round">${details}</g>
- <path d="M13 49 L23 54 L32 50 L41 54 L51 49" fill="none" stroke="${accent}" stroke-width="2"/>
+ <g fill="url(#${id}metal)" stroke="${dark}" stroke-width="1.2" stroke-linejoin="round" stroke-linecap="round">${motifs[shape]}</g>
  <circle cx="15" cy="13" r="3" fill="${light}" opacity=".8"/>
- <path d="M10 10 L16 8 M50 12 L55 16" stroke="${accent}" stroke-width="2" stroke-linecap="round"/>
  </svg>`;
 
 }
@@ -912,6 +899,8 @@ else if(tab==='feedback'){v.innerHTML=feedbackHTML()}
 else if(tab==='news'){
 // 次回以降は先頭に最新更新を追加すると最新ニュースと過去5件が自動で切り替わる。
 const updates=[
+{ver:124,title:'✨ 攻撃エフェクト大幅強化',detail:'全キャラの通常攻撃・必殺技に個別の多色弾、光る輪郭、弾道の残像、発射時の光と火花を追加。キャラのスキン配色にも追従。攻撃力や射程は変更なし。',date:'2026年11月18日（日本時間）'},
+{ver:123,title:'🎨 キャラの余計な線を削除・パンプキンをオレンジに',detail:'キャラアイコン中央の重なった幾何学模様・線状装飾を削除。キャラクター固有のシルエットを見やすくし、パンプキンの基本色をオレンジに変更。スキン拡張基盤は維持。',date:'2026年11月18日（日本時間）'},
 {ver:122,title:'🎨 キャラクターの表情パーツを削除',detail:'全22キャラの顔の目・口のパーツを削除。多色の装甲・模様・装飾とスキン対応基盤は維持。',date:'2026年11月18日（日本時間）'},
 {ver:121,title:'🎨 全22キャラの多色デザインとスキン基盤',detail:'全キャラクターのアイコンを多色・装飾・表情付きの新デザインへ変更。選択画面とバトル画面で同じ外見を表示。キャラごとにスキンIDと配色を管理できる基盤を追加。スキン販売・入手機能は今後追加予定。',date:'2026年11月18日（日本時間）'},
 {ver:120,title:'🏅 称号の獲得条件重複を解消',detail:'白金の精鋭は1250トロフィー、伝説を越える者は2000トロフィー、全英雄の絆は全22キャラ所持かつ累計500勝に変更。旧称号の獲得履歴は維持。',date:'2026年11月18日（日本時間）'},
@@ -1087,6 +1076,38 @@ function knockoutCheck(){
  if(teamScore[0]>=2||teamScore[1]>=2){finish(teamScore[0]>=2);return}
  knockoutRound++;roundBreak=2.8;
 }
+// Ver.124: ヒーロー別の攻撃色・発光・残像。スキンの配色も参照する。
+function attackPalette(id){
+ const colors=getHeroSkin(id).colors;
+ return {main:colors[1],core:colors[2],edge:colors[0],shadow:colors[3]};
+}
+function drawAttackProjectile(b){
+ const id=b.owner?.id??0,p=attackPalette(id),superShot=!!b.superShot;
+ const angle=Math.atan2(b.vy,b.vx),r=Math.max(4,b.r||5),pulse=1+Math.sin(elapsed*17+id)*.12;
+ ctx.save();ctx.translate(b.x,b.y);ctx.rotate(angle);
+ ctx.shadowColor=p.main;ctx.shadowBlur=superShot?24:13;
+ ctx.globalAlpha=.28;ctx.fillStyle=p.main;ctx.beginPath();ctx.ellipse(-r*1.3,0,r*(superShot?3.2:2.4),r*1.4,0,0,Math.PI*2);ctx.fill();
+ ctx.globalAlpha=1;
+ // 進行方向の後ろに伸びる色付きの残像
+ ctx.fillStyle=p.edge;ctx.beginPath();ctx.moveTo(-r*(superShot?4.4:3.1),0);ctx.lineTo(-r*.2,-r*.8);ctx.lineTo(-r*.2,r*.8);ctx.closePath();ctx.fill();
+ ctx.fillStyle=p.main;ctx.strokeStyle=p.core;ctx.lineWidth=superShot?2.8:1.6;
+ if(b.role===1){ctx.beginPath();ctx.moveTo(r*2.4,0);ctx.lineTo(-r*1.2,-r*.65);ctx.lineTo(-r*.5,0);ctx.lineTo(-r*1.2,r*.65);ctx.closePath();}
+ else if(id%5===0){ctx.beginPath();ctx.moveTo(r*1.5,0);ctx.lineTo(-r*.7,-r*.95);ctx.lineTo(-r*.35,0);ctx.lineTo(-r*.7,r*.95);ctx.closePath();}
+ else if(id%5===2){ctx.beginPath();ctx.moveTo(r*1.2,0);ctx.lineTo(-r*.1,-r*1.1);ctx.lineTo(-r*1.1,0);ctx.lineTo(-r*.1,r*1.1);ctx.closePath();}
+ else{ctx.beginPath();ctx.ellipse(0,0,r*1.35*pulse,r*.85*pulse,0,0,Math.PI*2);}
+ ctx.fill();ctx.stroke();
+ ctx.shadowBlur=0;ctx.fillStyle=p.core;ctx.beginPath();ctx.ellipse(r*.25,0,Math.max(2,r*.55),Math.max(1.5,r*.34),0,0,Math.PI*2);ctx.fill();
+ if(superShot){ctx.strokeStyle=p.core;ctx.lineWidth=2;ctx.globalAlpha=.8;ctx.beginPath();ctx.arc(0,0,r*1.8,0,Math.PI*2);ctx.stroke();}
+ ctx.restore();
+}
+function attackMuzzleFlash(e,dx,dy,superShot){
+ const p=attackPalette(e.id),angle=Math.atan2(dy,dx),x=e.x+dx*(e.r+8),y=e.y+dy*(e.r+8);
+ effects.push({x,y,r:5,max:superShot?36:19,life:superShot?16:9,color:p.main});
+ for(let k=0;k<(superShot?9:4);k++){
+  const a=angle+(Math.random()-.5)*1.1,spd=1.5+Math.random()*(superShot?4.5:2.5);
+  particles.push({x,y,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,life:superShot?22:12,color:k%3===0?p.core:k%2?p.main:p.edge});
+ }
+}
 function shoot(e,dx,dy,superShot=false){
 let now=elapsed*1000,boost=e.boostUntil>elapsed;
 if(!superShot){if(e.ammo<1||now-e.lastShot<e.cooldown*(boost?.55:1))return;
@@ -1094,7 +1115,7 @@ e.ammo--;e.lastShot=now;
 }
 e.lastHit=elapsed; // 通常攻撃・必殺技の使用で自然回復を中断し、5秒カウントを再開
 e.revealedUntil=Math.max(e.revealedUntil,elapsed+1.2);e.stealthUntil=0;
-let n=norm(dx,dy),id=e.id,kind=id%5;e.dir=Math.atan2(n.y,n.x);
+let n=norm(dx,dy),id=e.id,kind=id%5;e.dir=Math.atan2(n.y,n.x);attackMuzzleFlash(e,n.x,n.y,superShot);
 if(superShot){e.super=0;
 if(id===20){e.hp=Math.min(e.maxhp,e.hp+e.maxhp*.65);effects.push({x:e.x,y:e.y,r:22,max:165,life:38,color:'#ffb35c'});return;}
 if(id===21){ // スノーベル専用：聖夜のスノードーム
@@ -1560,7 +1581,14 @@ ctx.restore();}
 if(mode==='royale')for(let cube of powerCubes){if(elapsed<cube.spawn)continue;ctx.save();ctx.translate(cube.x,cube.y);let bob=Math.sin(elapsed*4+cube.x)*3;ctx.translate(0,bob);ctx.shadowColor='#9aff39';ctx.shadowBlur=15;ctx.fillStyle='#a4f53c';ctx.strokeStyle='#e6ff8e';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(0,-15);ctx.lineTo(15,-7);ctx.lineTo(15,10);ctx.lineTo(0,17);ctx.lineTo(-15,10);ctx.lineTo(-15,-7);ctx.closePath();ctx.fill();ctx.stroke();ctx.shadowBlur=0;ctx.fillStyle='#356f20';ctx.font='bold 18px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('⚡',0,1);ctx.restore()}
 drawSnowEvent();for(let ef of effects){ctx.beginPath();ctx.strokeStyle=ef.color;ctx.globalAlpha=Math.min(1,Math.max(0,ef.life/35));ctx.lineWidth=7;ctx.arc(ef.x,ef.y,Math.max(0.5,ef.max*(1-Math.min(ef.life,35)/35)),0,7);ctx.stroke()}ctx.globalAlpha=1;
 drawBossWarnings();
-for(let b of shots){if(b.role===1&&b.trail.length){ctx.beginPath();ctx.moveTo(b.trail[0].x,b.trail[0].y);for(let t of b.trail)ctx.lineTo(t.x,t.y);ctx.lineTo(b.x,b.y);ctx.strokeStyle=b.color;ctx.globalAlpha=.52;ctx.lineWidth=2;ctx.stroke();ctx.globalAlpha=1}ctx.beginPath();ctx.fillStyle=b.superShot?'#fff067':b.color;ctx.shadowBlur=13;ctx.shadowColor=ctx.fillStyle;if(b.role===1){ctx.save();ctx.translate(b.x,b.y);ctx.rotate(Math.atan2(b.vy,b.vx));ctx.fillRect(-9,-2,18,4);ctx.restore()}else{ctx.arc(b.x,b.y,b.r,0,7);ctx.fill()}ctx.shadowBlur=0}
+for(let b of shots){
+ const pal=attackPalette(b.owner?.id??0);
+ const trailLen=b.superShot?34:21,velocity=Math.hypot(b.vx,b.vy)||1;
+ ctx.save();ctx.strokeStyle=pal.main;ctx.lineWidth=Math.max(3,b.r*.85);ctx.lineCap='round';ctx.globalAlpha=b.superShot?.48:.3;ctx.shadowColor=pal.main;ctx.shadowBlur=b.superShot?17:9;
+ ctx.beginPath();ctx.moveTo(b.x-b.vx/velocity*trailLen,b.y-b.vy/velocity*trailLen);ctx.lineTo(b.x,b.y);ctx.stroke();
+ ctx.restore();
+ drawAttackProjectile(b);
+}
 for(let e of entities){if(e.dead||e!==player&&!canSee(player,e))continue;
 if(e.isBoss){drawBossAppearance(e);}else{
 drawHeroArt(ctx,e);}let bw=Math.max(69,e.r*2+34),barY=e.y-e.r-20;
