@@ -186,7 +186,14 @@ function equippedGadget(i){
  if(available!==undefined){eq.gadget=available;return available}
  return -1;
 }
-function equippedStar(i){let k=Number(equipment(i).star);return level(i)>=9&&Number.isInteger(k)&&k>=0&&k<2&&hasAbility(i,'star',k)?k:-1}
+function equippedStar(i){
+ if(level(i)<9)return -1;
+ const eq=equipment(i),k=Number(eq.star);
+ if(Number.isInteger(k)&&k>=0&&k<2&&hasAbility(i,'star',k))return k;
+ const available=[0,1].find(slot=>hasAbility(i,'star',slot));
+ if(available!==undefined){eq.star=available;return available}
+ return -1;
+}
 function starType(i){let n=equippedStar(i);return n<0?null:STAR_TYPES[i][n]}
 function gadgetType(i){let n=equippedGadget(i);return n<0?null:GADGET_TYPES[i][n]}
 let pendingAbilityPurchase=null;
@@ -447,26 +454,40 @@ async function leaderboardAPI(method,uid,payload){
  if(method==='PUT')opts.body=JSON.stringify(payload);
  return firebaseRequest(url,opts);
 }
-async function publishLeaderboard(){
- if(!cloudReady||!cloudUid)return;
- const uid=cloudUid,gen=cloudGeneration,username=cloudUserName,trophies=Math.max(0,Math.floor(Number(data.trophies)||0));
- unlockTitles();const title=equippedTitle().id,title2=secondTitle()?.id||null;
- if(leaderboardPublished===uid+':'+trophies+':'+title+':'+title2)return;
- try{
-  await leaderboardAPI('PUT',uid,{username,trophies,title,...(isAdmin()&&title2?{title2}:{})});
-  if(gen===cloudGeneration&&uid===cloudUid)leaderboardPublished=uid+':'+trophies+':'+title+':'+title2;
- }catch(e){console.warn('ランキング登録失敗',e);if(tab==='ranking'){leaderboardState='登録エラー：'+e.message;render()}}
+let leaderboardPublishQueue=Promise.resolve();
+async function publishLeaderboard(force=false){
+ if(!cloudReady||!cloudUid)return false;
+ const uid=cloudUid,gen=cloudGeneration;
+ const task=async()=>{
+  if(!cloudReady||cloudUid!==uid||cloudGeneration!==gen)return false;
+  const username=cloudUserName,trophies=Math.max(0,Math.floor(Number(data.trophies)||0));
+  unlockTitles();const title=equippedTitle().id,title2=secondTitle()?.id||null;
+  const signature=uid+':'+trophies+':'+title+':'+title2;
+  if(!force&&leaderboardPublished===signature)return true;
+  try{
+   await leaderboardAPI('PUT',uid,{username,trophies,title,...(isAdmin()&&title2?{title2}:{})});
+   if(gen===cloudGeneration&&uid===cloudUid){leaderboardPublished=signature;leaderboardState='ランキングを同期しました';}
+   return true;
+  }catch(e){
+   console.warn('ランキング登録失敗',e);
+   if(gen===cloudGeneration&&uid===cloudUid){leaderboardPublished=null;leaderboardState='ランキング送信エラー：'+e.message;if(tab==='ranking')render()}
+   return false;
+  }
+ };
+ leaderboardPublishQueue=leaderboardPublishQueue.catch(()=>false).then(task);
+ return leaderboardPublishQueue;
 }
+
 async function loadLeaderboard(){
  if(!cloudReady||!cloudUid)return;
  const request=++leaderboardRequest;leaderboardLoading=true;leaderboardState='ランキングを読み込み中…';
  if(tab==='ranking')render();
  try{
-  await publishLeaderboard();
+  const published=await publishLeaderboard(true);
   const raw=await leaderboardAPI('GET');
   if(request!==leaderboardRequest||!cloudReady)return;
   leaderboardEntries=Object.entries(raw&&typeof raw==='object'?raw:{}).filter(([uid,v])=>v&&typeof v==='object'&&typeof v.username==='string'&&/^[a-z0-9_-]{3,20}$/.test(v.username)&&Number.isSafeInteger(v.trophies)&&v.trophies>=0).map(([uid,v])=>({uid,username:v.username,trophies:v.trophies,title:typeof v.title==='string'&&titleById(v.title)&& (v.title!=='admin'||uid===ADMIN_UID)?v.title:null,title2:uid===ADMIN_UID&&typeof v.title2==='string'&&titleById(v.title2)?v.title2:null})).sort((a,b)=>b.trophies-a.trophies||a.username.localeCompare(b.username));
-  leaderboardState=leaderboardEntries.length?'更新完了':'まだランキング登録者がいません';
+  leaderboardState=!published?'ランキングの読み込みは成功しましたが、自分の記録の送信に失敗しました。Firebaseルールを更新してください。':leaderboardEntries.length?'更新完了':'まだランキング登録者がいません';
  }catch(e){if(request!==leaderboardRequest)return;leaderboardState='読み込みエラー：'+e.message}
  finally{if(request===leaderboardRequest){leaderboardLoading=false;if(tab==='ranking')render()}}
 }
@@ -588,11 +609,36 @@ const saveIssues=d=>{
  return errors;
 };
 const validateSave=d=>saveIssues(d).length===0;
+// Ver.129: Firebaseが数値キーの配列をオブジェクトとして返す場合も装備を復元。
+function normalizeAbilityEquipment(d){
+ const equipmentOut={},ownedOut={};let changed=false;
+ const sourceEquip=d.equipment&&typeof d.equipment==='object'?d.equipment:{};
+ const sourceOwned=d.abilityOwned&&typeof d.abilityOwned==='object'?d.abilityOwned:{};
+ for(let i=0;i<HEROES.length;i++){
+  const raw=sourceEquip[i]||{},o=sourceOwned[i]||{};
+  const owned={};const equipped={};
+  for(const type of ['gadget','star']){
+   const rawOwned=o[type];
+   const array=Array.isArray(rawOwned)?rawOwned:(rawOwned&&typeof rawOwned==='object'?Object.values(rawOwned):[]);
+   owned[type]=[...new Set(array.map(Number).filter(n=>Number.isInteger(n)&&n>=0&&n<2))];
+   const selected=Number(raw[type]);
+   // 所持している装備のみ選択。既存の有効な選択を最優先。
+   const selectedValid=Number.isInteger(selected)&&selected>=0&&selected<2&&owned[type].includes(selected);
+   equipped[type]=selectedValid?selected:(owned[type][0]??-1);
+   if(Number(raw[type])!==equipped[type]||!Array.isArray(rawOwned)&&rawOwned!==undefined)changed=true;
+  }
+  if(owned.gadget.length||owned.star.length||sourceEquip[i]){
+   equipmentOut[i]=equipped;ownedOut[i]=owned;
+  }
+ }
+ return {equipment:equipmentOut,abilityOwned:ownedOut,changed};
+}
 const normalizeSave=d=>{
  const x={...freshData(),...d};
  // Firebaseは空のオブジェクトを省略する。ログイン時に必ず再生成する。
- x.abilityOwned=(d.abilityOwned&&typeof d.abilityOwned==='object'&&!Array.isArray(d.abilityOwned))?d.abilityOwned:{};
- x.equipment=(d.equipment&&typeof d.equipment==='object'&&!Array.isArray(d.equipment))?d.equipment:{};
+ const abilityState=normalizeAbilityEquipment(d);
+ x.abilityOwned=abilityState.abilityOwned;
+ x.equipment=abilityState.equipment;
  x.drops=Number.isInteger(d.drops)&&d.drops>=0?d.drops:0;
  x.unlockedTitles=(d.unlockedTitles&&typeof d.unlockedTitles==='object'&&!Array.isArray(d.unlockedTitles))?d.unlockedTitles:{};
  x.selectedTitle=typeof d.selectedTitle==='string'?d.selectedTitle:'rookie';
@@ -636,7 +682,7 @@ const flushCloud=()=>{
  cloudDirty=false;cloudStatus('☁️ 保存中…');
  cloudQueue=cloudQueue.catch(()=>{}).then(async()=>{
   if(!cloudReady||uid!==cloudUid||gen!==cloudGeneration)return false;
-  try{await cloudDatabase('PUT',uid,payload);if(uid===cloudUid&&gen===cloudGeneration)cloudStatus('☁️ 保存済み');if(uid===cloudUid&&gen===cloudGeneration)publishLeaderboard();return true}
+  try{await cloudDatabase('PUT',uid,payload);if(uid===cloudUid&&gen===cloudGeneration)cloudStatus('☁️ 保存済み');if(uid===cloudUid&&gen===cloudGeneration)await publishLeaderboard();return true}
   catch(e){if(uid===cloudUid&&gen===cloudGeneration){cloudDirty=true;cloudStatus('⚠️ クラウド保存失敗：バックアップを作成してください');cloudMessage('保存エラー：'+e.message)}console.error('Firebase保存エラー',e);return false}
  });return cloudQueue;
 };
@@ -652,7 +698,7 @@ async function cloudLoad(uid,username){
   const remote=await cloudDatabase('GET',uid);
   if(gen!==cloudGeneration)return;
   if(remote!==null&&!validateSave(remote)){const fields=Object.keys(remote&&typeof remote==='object'?remote:{}).join(', ');throw Error('クラウドセーブの確認が必要です：'+saveIssues(remote).join(' / ')+'。保存項目：'+fields+'。データは上書きしていません。')}
-  data=remote===null?freshData():normalizeSave(remote);cloudUid=uid;cloudReady=true;const newlyUnlocked=unlockTitles();if(isAdmin()){data.unlockedTitles.admin=true;}saveLocal();if(newlyUnlocked&&remote!==null){cloudDirty=true;setTimeout(()=>{if(cloudReady&&cloudUid===uid)save()},1000)}
+  data=remote===null?freshData():normalizeSave(remote);cloudUid=uid;cloudReady=true;const equipmentWasRepaired=remote!==null&&normalizeAbilityEquipment(remote).changed;const newlyUnlocked=unlockTitles();if(isAdmin()){data.unlockedTitles.admin=true;}saveLocal();if((newlyUnlocked||equipmentWasRepaired)&&remote!==null){cloudDirty=true;setTimeout(()=>{if(cloudReady&&cloudUid===uid)save()},1000)}
   if(remote===null){cloudDirty=true;const ok=await flushCloud();if(!ok){cloudReady=false;cloudUid=null;throw Error('初期セーブをクラウドに保存できませんでした。ルールを確認してください。')}}
   render();setTimeout(()=>claimAdminGifts(),1200);$('cloudGate').classList.add('hidden');cloudStatus('☁️ '+username+'：読み込み完了');cloudMessage('');loadLeaderboard(); // ログイン直後にFirebaseからランキングを自動復元
  }catch(e){cloudReady=false;cloudUid=null;cloudMessage('読み込みに失敗しました：'+e.message+'\nFirebaseのルールと接続を確認してください。');cloudStatus('⚠️ クラウド読み込み失敗');console.error(e)}
@@ -823,7 +869,7 @@ $('heroDetail').addEventListener('click',e=>{
   abilityCollection(i)[type].push(k);
  }
  pendingAbilityPurchase=null;
- equipment(i)[type]=k;save();refresh();showHeroDetail(i);
+ equipment(i)[type]=k;save();if(cloudReady)flushCloud();refresh();showHeroDetail(i);
 },true);
 $('heroDetail').addEventListener('click',e=>{const b=e.target.closest('[data-detail]');if(!b){if(e.target===$('heroDetail'))closeHeroDetail();return}const a=b.dataset.detail;if(a==='close'){closeHeroDetail();return}
  if(a.startsWith('choose:')){const i=Number(a.split(':')[1]);if(ownsHero(i)){ensurePumpkinOwnership();data.selected=i;save();closeHeroDetail();render()}}});
@@ -942,6 +988,8 @@ else if(tab==='feedback'){v.innerHTML=feedbackHTML()}
 else if(tab==='news'){
 // 次回以降は先頭に最新更新を追加すると最新ニュースと過去5件が自動で切り替わる。
 const updates=[
+{ver:130,title:'🏆 トロフィーランキング同期修正',detail:'新称号のFirebaseルール対応、ランキングの送信競合防止、戦闘終了後の即時同期、更新失敗時の原因表示を追加。FirebaseルールVer.130への更新が必要です。',date:'2026年11月18日（日本時間）'},
+{ver:129,title:'🛠️ ガジェット・スターパワー装備保存修正',detail:'購入済み能力の装備状態をFirebase読み込み時に復元・補正。スターパワーも未装備状態を自動修復し、装備変更はクラウドに即時保存。既存の所持状況は維持。',date:'2026年11月18日（日本時間）'},
 {ver:128,title:'🟢 購入済みガジェットの自動装備修正',detail:'Lv.7以上で購入済みガジェットがあるのに装備情報が未設定・不整合の場合、所持済みのものを自動装備してバトルで使用可能に修正。旧セーブの数値文字列にも対応。未購入品は自動解放しない。',date:'2026年11月18日（日本時間）'},
 {ver:127,title:'🪨 ゴーレムの外観を岩石巨人に刷新',detail:'ゴーレムのデザインを、クラッシュ・ロワイヤルの岩石ゴーレムを参考にしたオリジナルの岩石巨人風へ変更。ごつごつした肩・角ばった岩の頭・青白く光る亀裂を追加。能力やほかのキャラは変更なし。',date:'2026年11月18日（日本時間）'},
 {ver:126,title:'🌿 キャラ固有のシンボルを復活',detail:'リーフの葉脈、タイタンの盾紋章、ロックのひび割れた岩、コメットの隕石と尾、ネオンのダイヤカット、ギアの歯車中心、ノヴァの宇宙模様を復活。汎用装飾を除去し、パンプキンの顔と多色デザインは維持。',date:'2026年11月18日（日本時間）'},
@@ -1740,7 +1788,7 @@ if(xmasRun==='boss'&&win&&xmasActive())xmasAddBossKill();
 xmasRun='';
 data.drops=(data.drops||0)+dropReward;
 data.trophies=Math.max(0,data.trophies+trophyDelta);
-data.matches++;if(win)data.wins++;data.best=Math.max(data.best,score);save();
+data.matches++;if(win)data.wins++;data.best=Math.max(data.best,score);save();if(cloudReady)publishLeaderboard();
 const trophyLabel=trophyDelta>0?'+'+trophyDelta:String(trophyDelta);
 const resultTitle=mode==='royale'?(placement===1?'🏆 1位！':placement<=4?'🎉 上位入賞！':`🏁 ${placement}位`):(win?'🏆 勝利！':'💥 敗北');
 $('overlay').style.display='flex';
