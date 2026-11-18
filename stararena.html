@@ -738,10 +738,6 @@ function heroArtSVG(i,size=62){
  <g fill="${base}" stroke="${light}" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round">${motifs[shape]}</g>
  <g fill="none" stroke="${dark}" stroke-width="2.4" stroke-linecap="round">${details}</g>
  <path d="M13 49 L23 54 L32 50 L41 54 L51 49" fill="none" stroke="${accent}" stroke-width="2"/>
- <circle cx="21" cy="27" r="3" fill="${light}" stroke="${dark}" stroke-width="1.2"/>
- <circle cx="43" cy="27" r="3" fill="${light}" stroke="${dark}" stroke-width="1.2"/>
- <circle cx="21" cy="27" r="1.2" fill="${dark}"/><circle cx="43" cy="27" r="1.2" fill="${dark}"/>
- <path d="M26 42 Q32 46 38 42" fill="none" stroke="${light}" stroke-width="2" stroke-linecap="round"/>
  <circle cx="15" cy="13" r="3" fill="${light}" opacity=".8"/>
  <path d="M10 10 L16 8 M50 12 L55 16" stroke="${accent}" stroke-width="2" stroke-linecap="round"/>
  </svg>`;
@@ -916,6 +912,7 @@ else if(tab==='feedback'){v.innerHTML=feedbackHTML()}
 else if(tab==='news'){
 // 次回以降は先頭に最新更新を追加すると最新ニュースと過去5件が自動で切り替わる。
 const updates=[
+{ver:122,title:'🎨 キャラクターの表情パーツを削除',detail:'全22キャラの顔の目・口のパーツを削除。多色の装甲・模様・装飾とスキン対応基盤は維持。',date:'2026年11月18日（日本時間）'},
 {ver:121,title:'🎨 全22キャラの多色デザインとスキン基盤',detail:'全キャラクターのアイコンを多色・装飾・表情付きの新デザインへ変更。選択画面とバトル画面で同じ外見を表示。キャラごとにスキンIDと配色を管理できる基盤を追加。スキン販売・入手機能は今後追加予定。',date:'2026年11月18日（日本時間）'},
 {ver:120,title:'🏅 称号の獲得条件重複を解消',detail:'白金の精鋭は1250トロフィー、伝説を越える者は2000トロフィー、全英雄の絆は全22キャラ所持かつ累計500勝に変更。旧称号の獲得履歴は維持。',date:'2026年11月18日（日本時間）'},
 {ver:119,title:'⚖️ 称号の難易度・ミッション報酬を再調整',detail:'全称号のレアリティ・名称を達成難度に合わせて見直し。全キャラ制覇は限定キャラを含む全22体の所持が必要。初級ミッションを整理し、コイン・スタードロップの過剰配布を抑制。既存の受取履歴は維持。',date:'2026年11月18日（日本時間）'},
