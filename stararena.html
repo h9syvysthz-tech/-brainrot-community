@@ -175,9 +175,17 @@ for(const [id,eq] of Object.entries(data.equipment)){
 }
 const ABILITY_COST={gadget:1000,star:2000};
 function abilityCollection(i){if(!data.abilityOwned||typeof data.abilityOwned!=='object')data.abilityOwned={};let e=data.abilityOwned[i];if(!e||typeof e!=='object')e=data.abilityOwned[i]={gadget:[],star:[]};for(let t of ['gadget','star'])if(!Array.isArray(e[t]))e[t]=[];return e}
-function hasAbility(i,type,k){return abilityCollection(i)[type].includes(k)}
+function hasAbility(i,type,k){return abilityCollection(i)[type].some(v=>Number(v)===k)}
 function equipment(i){if(!data.equipment||typeof data.equipment!=='object')data.equipment={};let e=data.equipment[i];if(!e||typeof e!=='object')e=data.equipment[i]={gadget:-1,star:-1};return e}
-function equippedGadget(i){let k=Number(equipment(i).gadget);return level(i)>=7&&Number.isInteger(k)&&k>=0&&k<2&&hasAbility(i,'gadget',k)?k:-1}
+function equippedGadget(i){
+ if(level(i)<7)return -1;
+ const eq=equipment(i),k=Number(eq.gadget);
+ if(Number.isInteger(k)&&k>=0&&k<2&&hasAbility(i,'gadget',k))return k;
+ // 購入済みだが装備情報が空・不正な古いセーブを修復。未購入品は解放しない。
+ const available=[0,1].find(slot=>hasAbility(i,'gadget',slot));
+ if(available!==undefined){eq.gadget=available;return available}
+ return -1;
+}
 function equippedStar(i){let k=Number(equipment(i).star);return level(i)>=9&&Number.isInteger(k)&&k>=0&&k<2&&hasAbility(i,'star',k)?k:-1}
 function starType(i){let n=equippedStar(i);return n<0?null:STAR_TYPES[i][n]}
 function gadgetType(i){let n=equippedGadget(i);return n<0?null:GADGET_TYPES[i][n]}
@@ -219,7 +227,7 @@ function updateGadgetButton(){const b=$('gadgetBtn');if(!b)return;
  if(!playing||!player){b.disabled=true;return}
  b.disabled=player.dead||player.gadgetIndex<0||player.gadgetCharges<=0;
  b.textContent=player.gadgetIndex<0?'🔒':`🟢${player.gadgetCharges}`;
- b.setAttribute('aria-label',player.gadgetIndex<0?'ガジェットはレベル7で解放':'ガジェット 残り'+player.gadgetCharges+'回');
+ b.setAttribute('aria-label',player.gadgetIndex<0?(player.lv<7?'ガジェットはレベル7で解放':'購入済みのガジェットがありません。キャラ画面で確認してください'):'ガジェット 残り'+player.gadgetCharges+'回');
 }
 
 // Higher-tier drops can unlock a previously unowned character; duplicates are never awarded.
@@ -934,6 +942,7 @@ else if(tab==='feedback'){v.innerHTML=feedbackHTML()}
 else if(tab==='news'){
 // 次回以降は先頭に最新更新を追加すると最新ニュースと過去5件が自動で切り替わる。
 const updates=[
+{ver:128,title:'🟢 購入済みガジェットの自動装備修正',detail:'Lv.7以上で購入済みガジェットがあるのに装備情報が未設定・不整合の場合、所持済みのものを自動装備してバトルで使用可能に修正。旧セーブの数値文字列にも対応。未購入品は自動解放しない。',date:'2026年11月18日（日本時間）'},
 {ver:127,title:'🪨 ゴーレムの外観を岩石巨人に刷新',detail:'ゴーレムのデザインを、クラッシュ・ロワイヤルの岩石ゴーレムを参考にしたオリジナルの岩石巨人風へ変更。ごつごつした肩・角ばった岩の頭・青白く光る亀裂を追加。能力やほかのキャラは変更なし。',date:'2026年11月18日（日本時間）'},
 {ver:126,title:'🌿 キャラ固有のシンボルを復活',detail:'リーフの葉脈、タイタンの盾紋章、ロックのひび割れた岩、コメットの隕石と尾、ネオンのダイヤカット、ギアの歯車中心、ノヴァの宇宙模様を復活。汎用装飾を除去し、パンプキンの顔と多色デザインは維持。',date:'2026年11月18日（日本時間）'},
 {ver:125,title:'🎃 パンプキンの顔・一括受取・決戦演出',detail:'パンプキンだけジャック・オー・ランタンの顔を復活。達成済みミッションを一括受け取り可能に。バトルロイヤルで生存者が2人になった瞬間、中央にバトルロイヤルの大きな文字を短時間表示。',date:'2026年11月18日（日本時間）'},
@@ -1029,7 +1038,7 @@ const canvas=$('gameCanvas'),ctx=canvas.getContext('2d');const rand=(a,b)=>a+Mat
 function blocked(x,y,r=17){return x<r||y<r||x>worldW-r||y>worldH-r||walls.some(w=>circleRect(x,y,r,w))}
 function pos(radius=28){for(let k=0;k<350;k++){let p={x:rand(65,worldW-65),y:rand(65,worldH-65)};if(!blocked(p.x,p.y,radius+10)&&entities.every(e=>dist(e,p)>e.r+radius+48))return p}for(let y=65;y<worldH-65;y+=35)for(let x=65;x<worldW-65;x+=35){let p={x,y};if(!blocked(x,y,radius+10)&&entities.every(e=>dist(e,p)>e.r+radius+25))return p}return{x:worldW/2,y:worldH/2}}
 let powerCubes=[];let powerBoxes=[];
-function create(id,team,ai=true,p){let a=h(id),lv=ai?(seriousBattle?Math.min(40,Math.max(1,1+Math.floor(data.trophies/170)+Math.floor(rand(-1,2)))*2):Math.min(20,Math.max(1,1+Math.floor(data.trophies/170)+Math.floor(rand(-1,2))))):level(id),hp=a.hp+lv*12;return{id,lv,team,ai,power:0,baseMaxhp:hp,baseDamage:a.damage+lv*3,x:p?.x??480,y:p?.y??300,r:a.bodySize,hp,maxhp:hp,speed:a.speed,damage:a.damage+lv*3,range:a.range,cooldown:a.cooldown,lastShot:0,super:0,dead:false,respawn:0,dir:0,lastHit:-10,think:0,tx:0,ty:0,score:0,invuln:0,slowUntil:0,boostUntil:0,poisonUntil:0,poisonOwner:null,aiStrafe:1,gasTick:0,ammo:AMMO_CAP[id],reloadProgress:0,revealedUntil:0,gadgetIndex:lv>=7?(ai?Math.floor(Math.random()*2):equippedGadget(id)):-1,starIndex:lv>=9&&ai?Math.floor(Math.random()*2):-1,gadgetCharges:lv>=7?3:0,gadgetShieldUntil:0,gadgetReloadUntil:0,gadgetDamageUntil:0,gadgetFlash:0,stealthUntil:0}}
+function create(id,team,ai=true,p){let a=h(id),lv=ai?(seriousBattle?Math.min(40,Math.max(1,1+Math.floor(data.trophies/170)+Math.floor(rand(-1,2)))*2):Math.min(20,Math.max(1,1+Math.floor(data.trophies/170)+Math.floor(rand(-1,2))))):level(id),hp=a.hp+lv*12;return{id,lv,team,ai,power:0,baseMaxhp:hp,baseDamage:a.damage+lv*3,x:p?.x??480,y:p?.y??300,r:a.bodySize,hp,maxhp:hp,speed:a.speed,damage:a.damage+lv*3,range:a.range,cooldown:a.cooldown,lastShot:0,super:0,dead:false,respawn:0,dir:0,lastHit:-10,think:0,tx:0,ty:0,score:0,invuln:0,slowUntil:0,boostUntil:0,poisonUntil:0,poisonOwner:null,aiStrafe:1,gasTick:0,ammo:AMMO_CAP[id],reloadProgress:0,revealedUntil:0,gadgetIndex:lv>=7?(ai?Math.floor(Math.random()*2):equippedGadget(id)):-1,starIndex:lv>=9&&ai?Math.floor(Math.random()*2):-1,gadgetCharges:lv>=7&&(ai||equippedGadget(id)>=0)?3:0,gadgetShieldUntil:0,gadgetReloadUntil:0,gadgetDamageUntil:0,gadgetFlash:0,stealthUntil:0}}
 function mapBuild(){
 worldW=mode==='royale'?3000:mode==='boss'?1300:1080;
 worldH=mode==='royale'?2200:mode==='boss'?850:720;
@@ -1661,7 +1670,7 @@ if((touchAim.active||superAim.active)&&!player.dead){
  ctx.save();ctx.strokeStyle='#fff5a8';ctx.lineWidth=5;ctx.globalAlpha=.85;ctx.setLineDash([18,11]);ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(ex,ey);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#fff5a8';ctx.beginPath();ctx.arc(ex,ey,8,0,Math.PI*2);ctx.fill();ctx.restore();
 }
 ctx.restore();
-ctx.fillStyle='#0b1537c9';ctx.fillRect(12,12,mode==='team'?280:250,134);ctx.textAlign='left';ctx.font='bold 18px system-ui';ctx.fillStyle='#fff';ctx.fillText('❤️ '+Math.ceil(player.hp)+' / '+player.maxhp,23,38);ctx.fillText('⚡ '+Math.floor(player.super)+'%  🏅 '+kills,23,63);ctx.font='bold 13px system-ui';ctx.fillStyle='#9dffb6';ctx.fillText('🟢 ガジェット '+(player.gadgetIndex<0?'Lv.7で解放':player.gadgetCharges+'/3'),23,111);if(mode==='royale'){ctx.font='bold 15px system-ui';ctx.fillStyle='#c6ff79';ctx.fillText('🟩 パワーキューブ ×'+(player.power||0),23,88)}
+ctx.fillStyle='#0b1537c9';ctx.fillRect(12,12,mode==='team'?280:250,134);ctx.textAlign='left';ctx.font='bold 18px system-ui';ctx.fillStyle='#fff';ctx.fillText('❤️ '+Math.ceil(player.hp)+' / '+player.maxhp,23,38);ctx.fillText('⚡ '+Math.floor(player.super)+'%  🏅 '+kills,23,63);ctx.font='bold 13px system-ui';ctx.fillStyle='#9dffb6';ctx.fillText('🟢 ガジェット '+(player.gadgetIndex<0?(player.lv<7?'Lv.7で解放':'未購入・未装備'):player.gadgetCharges+'/3'),23,111);if(mode==='royale'){ctx.font='bold 15px system-ui';ctx.fillStyle='#c6ff79';ctx.fillText('🟩 パワーキューブ ×'+(player.power||0),23,88)}
 ctx.font='bold 15px system-ui';ctx.fillStyle='#ffdd74';ctx.fillText('🔋 '+('●'.repeat(player.ammo)) + ('○'.repeat(AMMO_CAP[player.id]-player.ammo)),23,104);
 if(player.ammo<AMMO_CAP[player.id]){ctx.fillStyle='#27344c';ctx.fillRect(23,113,125,7);ctx.fillStyle='#f4c950';ctx.fillRect(23,113,125*clamp(player.reloadProgress/RELOAD_SEC[player.id],0,1),7)}ctx.fillStyle='#ffe77b';ctx.fillRect(22,76,Math.min(205,player.super*2.05),5);if(player.hp<player.maxhp){ctx.fillStyle=elapsed-player.lastHit>=5?'#81ff9e':'#ffffffa0';ctx.font='bold 13px system-ui';ctx.textAlign='left';ctx.fillText(elapsed-player.lastHit>=5?'💚 自動回復中':'💚 回復まで '+Math.ceil(5-(elapsed-player.lastHit))+'秒',23,142)}ctx.textAlign='right';ctx.fillText('⏱ '+Math.max(0,Math.ceil((mode==='royale'||mode==='boss'?180:90)-elapsed)),940,35);if(mode==='royale'){ctx.fillStyle=inGas(player)?'#ff9fb5':'#eecaff';ctx.font='bold 16px system-ui';ctx.textAlign='right';ctx.fillText(inGas(player)?'☠️ 毒ガス内！':'☣️ 毒ガス '+(30-Math.floor(elapsed%30))+'秒で次の縮小',940,86)}if(mode==='boss'){let boss=entities.find(e=>e.isBoss);if(boss){
 const bx=250,by=16,bw=470,bh=28,rate=clamp(boss.hp/boss.maxhp,0,1);
