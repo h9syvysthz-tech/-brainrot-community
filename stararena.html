@@ -114,7 +114,7 @@ const ATTACK_CONFIG=[
 [5,.20,.35,7,5,0],[1,0,1.08,19,2.5,0],[1,0,1.65,6.5,10,0],[2,.09,.82,12,5,2],[13,.135,.48,8.5,6,0]
 ];
 ATTACK_CONFIG.push([3,.11,.62,10,4,0]);
-const BOSS_NAME='👹 深淵の覇王';const BOSS_TYPES=[{id:'abyss',name:'👹 深淵の覇王',description:'高HPの重量級。メテオ・直線ビーム・衝撃波を使い、時間経過で怒りが増す。',hp:1,damage:1,speed:.95,cooldown:1},{id:'xmas',name:'❄️ 氷冠の魔王',description:'専用の氷晶生命体。凍結ゲージ・氷の檻・雪玉の連鎖・極寒フィールド・氷晶分裂を使うクリスマス限定ボス。',hp:.83,damage:.94,speed:1.05,cooldown:1.06},{id:'storm',name:'⚡ 雷霆の支配者',description:'深淵の覇王よりHPは低いが、移動が速く、高速落雷・扇状雷ビーム・雷の円環・追尾雷雨・十字雷撃・稲妻の壁・雷の迷路・雷嵐を使う。攻撃力はやや高い。',hp:.72,damage:1.25,speed:1.34,cooldown:.78}];let bossType='abyss';const selectedBoss=()=>BOSS_TYPES.find(b=>b.id===bossType)||BOSS_TYPES[0];const BOSS_DIFFICULTIES=[
+const BOSS_NAME='👹 深淵の覇王';const BOSS_TYPES=[{id:'abyss',name:'👹 深淵の覇王',description:'高HPの重量級。メテオ・直線ビーム・衝撃波を使い、時間経過で怒りが増す。',hp:1,damage:1,speed:.95,cooldown:1},{id:'xmas',name:'❄️ 氷冠の魔王',description:'専用の氷晶生命体。凍結ゲージ・氷の檻・雪玉の連鎖・極寒フィールド・氷晶分裂を使うクリスマス限定ボス。',hp:.89,damage:1.04,speed:1.05,cooldown:1.06},{id:'storm',name:'⚡ 雷霆の支配者',description:'深淵の覇王よりHPは低いが、移動が速く、高速落雷・扇状雷ビーム・雷の円環・追尾雷雨・十字雷撃・稲妻の壁・雷の迷路・雷嵐を使う。攻撃力はやや高い。',hp:.72,damage:1.25,speed:1.34,cooldown:.78}];let bossType='abyss';const selectedBoss=()=>BOSS_TYPES.find(b=>b.id===bossType)||BOSS_TYPES[0];const BOSS_DIFFICULTIES=[
 {name:'ビギナー',lv:3,hp:.65,damage:.60,interval:1.35,warning:1.30,rage:[85,135,170]},
 {name:'ノーマル',lv:7,hp:.85,damage:.82,interval:1.20,warning:1.18,rage:[70,115,155]},
 {name:'ハード',lv:12,hp:1.10,damage:1.05,interval:1.08,warning:1.08,rage:[55,100,140]},
@@ -291,20 +291,43 @@ const TITLES=[
  {id:'admin',name:'管理者',icon:'👑',rarity:'限定',color:'#ffdc69',desc:'運営者専用',test:()=>false},
  {id:'rookie',name:'はじまりの挑戦者',icon:'🌱',rarity:'ノーマル',color:'#b9d4ed',desc:'最初から所持',test:()=>true},
  {id:'firstwin',name:'勝利の第一歩',icon:'⚔️',rarity:'ノーマル',color:'#b9d4ed',desc:'1勝する',test:()=>data.wins>=1},
- {id:'bronze',name:'駆け出しファイター',icon:'🥉',rarity:'レア',color:'#79e6a1',desc:'トロフィー100',test:()=>data.trophies>=100},
- {id:'tenwins',name:'十戦錬磨',icon:'🔥',rarity:'レア',color:'#79e6a1',desc:'10勝する',test:()=>data.wins>=10},
- {id:'collector',name:'キャラコレクター',icon:'🧩',rarity:'スーパーレア',color:'#c4a1ff',desc:'10体のキャラを解放',test:()=>data.owned.length>=10},
- {id:'gold',name:'黄金の闘士',icon:'🏅',rarity:'スーパーレア',color:'#c4a1ff',desc:'トロフィー300',test:()=>data.trophies>=300},
- {id:'fiftywins',name:'歴戦の英雄',icon:'🛡️',rarity:'ウルトラレア',color:'#ffe17a',desc:'50勝する',test:()=>data.wins>=50},
- {id:'diamond',name:'ダイヤの覇者',icon:'💎',rarity:'ウルトラレア',color:'#ffe17a',desc:'トロフィー650',test:()=>data.trophies>=650},
- {id:'pumpkin',name:'ハロウィンの王',icon:'🎃',rarity:'レジェンド',color:'#ff9b4b',desc:'限定キャラ・パンプキンを購入',test:()=>data.pumpkinPurchased===true||data.owned.includes(20)},
- {id:'master',name:'アリーナの支配者',icon:'👑',rarity:'レジェンド',color:'#ff9b4b',desc:'トロフィー1100',test:()=>data.trophies>=1100},
- {id:'legend',name:'伝説の星',icon:'🌟',rarity:'ディバイン',color:'#ff79dd',desc:'トロフィー1800',test:()=>data.trophies>=1800},
- {id:'hundredwins',name:'百戦の伝説',icon:'🐉',rarity:'ディバイン',color:'#ff79dd',desc:'100勝する',test:()=>data.wins>=100},
- {id:'allheroes',name:'全キャラ制覇',icon:'🏆',rarity:'ディバイン',color:'#ff79dd',desc:'全21キャラを解放',test:()=>data.owned.length>=HEROES.length},
- {id:'stardust',name:'星屑の旅人',icon:'✨',rarity:'ウルトラレア',color:'#ffe17a',desc:'ウルトラレア以上のスタードロップから低確率',test:()=>false},
- {id:'celestial',name:'天界の使者',icon:'🪽',rarity:'レジェンド',color:'#ff9b4b',desc:'レジェンドスタードロップから低確率',test:()=>false},
- {id:'eternal',name:'永遠の星',icon:'🌌',rarity:'ディバイン',color:'#ff79dd',desc:'レジェンドスタードロップから超低確率',test:()=>false}
+ {id:'bronze',name:'銅の挑戦者',icon:'🥉',rarity:'ノーマル',color:'#b9d4ed',desc:'トロフィー100',test:()=>data.trophies>=100},
+ {id:'tenwins',name:'十勝の挑戦者',icon:'🔥',rarity:'ノーマル',color:'#b9d4ed',desc:'10勝する',test:()=>data.wins>=10},
+ {id:'collector',name:'仲間集めの旅人',icon:'🧩',rarity:'レア',color:'#79e6a1',desc:'10体のキャラを解放',test:()=>data.owned.length>=10},
+ {id:'gold',name:'黄金への一歩',icon:'🏅',rarity:'レア',color:'#79e6a1',desc:'トロフィー300',test:()=>data.trophies>=300},
+ {id:'fiftywins',name:'五十勝の戦士',icon:'🛡️',rarity:'レア',color:'#79e6a1',desc:'50勝する',test:()=>data.wins>=50},
+ {id:'diamond',name:'ダイヤへの到達者',icon:'💎',rarity:'スーパーレア',color:'#c4a1ff',desc:'トロフィー650',test:()=>data.trophies>=650},
+ {id:'pumpkin',name:'かぼちゃの友',icon:'🎃',rarity:'限定',color:'#9de9ff',desc:'限定キャラ・パンプキンを購入',test:()=>data.pumpkinPurchased===true||data.owned.includes(20)},
+ {id:'master',name:'白金の闘士',icon:'👑',rarity:'スーパーレア',color:'#c4a1ff',desc:'トロフィー1100',test:()=>data.trophies>=1100},
+ {id:'legend',name:'伝説ランクの挑戦者',icon:'🌟',rarity:'ウルトラレア',color:'#ffe17a',desc:'トロフィー1800',test:()=>data.trophies>=1800},
+ {id:'hundredwins',name:'百勝の戦士',icon:'🐉',rarity:'スーパーレア',color:'#c4a1ff',desc:'100勝する',test:()=>data.wins>=100},
+ {id:'allheroes',name:'全英雄の収集者',icon:'🏆',rarity:'ディバイン',color:'#ff79dd',desc:'全22キャラを解放',test:()=>HEROES.every((_,i)=>ownsHero(i))},
+ {id:'stardust',name:'星屑の旅人',icon:'✨',rarity:'スーパーレア',color:'#c4a1ff',desc:'ウルトラレア以上のスタードロップから低確率',test:()=>false},
+ {id:'celestial',name:'天界の使者',icon:'🪽',rarity:'ウルトラレア',color:'#ffe17a',desc:'レジェンドスタードロップから低確率',test:()=>false},
+ {id:'eternal',name:'永遠の星',icon:'🌌',rarity:'レジェンド',color:'#ff9b4b',desc:'レジェンドスタードロップから超低確率',test:()=>false},
+ {id:'rankextra0',name:'白金の挑戦者',icon:'🔷',rarity:'スーパーレア',color:'#c4a1ff',desc:'トロフィー1100＋累計60勝のミッション報酬',test:()=>false},
+ {id:'rankextra1',name:'伝説への到達者',icon:'🔥',rarity:'ウルトラレア',color:'#ffe17a',desc:'トロフィー1800＋累計150勝のミッション報酬',test:()=>false},
+ {id:'rankextra2',name:'真のマスター',icon:'👑',rarity:'レジェンド',color:'#ff9b4b',desc:'トロフィー3000到達ミッション報酬',test:()=>false},
+ {id:'rankextra3',name:'プロアリーナの覇者',icon:'⚡',rarity:'レジェンド',color:'#ff9b4b',desc:'トロフィー5000到達ミッション報酬',test:()=>false},
+ {id:'rankextra4',name:'神域の戦士',icon:'🌠',rarity:'ディバイン',color:'#ff79dd',desc:'トロフィー10000到達ミッション報酬',test:()=>false},
+ {id:'winlegend0',name:'二十五勝の戦士',icon:'⚔️',rarity:'レア',color:'#79e6a1',desc:'累計25勝＋50試合のミッション報酬',test:()=>false},
+ {id:'winlegend1',name:'七十五勝の猛者',icon:'⚔️',rarity:'スーパーレア',color:'#c4a1ff',desc:'累計75勝＋150試合のミッション報酬',test:()=>false},
+ {id:'winlegend2',name:'百五十勝の勇士',icon:'⚔️',rarity:'スーパーレア',color:'#c4a1ff',desc:'累計150勝＋300試合のミッション報酬',test:()=>false},
+ {id:'winlegend3',name:'二百五十勝の達人',icon:'⚔️',rarity:'ウルトラレア',color:'#ffe17a',desc:'累計250勝＋500試合のミッション報酬',test:()=>false},
+ {id:'winlegend4',name:'四百勝の闘士',icon:'⚔️',rarity:'ウルトラレア',color:'#ffe17a',desc:'累計400勝＋800試合のミッション報酬',test:()=>false},
+ {id:'winlegend5',name:'六百勝の英雄',icon:'⚔️',rarity:'レジェンド',color:'#ff9b4b',desc:'累計600勝＋1200試合のミッション報酬',test:()=>false},
+ {id:'winlegend6',name:'八百勝の王者',icon:'⚔️',rarity:'レジェンド',color:'#ff9b4b',desc:'累計800勝＋1600試合のミッション報酬',test:()=>false},
+ {id:'winlegend7',name:'千勝の神話',icon:'⚔️',rarity:'ディバイン',color:'#ff79dd',desc:'累計1000勝＋2000試合のミッション報酬',test:()=>false},
+ {id:'battlelegend0',name:'五十戦の旅人',icon:'🛡️',rarity:'ノーマル',color:'#b9d4ed',desc:'累計50試合＋20勝のミッション報酬',test:()=>false},
+ {id:'battlelegend1',name:'百戦の経験者',icon:'🛡️',rarity:'レア',color:'#79e6a1',desc:'累計100試合＋40勝のミッション報酬',test:()=>false},
+ {id:'battlelegend2',name:'二百五十戦の熟練者',icon:'🛡️',rarity:'スーパーレア',color:'#c4a1ff',desc:'累計250試合＋100勝のミッション報酬',test:()=>false},
+ {id:'battlelegend3',name:'五百戦の挑戦者',icon:'🛡️',rarity:'ウルトラレア',color:'#ffe17a',desc:'累計500試合＋200勝のミッション報酬',test:()=>false},
+ {id:'battlelegend4',name:'千戦の生き証人',icon:'🛡️',rarity:'レジェンド',color:'#ff9b4b',desc:'累計1000試合＋400勝のミッション報酬',test:()=>false},
+ {id:'collectlegend0',name:'五人の仲間',icon:'🧩',rarity:'ノーマル',color:'#b9d4ed',desc:'5キャラ所持＋20勝のミッション報酬',test:()=>false},
+ {id:'collectlegend1',name:'十二人の仲間',icon:'🧩',rarity:'レア',color:'#79e6a1',desc:'12キャラ所持＋80勝のミッション報酬',test:()=>false},
+ {id:'collectlegend2',name:'十六人の仲間',icon:'🧩',rarity:'スーパーレア',color:'#c4a1ff',desc:'16キャラ所持＋200勝のミッション報酬',test:()=>false},
+ {id:'collectlegend3',name:'二十人の英雄',icon:'🧩',rarity:'ウルトラレア',color:'#ffe17a',desc:'20キャラ所持＋400勝のミッション報酬',test:()=>false},
+ {id:'collectlegend4',name:'全英雄の絆',icon:'🧩',rarity:'ディバイン',color:'#ff79dd',desc:'全22キャラ所持＋累計500勝のミッション報酬',test:()=>false},
 ];
 const TITLE_RARITY_ORDER=['ノーマル','レア','スーパーレア','ウルトラレア','レジェンド','ディバイン','限定'];
 const sortedTitles=()=>TITLES.filter(t=>t.id!=='admin'||isAdmin()).sort((a,b)=>TITLE_RARITY_ORDER.indexOf(a.rarity)-TITLE_RARITY_ORDER.indexOf(b.rarity));
@@ -316,35 +339,79 @@ function unlockTitles(){
  if(!isAdmin()&&data.selectedTitle==='admin'){data.selectedTitle='rookie';changed=true}
  if(!isAdmin()&&data.selectedTitle2){data.selectedTitle2=null;changed=true}
  if(!data.unlockedTitles.rookie){data.unlockedTitles.rookie=true;changed=true}
- if(!titleById(data.selectedTitle)||!data.unlockedTitles[data.selectedTitle]){data.selectedTitle='rookie';changed=true}
+ if(!titleById(data.selectedTitle)||!data.unlockedTitles[data.selectedTitle]||(data.selectedTitle==='allheroes'&&!titleById('allheroes').test())){data.selectedTitle='rookie';changed=true}
  return changed;
 }
-function equippedTitle(){const t=titleById(data.selectedTitle);return t&&data.unlockedTitles?.[t.id]?t:titleById('rookie')}
+function equippedTitle(){const t=titleById(data.selectedTitle);return t&&data.unlockedTitles?.[t.id]&&(t.id!=='allheroes'||t.test())?t:titleById('rookie')}
 function secondTitle(){return isAdmin()&&data.selectedTitle2&&data.selectedTitle2!==data.selectedTitle&&data.unlockedTitles?.[data.selectedTitle2]?titleById(data.selectedTitle2):null}
 function equippedTitlesHTML(){return titleHTML(equippedTitle())+(secondTitle()?titleHTML(secondTitle()):'')}
 function titleHTML(t){return t?`<span style="display:inline-block;margin-left:5px;padding:3px 7px;border:1px solid ${t.color};border-radius:9px;color:${t.color};font-size:12px;font-weight:800;white-space:normal">${t.icon} ${escapeBoard(t.name)}</span>`:''}
-function titleCollectionHTML(){unlockTitles();const total=TITLES.filter(t=>data.unlockedTitles[t.id]&&(t.id!=='admin'||isAdmin())).length;return `<section class="panel"><h2>🏅 称号コレクション（${total}種類）</h2><p class="muted">${isAdmin()?'管理者は称号を2つまで装備できます。':'所持称号から1つ装備できます。'}</p><p>装備中：${equippedTitlesHTML()}</p><div class="grid">${sortedTitles().map(t=>{const own=!!data.unlockedTitles[t.id],sel=data.selectedTitle===t.id,sel2=isAdmin()&&data.selectedTitle2===t.id;return `<div class="card" style="border-color:${own?t.color:'#52617e'};opacity:${own?1:.68}"><div style="font-size:23px">${t.icon}</div><div style="font-weight:800;color:${own?t.color:'#aab4c7'}">${own?escapeBoard(t.name):'🔒 '+escapeBoard(t.name)}</div><p class="small">${t.rarity} ／ ${escapeBoard(t.desc)}</p>${own?(sel?'<button class="btn green" disabled>✓ 1枠目</button>':btn('1枠目に装備','equipTitle:'+t.id,'green'))+(isAdmin()?(sel2?btn('2枠目から外す','equipTitle2:none'):sel?'':btn('2枠目に装備','equipTitle2:'+t.id)):''):'<span class="small">未獲得</span>'}</div>`}).join('')}</div></section>`}
+function titleCollectionHTML(){unlockTitles();const total=TITLES.filter(t=>data.unlockedTitles[t.id]&&(t.id!=='admin'||isAdmin())&&(t.id!=='allheroes'||t.test())).length;return `<section class="panel"><h2>🏅 称号コレクション（${total}種類）</h2><p class="muted">${isAdmin()?'管理者は称号を2つまで装備できます。':'所持称号から1つ装備できます。'}</p><p>装備中：${equippedTitlesHTML()}</p><div class="grid">${sortedTitles().map(t=>{const own=!!data.unlockedTitles[t.id]&&(t.id!=='allheroes'||t.test()),sel=data.selectedTitle===t.id,sel2=isAdmin()&&data.selectedTitle2===t.id;return `<div class="card" style="border-color:${own?t.color:'#52617e'};opacity:${own?1:.68}"><div style="font-size:23px">${t.icon}</div><div style="font-weight:800;color:${own?t.color:'#aab4c7'}">${own?escapeBoard(t.name):'🔒 '+escapeBoard(t.name)}</div><p class="small">${t.rarity} ／ ${escapeBoard(t.desc)}</p>${own?(sel?'<button class="btn green" disabled>✓ 1枠目</button>':btn('1枠目に装備','equipTitle:'+t.id,'green'))+(isAdmin()?(sel2?btn('2枠目から外す','equipTitle2:none'):sel?'':btn('2枠目に装備','equipTitle2:'+t.id)):''):'<span class="small">未獲得</span>'}</div>`}).join('')}</div></section>`}
 // ミッションは受け取り式。既存の称号所持状態は維持し、報酬の二重受取を防ぐ。
 const MISSIONS=[
- {id:'firstwin',title:'初勝利',desc:'バトルで1勝する',test:()=>data.wins>=1,reward:{title:'firstwin',coins:100}},
- {id:'bronze',title:'シルバーへの道',desc:'トロフィー100到達',test:()=>data.trophies>=100,reward:{title:'bronze',drops:1}},
- {id:'tenwins',title:'十戦錬磨',desc:'10勝する',test:()=>data.wins>=10,reward:{title:'tenwins',coins:350}},
- {id:'collector',title:'仲間を集めよう',desc:'キャラ10体解放',test:()=>data.owned.length>=10,reward:{title:'collector',drops:2}},
- {id:'gold',title:'黄金の闘士',desc:'トロフィー300到達',test:()=>data.trophies>=300,reward:{title:'gold',coins:600}},
- {id:'fiftywins',title:'歴戦の英雄',desc:'50勝する',test:()=>data.wins>=50,reward:{title:'fiftywins',drops:4}},
- {id:'diamond',title:'ダイヤの覇者',desc:'トロフィー650到達',test:()=>data.trophies>=650,reward:{title:'diamond',coins:1200}},
- {id:'pumpkin',title:'ハロウィンの王',desc:'ショップでパンプキンを購入',test:()=>data.pumpkinPurchased===true||data.owned.includes(20),reward:{title:'pumpkin',drops:3}},
- {id:'master',title:'アリーナの支配者',desc:'トロフィー1100到達',test:()=>data.trophies>=1100,reward:{title:'master',coins:2000}},
- {id:'legend',title:'伝説の星',desc:'トロフィー1800到達',test:()=>data.trophies>=1800,reward:{title:'legend',drops:8}},
- {id:'hundredwins',title:'百戦の伝説',desc:'100勝する',test:()=>data.wins>=100,reward:{title:'hundredwins',coins:3000}},
- {id:'allheroes',title:'全キャラ制覇',desc:'全21キャラを解放（パンプキンはショップ限定）',test:()=>data.owned.length>=HEROES.length,reward:{title:'allheroes',drops:10}},
- {id:'matches5',title:'アリーナ入門',desc:'5試合プレイ',test:()=>data.matches>=5,reward:{coins:300}},
- {id:'matches20',title:'戦いの経験',desc:'20試合プレイ',test:()=>data.matches>=20,reward:{drops:3}},
- {id:'wins3',title:'新たな仲間',desc:'3勝する',test:()=>data.wins>=3,reward:{hero:true}},
- {id:'wins15',title:'特殊能力の発見',desc:'15勝する',test:()=>data.wins>=15,reward:{ability:'gadget'}},
- {id:'wins30',title:'星の力',desc:'30勝する',test:()=>data.wins>=30,reward:{ability:'star'}},
- {id:'trophies500',title:'宝の山',desc:'トロフィー500到達',test:()=>data.trophies>=500,reward:{coins:1000,drops:2}}
+ {id:'firstwin',title:'初勝利',desc:'バトルで1勝する',test:()=>data.wins>=1,reward:{title:'firstwin',coins:20}},
+ {id:'bronze',title:'シルバーへの道',desc:'トロフィー100到達',test:()=>data.trophies>=100,reward:{title:'bronze',coins:30}},
+ {id:'tenwins',title:'十戦錬磨',desc:'10勝する',test:()=>data.wins>=10,reward:{title:'tenwins',coins:100}},
+ {id:'collector',title:'仲間を集めよう',desc:'キャラ10体解放',test:()=>data.owned.length>=10,reward:{title:'collector',coins:180}},
+ {id:'gold',title:'黄金の闘士',desc:'トロフィー300到達',test:()=>data.trophies>=300,reward:{title:'gold',coins:200}},
+ {id:'fiftywins',title:'歴戦の英雄',desc:'50勝する',test:()=>data.wins>=50,reward:{title:'fiftywins',drops:1}},
+ {id:'diamond',title:'ダイヤの覇者',desc:'トロフィー650到達',test:()=>data.trophies>=650,reward:{title:'diamond',coins:400}},
+ {id:'pumpkin',title:'ハロウィンの王',desc:'ショップでパンプキンを購入',test:()=>data.pumpkinPurchased===true||data.owned.includes(20),reward:{title:'pumpkin',coins:150}},
+ {id:'master',title:'アリーナの支配者',desc:'トロフィー1100到達',test:()=>data.trophies>=1100,reward:{title:'master',coins:650}},
+ {id:'legend',title:'伝説の星',desc:'トロフィー1800到達',test:()=>data.trophies>=1800,reward:{title:'legend',drops:2}},
+ {id:'hundredwins',title:'百戦の伝説',desc:'100勝する',test:()=>data.wins>=100,reward:{title:'hundredwins',coins:850}},
+ {id:'allheroes',title:'全キャラ制覇',desc:'全22キャラを解放（限定キャラを含む）',test:()=>HEROES.every((_,i)=>ownsHero(i)),reward:{title:'allheroes',drops:5}},
+ {id:'matches5',title:'アリーナ入門',desc:'5試合プレイ',test:()=>data.matches>=5,reward:{coins:25}},
+ {id:'matches20',title:'戦いの経験',desc:'20試合プレイ',test:()=>data.matches>=20,reward:{coins:100}},
+ {id:'wins3',title:'新たな仲間',desc:'3勝する',test:()=>data.wins>=3,reward:{coins:45}},
+ {id:'wins15',title:'特殊能力の発見',desc:'15勝する',test:()=>data.wins>=15,reward:{coins:140}},
+ {id:'wins30',title:'星の力',desc:'30勝する',test:()=>data.wins>=30,reward:{coins:240}},
+ {id:'trophies500',title:'宝の山',desc:'トロフィー500到達',test:()=>data.trophies>=500,reward:{coins:350,drops:1}}
 ];
+// Ver.118: 既存18件に82件追加し、合計100件。IDはセーブ互換のため固定。
+const EXTRA_MISSION_GROUPS=[
+ {key:'battle',label:'実戦経験',values:[10,25,30,40,50,75,100,125,150,175,200,250,300,350,400,500,600,750,800,1000,1250,1500,1750,2000,2500],get:()=>data.matches},
+ {key:'victory',label:'勝利への道',values:[10,20,25,35,40,60,75,90,125,150,175,200,250,300,400,500,600,750,800,1000,1250,1500,1750,2000,2500],get:()=>data.wins},
+ {key:'trophy',label:'トロフィーへの挑戦',values:[300,400,750,900,1000,1100,1250,1500,1800,2000,2500,3000,3500,4000,5000,6500,8000,10000,12500,15000,17500,20000,25000,30000,40000],get:()=>data.trophies},
+ {key:'heroes',label:'仲間を集めよう',values:[5,9,12,14,16,20,22],get:()=>new Set(data.owned).size}
+];
+const EXTRA_TITLE_AT={
+ 'trophy_1100':'rankextra0','trophy_1800':'rankextra1','trophy_3000':'rankextra2','trophy_5000':'rankextra3','trophy_10000':'rankextra4',
+ ...Object.fromEntries([25,75,150,250,400,600,750,1000].map((n,i)=>['victory_'+n,'winlegend'+i])),
+ ...Object.fromEntries([50,100,250,500,1000].map((n,i)=>['battle_'+n,'battlelegend'+i])),
+ ...Object.fromEntries([5,12,16,20,22].map((n,i)=>['heroes_'+n,'collectlegend'+i]))
+};
+const SPECIAL_TITLE_REQUIREMENTS={
+ 'trophy_1100':{desc:'トロフィー1100＋累計60勝',test:()=>data.trophies>=1100&&data.wins>=60},
+ 'trophy_1800':{desc:'トロフィー1800＋累計150勝',test:()=>data.trophies>=1800&&data.wins>=150},
+ 'victory_25':{desc:'累計25勝＋50試合',test:()=>data.wins>=25&&data.matches>=50},
+ 'victory_75':{desc:'累計75勝＋150試合',test:()=>data.wins>=75&&data.matches>=150},
+ 'victory_150':{desc:'累計150勝＋300試合',test:()=>data.wins>=150&&data.matches>=300},
+ 'victory_250':{desc:'累計250勝＋500試合',test:()=>data.wins>=250&&data.matches>=500},
+ 'victory_400':{desc:'累計400勝＋800試合',test:()=>data.wins>=400&&data.matches>=800},
+ 'victory_600':{desc:'累計600勝＋1200試合',test:()=>data.wins>=600&&data.matches>=1200},
+ 'victory_800':{desc:'累計800勝＋1600試合',test:()=>data.wins>=800&&data.matches>=1600},
+ 'victory_1000':{desc:'累計1000勝＋2000試合',test:()=>data.wins>=1000&&data.matches>=2000},
+ 'battle_50':{desc:'累計50試合＋20勝',test:()=>data.matches>=50&&data.wins>=20},
+ 'battle_100':{desc:'累計100試合＋40勝',test:()=>data.matches>=100&&data.wins>=40},
+ 'battle_250':{desc:'累計250試合＋100勝',test:()=>data.matches>=250&&data.wins>=100},
+ 'battle_500':{desc:'累計500試合＋200勝',test:()=>data.matches>=500&&data.wins>=200},
+ 'battle_1000':{desc:'累計1000試合＋400勝',test:()=>data.matches>=1000&&data.wins>=400},
+ 'heroes_5':{desc:'5キャラ所持＋20勝',test:()=>new Set(data.owned).size>=5&&data.wins>=20},
+ 'heroes_12':{desc:'12キャラ所持＋80勝',test:()=>new Set(data.owned).size>=12&&data.wins>=80},
+ 'heroes_16':{desc:'16キャラ所持＋200勝',test:()=>new Set(data.owned).size>=16&&data.wins>=200},
+ 'heroes_20':{desc:'20キャラ所持＋400勝',test:()=>new Set(data.owned).size>=20&&data.wins>=400},
+ 'heroes_22':{desc:'全22キャラ所持＋累計500勝',test:()=>HEROES.every((_,i)=>ownsHero(i))&&data.wins>=500}
+};
+for(const group of EXTRA_MISSION_GROUPS){
+ for(const goal of group.values){
+  const id=group.key+'_'+goal;
+  const difficulty=group.key==='heroes'?goal/22:group.key==='trophy'?goal/10000:goal/1000;
+  const reward=difficulty<.05?{coins:20}:difficulty<.12?{coins:45}:difficulty<.25?{coins:90}:difficulty<.5?{coins:180}:difficulty<1?{coins:350}:difficulty<2?{coins:650,drops:1}:{coins:1100,drops:2};
+  if(EXTRA_TITLE_AT[id])reward.title=EXTRA_TITLE_AT[id];
+  MISSIONS.push({id,title:group.label+' '+goal,desc:SPECIAL_TITLE_REQUIREMENTS[id]?.desc||(group.key==='trophy'?`トロフィー${goal}以上に到達`:group.key==='heroes'?`キャラクターを${goal}体所持`:group.key==='victory'?`累計${goal}勝する`:`累計${goal}試合プレイ`),test:()=>SPECIAL_TITLE_REQUIREMENTS[id]?SPECIAL_TITLE_REQUIREMENTS[id].test():group.get()>=goal,reward});
+ }
+}
 function missionClaims(){if(!data.claimedMissions||typeof data.claimedMissions!=='object'||Array.isArray(data.claimedMissions))data.claimedMissions={};return data.claimedMissions}
 function missionRewardText(r){const v=[];if(r.title){const t=titleById(r.title);v.push('🏅 '+t.name)}if(r.coins)v.push('🪙 '+r.coins+'コイン');if(r.drops)v.push('🌟 '+r.drops+'個');if(r.hero)v.push('🎁 ランダム未解放キャラ（パンプキン除外）');if(r.ability)v.push(r.ability==='gadget'?'🟢 ランダムガジェット':'⭐ ランダムスターパワー');return v.join(' ＋ ')}
 function claimMission(id){
@@ -360,7 +427,8 @@ function claimMission(id){
  if(r.drops){data.drops+=r.drops;message.push('🌟 '+r.drops+'個')}
  missionClaims()[id]=true;save();render();alert('🎉 ミッション達成報酬を受け取りました！\n'+message.join(' / '));
 }
-function missionsHTML(){const claims=missionClaims(),done=MISSIONS.filter(m=>claims[m.id]).length;return `<section class="panel"><h2>📜 ミッション（${done}/${MISSIONS.length}）</h2><p class="muted">条件を達成したら「受け取る」を押して報酬を獲得！称号・コイン・スタードロップ・キャラ・特殊能力などが手に入ります。称号はランク画面から装備できます。</p><div class="grid">${MISSIONS.map(m=>{const claimed=!!claims[m.id],ready=m.test();return `<div class="card" style="text-align:left;border-color:${claimed?'#507d65':ready?'#d7b75b':'#52617e'}"><b>${claimed?'✅ ':ready?'🎉 ':'📜 '}${m.title}</b><p class="small">${m.desc}</p><p class="small">報酬：${missionRewardText(m.reward)}</p>${claimed?'<button class="btn" disabled>✓ 受け取り済み</button>':ready?btn('🎁 報酬を受け取る','claimMission:'+m.id,'green'):'<button class="btn" disabled>🔒 未達成</button>'}</div>`}).join('')}</div></section>`}
+let missionViewFilter='all';
+function missionsHTML(){const claims=missionClaims(),done=MISSIONS.filter(m=>claims[m.id]).length;const visible=MISSIONS.filter(m=>missionViewFilter==='all'||(missionViewFilter==='ready'&&!claims[m.id]&&m.test())||(missionViewFilter==='pending'&&!claims[m.id])||(missionViewFilter==='claimed'&&claims[m.id]));return `<section class="panel"><h2>📜 ミッション（${done}/${MISSIONS.length}）</h2><p class="muted">条件を達成したら「受け取る」を押して報酬を獲得！称号・コイン・スタードロップ・キャラ・特殊能力などが手に入ります。称号はランク画面から装備できます。</p><div class="row" style="flex-wrap:wrap;gap:6px;margin:10px 0">${[['all','すべて'],['ready','受取可能'],['pending','未受取'],['claimed','受取済']].map(([id,label])=>`<button class="btn ${missionViewFilter===id?'orange':''}" data-act="missionFilter:${id}">${label}</button>`).join('')}</div><div class="grid">${visible.map(m=>{const claimed=!!claims[m.id],ready=m.test();return `<div class="card" style="text-align:left;border-color:${claimed?'#507d65':ready?'#d7b75b':'#52617e'}"><b>${claimed?'✅ ':ready?'🎉 ':'📜 '}${m.title}</b><p class="small">${m.desc}</p><p class="small">報酬：${missionRewardText(m.reward)}</p>${claimed?'<button class="btn" disabled>✓ 受け取り済み</button>':ready?btn('🎁 報酬を受け取る','claimMission:'+m.id,'green'):'<button class="btn" disabled>🔒 未達成</button>'}</div>`}).join('')}</div></section>`}
 // オンライン順位：セーブデータとは別の公開プロフィールのみ共有する。
 let leaderboardEntries=[],leaderboardState='読み込み前',leaderboardLoading=false,leaderboardRequest=0,leaderboardPublished=null;
 const escapeBoard=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -397,7 +465,7 @@ async function loadLeaderboard(){
 }
 function leaderboardHTML(){
  const me=leaderboardEntries.findIndex(x=>x.uid===cloudUid);
- const rows=leaderboardEntries.slice(0,100).map((x,i)=>`<div class="card" style="display:flex;align-items:center;gap:10px;margin:7px 0;padding:10px;${x.uid===cloudUid?'border:2px solid #facc15;':''}"><b style="min-width:45px">${i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)+'位'}</b><span style="flex:1;overflow-wrap:anywhere">${escapeBoard(x.username)}${x.uid===cloudUid?'（あなた）':''}${titleHTML(titleById(x.title))}${x.uid===ADMIN_UID&&x.title2!==x.title?titleHTML(titleById(x.title2)):''}</span><b>🏆 ${x.trophies}</b></div>`).join('');
+ const rows=leaderboardEntries.slice(0,100).map((x,i)=>`<div class="card" style="display:flex;align-items:center;gap:10px;margin:7px 0;padding:10px;${x.uid===cloudUid?'border:2px solid #facc15;':''}"><b style="min-width:45px">${i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)+'位'}</b><span style="flex:1;overflow-wrap:anywhere"><strong style="color:${trophyRank(x.trophies).color};text-shadow:0 0 8px ${trophyRank(x.trophies).color}44">${escapeBoard(x.username)}</strong> <span class="small" style="color:${trophyRank(x.trophies).color}">【${trophyRank(x.trophies).name}】</span>${x.uid===cloudUid?'（あなた）':''}${titleHTML(titleById(x.title))}${x.uid===ADMIN_UID&&x.title2!==x.title?titleHTML(titleById(x.title2)):''}</span><b>🏆 ${x.trophies}</b></div>`).join('');
  return `<section class="panel"><h2>🌐 オンライントロフィーランキング</h2><p class="muted">ログイン中のプレイヤーをトロフィー数順に表示（上位100人）。</p><p>自分の順位：<strong>${me>=0?(me+1)+'位':'未登録'}</strong> ／ 自分のトロフィー：🏆 ${data.trophies}</p>${btn(leaderboardLoading?'⏳ 読み込み中…':'🔄 ランキング更新','refreshLeaderboard')}<p class="small">${escapeBoard(leaderboardState)}</p>${rows||'<p class="muted">ランキングのデータはまだありません。</p>'}<p class="small">※ユーザー名とトロフィー数がほかのプレイヤーに公開されます。ランキングの表示にはFirebaseの専用ルール設定が必要です。</p></section>`;
 }
 
@@ -411,13 +479,13 @@ async function boardCall(method,path,payload){const token=await getCloudToken();
 function feedbackListHTML(){
  const rows=feedbackPosts.slice(0,100).map(p=>{
   const mine=p.uid===cloudUid,likes=p.likes||{},liked=!!likes[cloudUid],replies=p.replies||[];
-  const replyRows=replies.map(r=>`<div class="card" style="margin:6px 0 6px 16px;padding:9px;background:#111c37"><div class="small"><b>↳ ${escapeBoard(r.username)}</b> ・ ${new Date(r.createdAt).toLocaleString('ja-JP')}${r.uid===cloudUid?` <button type="button" class="btn" style="padding:4px 7px" data-act="deleteReply" data-owner="${escapeBoard(p.uid)}" data-post="${escapeBoard(p.id)}" data-replyuid="${escapeBoard(r.uid)}" data-replyid="${escapeBoard(r.id)}">削除</button>`:''}</div><p style="white-space:pre-wrap;overflow-wrap:anywhere">${escapeBoard(r.message)}</p></div>`).join('');
-  return `<div class="card" style="margin:10px 0;text-align:left;overflow-wrap:anywhere"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><b>👤 ${escapeBoard(p.username)}</b><span class="small">${new Date(p.createdAt).toLocaleString('ja-JP')}</span></div><p class="small">${feedbackKinds[p.category]}</p><p style="white-space:pre-wrap">${escapeBoard(p.message)}</p><div style="display:flex;gap:7px;flex-wrap:wrap;align-items:center"><button type="button" class="btn" data-act="likeFeedback" data-owner="${escapeBoard(p.uid)}" data-post="${escapeBoard(p.id)}">${liked?'❤️ いいね済み':'🤍 いいね'} ${Object.keys(likes).length}</button>${mine?`<button type="button" class="btn red" data-act="deleteFeedback" data-owner="${escapeBoard(p.uid)}" data-post="${escapeBoard(p.id)}">🗑️ 投稿を削除</button>`:''}</div><div style="margin-top:10px"><b>💬 返信（${replies.length}件）</b>${replyRows}<div style="display:flex;gap:6px;flex-wrap:wrap"><input class="feedback-input" style="flex:1;min-width:150px;margin:5px 0" maxlength="300" placeholder="返信を入力（1〜300文字）" id="reply-${p.uid}-${p.id}"><button type="button" class="btn" data-act="replyFeedback" data-owner="${escapeBoard(p.uid)}" data-post="${escapeBoard(p.id)}">返信する</button></div></div></div>`;
+  const replyRows=replies.map(r=>`<div class="card" style="margin:6px 0 6px 16px;padding:9px;background:#111c37"><div class="small"><b>↳ ${escapeBoard(r.username)}</b> ・ ${new Date(r.createdAt).toLocaleString('ja-JP')}${(r.uid===cloudUid||isAdmin())?` <button type="button" class="btn" style="padding:4px 7px" data-act="deleteReply" data-owner="${escapeBoard(p.uid)}" data-post="${escapeBoard(p.id)}" data-replyuid="${escapeBoard(r.uid)}" data-replyid="${escapeBoard(r.id)}">削除</button>`:''}</div><p style="white-space:pre-wrap;overflow-wrap:anywhere">${escapeBoard(r.message)}</p></div>`).join('');
+  return `<div class="card" style="margin:10px 0;text-align:left;overflow-wrap:anywhere"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><b>👤 ${escapeBoard(p.username)}</b><span class="small">${new Date(p.createdAt).toLocaleString('ja-JP')}</span></div><p class="small">${feedbackKinds[p.category]}</p><p style="white-space:pre-wrap">${escapeBoard(p.message)}</p><div style="display:flex;gap:7px;flex-wrap:wrap;align-items:center"><button type="button" class="btn" data-act="likeFeedback" data-owner="${escapeBoard(p.uid)}" data-post="${escapeBoard(p.id)}">${liked?'❤️ いいね済み':'🤍 いいね'} ${Object.keys(likes).length}</button>${mine||isAdmin()?`<button type="button" class="btn red" data-act="deleteFeedback" data-owner="${escapeBoard(p.uid)}" data-post="${escapeBoard(p.id)}">🗑️ 投稿を削除</button>`:''}</div><div style="margin-top:10px"><b>💬 返信（${replies.length}件）</b>${replyRows}<div style="display:flex;gap:6px;flex-wrap:wrap"><input class="feedback-input" style="flex:1;min-width:150px;margin:5px 0" maxlength="300" placeholder="返信を入力（1〜300文字）" id="reply-${p.uid}-${p.id}"><button type="button" class="btn" data-act="replyFeedback" data-owner="${escapeBoard(p.uid)}" data-post="${escapeBoard(p.id)}">返信する</button></div></div></div>`;
  }).join('');
  return `<h3>📢 みんなの投稿（新着順・最大100件）</h3><p class="small">${escapeBoard(feedbackLoading?'読み込み中…':feedbackStatus)}</p>${rows||(!feedbackLoading?'<p class="muted">まだ投稿がありません。</p>':'')}`;
 }
 function feedbackHTML(){
- return `<section class="panel"><h2>💬 みんなのフィードバック掲示板</h2><p class="muted">要望・改善案・不具合報告を共有し、返信やいいねができます。</p><label for="feedbackCategory">種類</label><select class="feedback-input" id="feedbackCategory"><option value="request">✨ 新機能・要望</option><option value="balance">⚖️ バランス調整</option><option value="bug">🛠️ 不具合報告</option><option value="other">💬 その他</option></select><label for="feedbackText">内容（10〜500文字）</label><textarea class="feedback-input" id="feedbackText" rows="5" minlength="10" maxlength="500" placeholder="例：〇〇の攻撃力を少し上げてほしいです。理由は…" style="resize:vertical"></textarea><p class="feedback-hint">投稿と返信は全プレイヤーに公開されます。個人情報やパスワードを書かず、相手を傷つける投稿は避けてください。自分の投稿・返信は削除できます。</p><button type="button" class="btn green" data-act="sendFeedback" id="sendFeedbackButton" ${feedbackSending?'disabled':''}>${feedbackSending?'⏳ 投稿中…':'📨 掲示板に投稿'}</button><p class="feedback-status" id="feedbackStatus" role="status"></p></section><section class="panel"><button class="btn" type="button" data-act="refreshFeedback">🔄 投稿を更新</button><div id="feedbackList">${feedbackListHTML()}</div></section>`;
+ return `<section class="panel"><h2>💬 みんなのフィードバック掲示板</h2><p class="muted">要望・改善案・不具合報告を共有し、返信やいいねができます。</p><label for="feedbackCategory">種類</label><select class="feedback-input" id="feedbackCategory"><option value="request">✨ 新機能・要望</option><option value="balance">⚖️ バランス調整</option><option value="bug">🛠️ 不具合報告</option><option value="other">💬 その他</option></select><label for="feedbackText">内容（10〜500文字）</label><textarea class="feedback-input" id="feedbackText" rows="5" minlength="10" maxlength="500" placeholder="例：〇〇の攻撃力を少し上げてほしいです。理由は…" style="resize:vertical"></textarea><p class="feedback-hint">投稿と返信は全プレイヤーに公開されます。個人情報やパスワードを書かず、相手を傷つける投稿は避けてください。自分の投稿・返信は削除できます。管理者shutoは全投稿・返信を削除できます。</p><button type="button" class="btn green" data-act="sendFeedback" id="sendFeedbackButton" ${feedbackSending?'disabled':''}>${feedbackSending?'⏳ 投稿中…':'📨 掲示板に投稿'}</button><p class="feedback-status" id="feedbackStatus" role="status"></p></section><section class="panel"><button class="btn" type="button" data-act="refreshFeedback">🔄 投稿を更新</button><div id="feedbackList">${feedbackListHTML()}</div></section>`;
 }
 async function loadFeedback(){
  if(!cloudReady||!cloudUid)return;
@@ -479,12 +547,12 @@ async function feedbackAction(action,button){
   method='PUT';path=boardPath('feedbackReplies',owner,id)+'/'+encodeURIComponent(cloudUid)+'/'+newBoardId();
   payload={username:cloudUserName,message,createdAt:Date.now()};
  }else if(action==='deleteFeedback'){
-  if(owner!==cloudUid)return;
+  if(owner!==cloudUid&&!isAdmin())return;
   if(button.dataset.confirmDelete!=='yes'){button.dataset.confirmDelete='yes';button.textContent='⚠️ もう一度押すと投稿を削除';button.title='もう一度押すと削除します';return;}
   method='DELETE';path=boardPath('feedback',owner,id);
  }else if(action==='deleteReply'){
   const replyUid=button.dataset.replyuid,replyId=button.dataset.replyid;
-  if(replyUid!==cloudUid)return;
+  if(replyUid!==cloudUid&&!isAdmin())return;
   if(button.dataset.confirmDelete!=='yes'){button.dataset.confirmDelete='yes';button.textContent='⚠️ もう一度押すと返信を削除';button.title='もう一度押すと削除します';return;}
   method='DELETE';path=boardPath('feedbackReplies',owner,id)+'/'+encodeURIComponent(replyUid)+'/'+encodeURIComponent(replyId);
  }else return;
@@ -600,7 +668,19 @@ cloudStatus('☁️ ログイン待ち');cloudMessage('ユーザー名とパス�
 $('exportSave').onclick=()=>{save();const blob=new Blob([JSON.stringify({format:'star-arena-save',version:1,data},null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='star_arena_save_'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000)};
 $('importSave').onclick=()=>$('saveFile').click();
 $('saveFile').onchange=async(e)=>{const file=e.target.files?.[0];if(!file)return;try{const payload=JSON.parse(await file.text());const restored=payload?.format==='star-arena-save'?payload.data:payload;if(!validateSave(restored))throw Error('STAR ARENAのセーブデータではありません');if(!confirm('現在のセーブデータを読み込んだデータで上書きしますか？'))return;if(!cloudReady)throw Error('先にログインしてください');data=normalizeSave(restored);save();await flushCloud();render();refresh();alert('セーブデータを読み込みました。クラウドの保存状態も確認してください。')}catch(err){alert('読み込みに失敗しました: '+err.message)}finally{e.target.value=''}};
-const level=i=>Math.max(1,Number(data.levels[i])||1);const rank=()=>data.trophies<100?'ブロンズ':data.trophies<300?'シルバー':data.trophies<650?'ゴールド':data.trophies<1100?'ダイヤ':data.trophies<1800?'マスター':'レジェンド';const refresh=()=>{$('coins').textContent='🪙 '+data.coins;$('trophies').textContent='🏆 '+data.trophies};const btn=(label,fn,klass='')=>`<button class="btn ${klass}" data-act="${fn}">${label}</button>`;const h=i=>HEROES[i];const HERO_ART_SHAPES=['flame','crystal','bolt','leaf','shuriken','crescent','shield','star','wave','rock','claw','comet','prism','mist','phoenix','gear','fang','orb','tower','galaxy','pumpkin'];
+const TROPHY_RANKS=[
+ {min:0,name:'ブロンズ',color:'#c58a62'},
+ {min:100,name:'シルバー',color:'#cbd5e1'},
+ {min:300,name:'ゴールド',color:'#ffd44d'},
+ {min:650,name:'ダイヤ',color:'#55d9ff'},
+ {min:1100,name:'プラチナ',color:'#a8f3e4'},
+ {min:1800,name:'レジェンド',color:'#ff9c45'},
+ {min:3000,name:'マスター',color:'#e08bff'},
+ {min:5000,name:'プロ',color:'#ff628f'},
+ {min:10000,name:'ディバイン',color:'#ffdc69'}
+];
+const trophyRank=t=>{const n=Math.max(0,Number(t)||0);return [...TROPHY_RANKS].reverse().find(r=>n>=r.min)||TROPHY_RANKS[0]};
+const level=i=>Math.max(1,Number(data.levels[i])||1);const rank=()=>trophyRank(data.trophies).name;const refresh=()=>{$('coins').textContent='🪙 '+data.coins;$('trophies').textContent='🏆 '+data.trophies};const btn=(label,fn,klass='')=>`<button class="btn ${klass}" data-act="${fn}">${label}</button>`;const h=i=>HEROES[i];const HERO_ART_SHAPES=['flame','crystal','bolt','leaf','shuriken','crescent','shield','star','wave','rock','claw','comet','prism','mist','phoenix','gear','fang','orb','tower','galaxy','pumpkin'];
 function heroArtSVG(i,size=62){
  const c=HEROES[i],k=i%21,shape=i===21?'snowbell':HERO_ART_SHAPES[k];
  const motifs={
@@ -786,7 +866,7 @@ function xmasEventHTML(){const n=xmasCount(),joined=Number(xmasParticipant().bos
 }
 
 function render(){refresh();document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x.dataset.tab===tab));let v=$('view');if(tab==='home'){v.innerHTML=`<section class="panel hero"><div class="portrait">${heroArtSVG(data.selected,104)}</div><div><div class="big">${h(data.selected).name} ${rarityTag(data.selected)} <span class="badge">Lv.${level(data.selected)}</span></div><p class="muted">勝利 ${data.wins}回 ／ 対戦 ${data.matches}回 ／ 最高スコア ${data.best}</p>${btn('▶ バトルへ','tab:battle','orange')} ${btn('キャラクター変更','tab:heroes')}<p>🌟 スタードロップ：${data.drops}個（スーパーレア以上はキャラや特殊能力も出現！ ウルトラレア以上からは限定称号も超低確率で出現）</p>${btn('🌟 スタードロップを開封','openDrop','orange')}<p class="small">🟢 ガジェット Lv.7で購入（1000コイン） ／ ⭐ スターパワー Lv.9で購入（2000コイン）。ドロップでも入手可能！</p></div></section><section class="panel"><h3>🎟️ アイテムコード</h3><p class="muted">特別なコードを入力するとアイテムを受け取れます。各コードは1アカウントにつき1回だけ使用可能です。</p><div style="display:flex;gap:8px;flex-wrap:wrap"><input id="itemCodeInput" type="text" maxlength="32" autocomplete="off" spellcheck="false" placeholder="アイテムコードを入力" style="flex:1;min-width:140px;padding:12px;border-radius:10px;border:1px solid #64748b;background:#101c36;color:white"><button type="button" class="btn" data-act="redeemCode" id="redeemCodeButton">🎁 受け取る</button></div><p class="small" id="redeemCodeMessage">※ログイン中のアカウントに付与します。</p></section>${isAdmin()&&adminPanelOpen?adminPanelHTML():''}<section class="panel"><h3>⌨️ パソコンの操作方法</h3><p><strong>移動：</strong>矢印キー（↑ ↓ ← →）または W・S（上下）</p><p><strong>Dキー：</strong>自動照準で通常攻撃（長押しで連射）</p><p><strong>Aキー：</strong>自動照準で必殺技</p><p><strong>マウス：</strong>照準を合わせてクリックで攻撃</p><p><strong>スペースキー：</strong>必殺技</p><p><strong>Fキー：</strong>ガジェットを使用（1試合3回）</p><p class="small">自動照準では近くの敵やパワーキューブの箱を狙います。</p></section><section class="panel"><h3>🎮 遊び方</h3><p>ボス・3vs3ノックアウト勝利でトロフィー+30とスタードロップ1個、敗北で-15。バトルロイヤルは順位ごとに報酬が変わります。ホーム画面で開封するとコインを獲得できます。スーパーレア以上からは低確率で未解放キャラクターやガジェット・スターパワー、ウルトラレア以上からは限定称号も登場します。敗北時はスタードロップを獲得できません。 キャラごとに弾数とリロード時間が異なり、弾は1発ずつ自動装填されます。草むらから攻撃すると1.2秒間、攻撃を受けると1秒間姿が見えます。 攻撃を当てると必殺技ゲージがたまります。最後にダメージを受けるか、自分が攻撃してから5秒経つと、最大HPの約16%を毎秒自動回復します。攻撃すると自動回復は中断されます。</p><p class="small">※このゲームはオリジナル作品です。通常バトルはCPU対戦です。オンラインデュエル試験版は専用アリーナで対人対戦できます。</p></section>`}
-else if(tab==='battle'){const modeCards=[['boss','👹 ボスバトル','味方AI2人と協力して180秒以内にボスを討伐。仲間が生存していれば20秒後に復活できます。'],['royale','👑 バトルロイヤル','10人で生き残りを競います。箱からパワーキューブを集め、縮小する毒ガスを避けて戦おう。'],['team','🔵 3vs3ノックアウト','味方AI2人と敵チーム3人で対戦。ラウンド中は復活なし。先に2ラウンド勝利したチームの勝ち。'],['duel','⚔️ デュエル（1vs1）','自分と敵AIの一騎打ち。3ラウンド制で先に2勝した側の勝ち。']];const info=modeCards.find(x=>x[0]===mode)||modeCards[0];v.innerHTML=`<section class="panel"><h2>⚔️ バトルモードを選択</h2><p class="muted">遊びたいモードを押すと、ルールや設定が表示されます。</p><div class="grid">${modeCards.map(m=>`<button type="button" class="hero-tile ${mode===m[0]?'current':''}" data-act="chooseMode:${m[0]}" style="min-height:100px;cursor:pointer"><span class="avatar">${m[1].split(' ')[0]}</span><b>${m[1]}</b><span class="small">${mode===m[0]?'✓ 選択中':'詳細を見る'}</span></button>`).join('')}</div><div class="panel" style="margin-top:15px;border:2px solid #7ea8ff"><h2>${info[1]}</h2><p>${info[2]}</p><p class="small">${mode==='royale'?'順位に応じてトロフィーとスタードロップを獲得。1〜4位は報酬あり。':'勝利：🏆 +30・🌟 1個 ／ 敗北：🏆 −15・ドロップなし'}</p>${mode==='boss'?`<h3>👹 戦うボスを選択</h3><div class="grid">${BOSS_TYPES.filter(b=>b.id!=='xmas').map(b=>`<button type="button" class="hero-tile ${bossType===b.id?'current':''}" data-act="chooseBoss:${b.id}" style="cursor:pointer"><span class="avatar" style="display:inline-flex;align-items:center;justify-content:center;width:112px;height:112px;background:#0e1d36;border-radius:14px"><img src="${bossPortrait(b.id)}" alt="${b.name}のバトル中の姿" style="width:108px;height:108px;object-fit:contain"></span><b>${b.name}</b><span class="small">${bossType===b.id?'✓ 選択中':'このボスと戦う'}</span></button>`).join('')}</div><p>${selectedBoss().description}</p><p class="small">HP倍率：${selectedBoss().hp}倍 ／ 攻撃力倍率：${selectedBoss().damage}倍 ／ 攻撃頻度：${selectedBoss().cooldown<1?'高い':'標準'}</p><h3>🎚️ 難易度を選択</h3><select id="bossDifficultySelect" style="width:100%;padding:12px;background:#101c36;color:white;border:1px solid #a78bfa;border-radius:9px">${BOSS_DIFFICULTIES.map((d,i)=>`<option value="${i}" ${bossDifficulty===i?'selected':''}>${i+1}. ${d.name}</option>`).join('')}</select><p class="small">通常ボス勝利時のトロフィー：ビギナー+15／ノーマル+25／ハード+35／エキスパート+50／ナイトメア+80。<br>ボスのHP・攻撃力・攻撃間隔・怒りになる時間が難易度で大きく変化します。プレイヤーのレベルは変更されません。</p>`:''}${btn('▶ '+info[1]+'を開始','start','orange')}</div></section>`}
+else if(tab==='battle'){const modeCards=[['boss','👹 ボスバトル','味方AI2人と協力して180秒以内にボスを討伐。仲間が生存していれば20秒後に復活できます。'],['royale','👑 バトルロイヤル','10人で生き残りを競います。箱からパワーキューブを集め、縮小する毒ガスを避けて戦おう。'],['team','🔵 3vs3ノックアウト','味方AI2人と敵チーム3人で対戦。ラウンド中は復活なし。先に2ラウンド勝利したチームの勝ち。'],['duel','⚔️ デュエル（1vs1）','自分と敵AIの一騎打ち。3ラウンド制で先に2勝した側の勝ち。'],['serious','🔥 ガチバトル','1000トロフィー以上限定。4つの通常モードからランダム抽選！ AIレベル最大40、通常ボスのHPと攻撃力は2倍、トロフィー増減も2倍。']];const info=modeCards.find(x=>x[0]===mode)||modeCards[0];v.innerHTML=`<section class="panel"><h2>⚔️ バトルモードを選択</h2><p class="muted">遊びたいモードを押すと、ルールや設定が表示されます。</p><div class="grid">${modeCards.map(m=>`<button type="button" class="hero-tile ${mode===m[0]?'current':''}" data-act="chooseMode:${m[0]}" style="min-height:100px;cursor:pointer"><span class="avatar">${m[1].split(' ')[0]}</span><b>${m[1]}</b><span class="small">${mode===m[0]?'✓ 選択中':m[0]==='serious'&&data.trophies<1000?'🔒 あと'+(1000-data.trophies)+'🏆':'詳細を見る'}</span></button>`).join('')}</div><div class="panel" style="margin-top:15px;border:2px solid #7ea8ff"><h2>${info[1]}</h2><p>${info[2]}</p><p class="small">${mode==='royale'?'順位に応じてトロフィーとスタードロップを獲得。1〜4位は報酬あり。':'勝利：🏆 +30・🌟 1個 ／ 敗北：🏆 −15・ドロップなし'}</p>${mode==='serious'?`<p class="small">現在のトロフィー：🏆 ${data.trophies} ／ ${data.trophies>=1000?'解放済み':'あと'+(1000-data.trophies)+'で解放'}</p><p class="small">抽選対象：バトルロイヤル／通常ボスバトル／3vs3ノックアウト／デュエル。ボス戦では通常ボス2体と難易度をランダム抽選します。</p>`:''}${mode==='boss'?`<h3>👹 戦うボスを選択</h3><div class="grid">${BOSS_TYPES.filter(b=>b.id!=='xmas').map(b=>`<button type="button" class="hero-tile ${bossType===b.id?'current':''}" data-act="chooseBoss:${b.id}" style="cursor:pointer"><span class="avatar" style="display:inline-flex;align-items:center;justify-content:center;width:112px;height:112px;background:#0e1d36;border-radius:14px"><img src="${bossPortrait(b.id)}" alt="${b.name}のバトル中の姿" style="width:108px;height:108px;object-fit:contain"></span><b>${b.name}</b><span class="small">${bossType===b.id?'✓ 選択中':'このボスと戦う'}</span></button>`).join('')}</div><p>${selectedBoss().description}</p><p class="small">HP倍率：${selectedBoss().hp}倍 ／ 攻撃力倍率：${selectedBoss().damage}倍 ／ 攻撃頻度：${selectedBoss().cooldown<1?'高い':'標準'}</p><h3>🎚️ 難易度を選択</h3><select id="bossDifficultySelect" style="width:100%;padding:12px;background:#101c36;color:white;border:1px solid #a78bfa;border-radius:9px">${BOSS_DIFFICULTIES.map((d,i)=>`<option value="${i}" ${bossDifficulty===i?'selected':''}>${i+1}. ${d.name}</option>`).join('')}</select><p class="small">通常ボス勝利時のトロフィー：ビギナー+15／ノーマル+25／ハード+35／エキスパート+50／ナイトメア+80。<br>ボスのHP・攻撃力・攻撃間隔・怒りになる時間が難易度で大きく変化します。プレイヤーのレベルは変更されません。</p>`:''}${mode==='serious'?`<button type="button" class="btn orange" data-act="startSerious" ${data.trophies<1000?'disabled':''}>🔥 ガチバトルを開始（ランダム抽選）</button>`:btn('▶ '+info[1]+'を開始','start','orange')}</div></section>`}
 else if(tab==='heroes'){v.innerHTML=`<section class="panel"><h2>👥 キャラクター（${new Set([...(Array.isArray(data.owned)?data.owned:[]),...(ownsHero(20)?[20]:[])]).size}/${HEROES.length}）</h2><p class="muted">レアリティ：🟦 ノーマル ／ 🟩 レア ／ 🟪 スーパーレア ／ 🟨 ウルトラレア ／ 🌟 レジェンド</p><p class="muted">キャラクターをタップすると、ステータス・ガジェット2種類・スターパワー2種類を確認して装備できます。詳細画面から選択するか、戻るかを決められます。購入済みの🎃パンプキンもここから選択できます。</p>${btn('選択キャラを強化：'+(150*level(data.selected))+'🪙','upgrade','green')}<p class="small">現在：${h(data.selected).name} Lv.${level(data.selected)}</p><div class="grid">${HEROES.map((_,i)=>heroCard(i)).join('')}</div></section>`}
 else if(tab==='shop'){v.innerHTML=`<section class="panel"><h2>🛒 ショップ</h2><p>所持コイン：🪙 ${data.coins}</p><div class="grid"><div class="card"><div class="avatar">🎁</div><b>ヒーローボックス</b><p class="small">未解放キャラを1体獲得。高レアほど出にくい・重複なし。</p>${btn('1000🪙 で開封','gacha','orange')}</div><div class="card"><div class="avatar">⬆️</div><b>キャラ強化</b><p class="small">${h(data.selected).name} Lv.${level(data.selected)}</p>${btn((150*level(data.selected))+'🪙 で強化','upgrade','green')}</div><h3 style="margin:24px 0 12px">🎃❄️ 期間限定キャラクター</h3><p class="muted">ハロウィン限定キャラは販売中！ クリスマス限定キャラは近日公開です。</p><div class="grid"><div class="card" style="border:2px solid #f19a49;background:linear-gradient(145deg,#443049,#28253f)"><div class="avatar" style="font-size:48px">🎃</div><b>🎃 パンプキン</b>${rarityTag(20)}<p class="small">HP${h(20).hp} / 攻撃力${h(20).damage} / ${ATTACK_CONFIG[20][0]}発の集中散弾・中射程・まとまりのある弾道 / 弾数1 / リロード3.3秒 / 低速 / 必殺技：自身のHPを65%回復</p>${data.owned.includes(20)?(data.selected===20?'<button class="btn green" disabled>✓ 使用中</button>':btn('✓ 購入済み・使用キャラに設定','choosePumpkin','green')):btn('5000🪙 で購入','buyHalloween','orange')}</div><div class="card" style="border:2px solid #85d6f1;background:linear-gradient(145deg,#264b62,#293349)"><div class="avatar" style="font-size:48px">🎄</div><b>🎄 クリスマス限定キャラ</b><p class="small">クリスマス限定の特別なキャラクターが登場予定！</p><button class="btn" type="button" disabled style="opacity:.65;cursor:not-allowed;width:100%;background:#416c80">🔒 近日公開・購入不可</button></div></div></section>`}
 else if(tab==='missions'){v.innerHTML=missionsHTML()}
@@ -796,6 +876,14 @@ else if(tab==='feedback'){v.innerHTML=feedbackHTML()}
 else if(tab==='news'){
 // 次回以降は先頭に最新更新を追加すると最新ニュースと過去5件が自動で切り替わる。
 const updates=[
+{ver:120,title:'🏅 重複称号の入手条件を修正',detail:'同じトロフィー数・勝利数・所持キャラ数だけで複数の称号が取れる問題を修正。追加称号は勝利数と試合数などを組み合わせた独自の達成条件に変更。既存の所持称号や受取履歴は維持。',date:'2026年11月18日（日本時間）'},
+{ver:119,title:'⚖️ 称号の難易度・ミッション報酬を再調整',detail:'全称号のレアリティ・名称を達成難度に合わせて見直し。全キャラ制覇は限定キャラを含む全22体の所持が必要。初級ミッションを整理し、コイン・スタードロップの過剰配布を抑制。既存の受取履歴は維持。',date:'2026年11月18日（日本時間）'},
+{ver:118,title:'📜 ミッション100件＆称号コレクション拡張',detail:'既存18件に新ミッション82件を追加し合計100件。トロフィー・勝利・試合・キャラ収集の達成報酬と新称号23種類を追加。ミッションの表示フィルターも実装。',date:'2026年11月18日（日本時間）'},
+{ver:117,title:'🔥 ガチバトルを通常モード一覧に移動＆ボス2倍',detail:'ガチバトルを5番目のモードカードに変更。詳細画面から開始可能。ガチバトルの通常ボスはHPと攻撃力（特殊攻撃を含む）が通常の2倍になります。',date:'2026年11月18日（日本時間）'},
+{ver:116,title:'🔥 ガチバトル解放',detail:'1000トロフィー以上で挑戦可能。バトルロイヤル・通常ボスバトル・ノックアウト・デュエルからランダム抽選。AIレベル通常の2倍・最大40、勝敗によるトロフィー増減2倍。',date:'2026年11月18日（日本時間）'},
+{ver:115,title:'🏆 トロフィーランクを9段階に拡張',detail:'プラチナ1100、レジェンド1800、マスター3000、プロ5000、ディバイン10000を追加。オンラインランキングのユーザー名とランク表示色がトロフィーに応じて変化します。',date:'2026年11月18日（日本時間）'},
+{ver:114,title:'👑 管理者のフィードバック管理機能',detail:'shutoアカウントのみ、他のユーザーのフィードバック投稿・返信も削除できるように変更。FirebaseルールのVer.114への更新が必要です。アカウントの完全削除は安全のためFirebase管理コンソールで実行してください。',date:'2026年11月18日（日本時間）'},
+{ver:113,title:'❄️ 氷冠の魔王を追加強化',detail:'クリスマス限定ボスのHP・攻撃力を少し上げ、専用攻撃の範囲と頻度を微増。接近時の凍結ゲージ蓄積も少し強化。通常ボス2体の難易度別トロフィー報酬は変更なし。',date:'2026年11月18日（日本時間）'},
 {ver:112,title:'🏆 通常ボスの高難易度報酬を強化',detail:'深淵の覇王・雷霆の支配者の勝利トロフィーをエキスパート+50、ナイトメア+80に変更。ほかの難易度は従来どおり。',date:'2026年11月18日（日本時間）'},
 {ver:111,title:'❄️ 限定ボスの攻撃調整＆通常ボスの難易度別トロフィー',detail:'氷冠の魔王だけ攻撃範囲を少し拡大し、攻撃頻度を約10%増加。深淵の覇王・雷霆の支配者の勝利トロフィーを難易度別に変更（+15/+25/+35/+50/+80）。限定ボスや他モードの報酬は維持。',date:'2026年11月18日（日本時間）'},
 {ver:110,title:'📱 必殺技の描画不具合修正＆氷冠の魔王の凍結能力改善',detail:'スマホで必殺技を使うとキャラクターが消える描画エラーを修正。氷冠の魔王に接近・攻撃を受けるとすぐ鈍足になり、凍結ゲージが100になると1.65秒間移動不能になるよう変更。',date:'2026年11月17日（日本時間）'},
@@ -868,15 +956,15 @@ const latest=updates[0],history=updates.slice(1,11);
 const historyHtml=history.map(n=>`<article class="card" style="margin-top:12px;text-align:left"><div class="row" style="justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><h3 style="margin:0">${n.title}</h3><span class="pill">Ver.${n.ver}</span></div>${n.date?`<p class="small muted">更新日時：${n.date}</p>`:''}<p>${n.detail}</p></article>`).join('');
 v.innerHTML=`<section class="panel news-panel"><div class="row" style="justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><h2 style="margin:0">📰 最新ニュース</h2><span class="pill">Ver.${latest.ver}</span></div><p class="muted">最終アップデート：${latest.date}</p><div class="card" style="margin-top:16px;text-align:left"><h3>✨ ${latest.title}</h3><p>${latest.detail}</p></div><div style="margin-top:18px"><button type="button" class="btn" data-act="toggleHistory" aria-expanded="${newsHistoryOpen}" aria-controls="newsHistory">${newsHistoryOpen?'▲ 過去のアップデートを閉じる':'📜 過去のアップデートを見る'}</button></div><div id="newsHistory" ${newsHistoryOpen?'':'hidden'} style="margin-top:14px"><h3>📚 過去のアップデート（10件）</h3>${historyHtml}</div></section>`;
 }
-else{v.innerHTML=`<section class="panel"><h2>🏆 ランク</h2><div class="big">${rank()}</div><p>現在のトロフィー：${data.trophies} 🏆</p><p class="muted">ブロンズ 0 ／ シルバー 100 ／ ゴールド 300 ／ ダイヤ 650 ／ マスター 1100 ／ レジェンド 1800</p><p>勝利数：${data.wins} ／ 対戦数：${data.matches}</p></section><section class="panel"><div class="row" style="justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><h2 style="margin:0">🏅 称号コレクション</h2><button type="button" class="btn" data-act="toggleTitles" aria-expanded="${titleCollectionOpen}">${titleCollectionOpen?'▲ 閉じる':'🏅 称号を表示・選択'}</button></div><p class="muted">装備中：${equippedTitlesHTML()}</p>${titleCollectionOpen?titleCollectionHTML():''}</section>${leaderboardHTML()}`}}
+else{v.innerHTML=`<section class="panel"><h2>🏆 ランク</h2><div class="big" style="color:${trophyRank(data.trophies).color}">${rank()}</div><p>現在のトロフィー：${data.trophies} 🏆</p><p class="muted">ブロンズ 0 ／ シルバー 100 ／ ゴールド 300 ／ ダイヤ 650 ／ プラチナ 1100 ／ レジェンド 1800 ／ マスター 3000 ／ プロ 5000 ／ ディバイン 10000</p><p>勝利数：${data.wins} ／ 対戦数：${data.matches}</p></section><section class="panel"><div class="row" style="justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><h2 style="margin:0">🏅 称号コレクション</h2><button type="button" class="btn" data-act="toggleTitles" aria-expanded="${titleCollectionOpen}">${titleCollectionOpen?'▲ 閉じる':'🏅 称号を表示・選択'}</button></div><p class="muted">装備中：${equippedTitlesHTML()}</p>${titleCollectionOpen?titleCollectionHTML():''}</section>${leaderboardHTML()}`}}
 document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{tab=b.dataset.tab;render();if(tab==='feedback')loadFeedback();if(tab==='events')loadXmas()});
 $('view').addEventListener('change',e=>{if(e.target.name==='mode'){mode=e.target.value;render()}});
-$('view').addEventListener('click',e=>{let b=e.target.closest('[data-act]');if(!b)return;let a=b.dataset.act;if(a.startsWith('chooseMode:')){mode=a.split(':')[1];if(bossType==='xmas')bossType='abyss';render()}else if(a.startsWith('chooseBoss:')){bossType=a.split(':')[1];render()}else if(a==='xmasBoss'){if(!xmasActive())return alert('開催期間外です');xmasRun='boss';mode='boss';bossType='xmas';bossDifficulty=1;start()}else if(a==='xmasSnow'){if(!xmasActive())return alert('開催期間外です');xmasRun='snow';mode='royale';start()}else if(a==='xmasRefresh'){loadXmas()}else if(a==='xmasClaim'){claimXmas()}else if(a==='sendFeedback'){sendFeedback()}else if(a==='refreshFeedback'){loadFeedback()}else if(['likeFeedback','replyFeedback','deleteFeedback','deleteReply'].includes(a)){feedbackAction(a,b)}else if(a==='redeemCode'){redeemItemCode()}else if(a==='sendGift'){sendAdminGift()}else if(a==='closeAdmin'){adminPanelOpen=false;pendingAdminAction='';render()}else if(a.startsWith('equipTitle2:')){if(!isAdmin())return;const id=a.split(':')[1];unlockTitles();if(id!=='none'&&(!data.unlockedTitles[id]||!titleById(id)||id===data.selectedTitle))return;data.selectedTitle2=id==='none'?null:id;leaderboardPublished=null;save();publishLeaderboard().then(()=>{if(tab==='ranking')loadLeaderboard()});render()}else if(a.startsWith('claimMission:')){claimMission(a.split(':')[1])}else if(a.startsWith('equipTitle:')){const id=a.split(':')[1];unlockTitles();if(!data.unlockedTitles[id]||!titleById(id))return alert('未獲得の称号です');data.selectedTitle=id;leaderboardPublished=null;save();publishLeaderboard().then(()=>{if(tab==='ranking')loadLeaderboard()});render()}else if(a==='refreshLeaderboard'){if(!leaderboardLoading)loadLeaderboard()}else if(a==='toggleTitles'){titleCollectionOpen=!titleCollectionOpen;render()}else if(a==='toggleHistory'){newsHistoryOpen=!newsHistoryOpen;render()}else if(a==='start'){xmasRun='';start();}else if(a==='openDrop')openDrop();else if(a.startsWith('tab:')){tab=a.split(':')[1];render();if(tab==='ranking')loadLeaderboard();if(tab==='feedback')loadFeedback()}else if(a.startsWith('detail:')){showHeroDetail(+a.split(':')[1])}else if(a.startsWith('select:')){data.selected=+a.split(':')[1];save();render()}else if(a==='upgrade'){let cost=150*level(data.selected);if(data.coins<cost)return alert('コインが足りません');if(level(data.selected)>=20)return alert('最大レベルです');data.coins-=cost;data.levels[data.selected]=level(data.selected)+1;save();render()}else if(a==='choosePumpkin'){if(!data.owned.includes(20)&&data.pumpkinPurchased===true)data.owned.push(20);if(!data.owned.includes(20))return alert('パンプキンの購入情報が見つかりません。Firebaseの所持キャラ一覧を確認してください。');data.selected=20;save();render();alert('🎃 パンプキンを使用キャラに設定しました！')}else if(a==='buyHalloween'){if(data.owned.includes(20))return alert('すでに購入済みです');if(data.coins<5000)return alert('コインが足りません（5000コイン必要）');if(!confirm('🎃 パンプキンを5000コインで購入しますか？'))return;data.coins-=5000;data.owned.push(20);data.pumpkinPurchased=true;data.selected=20;save();alert('🎉 🎃 パンプキンを購入し、使用キャラに設定しました！');render()}else if(a==='gacha'){let locked=randomUnlockableHeroIds();if(!locked.length)return alert('ヒーローボックスで解放できるキャラは全員解放済みです！ ショップ限定キャラはショップから購入してください。');if(data.coins<1000)return alert('コインが足りません');data.coins-=1000;let i=weightedHeroDraw(locked);data.owned.push(i);save();alert('🎉 '+h(i).icon+' '+h(i).name+' を獲得！');render()}});
+$('view').addEventListener('click',e=>{let b=e.target.closest('[data-act]');if(!b)return;let a=b.dataset.act;if(a.startsWith('missionFilter:')){missionViewFilter=a.split(':')[1];render()}else if(a==='startSerious'){startSeriousBattle()}else if(a.startsWith('chooseMode:')){seriousBattle=false;mode=a.split(':')[1];if(bossType==='xmas')bossType='abyss';render()}else if(a.startsWith('chooseBoss:')){bossType=a.split(':')[1];render()}else if(a==='xmasBoss'){seriousBattle=false;if(!xmasActive())return alert('開催期間外です');xmasRun='boss';mode='boss';bossType='xmas';bossDifficulty=1;start()}else if(a==='xmasSnow'){seriousBattle=false;if(!xmasActive())return alert('開催期間外です');xmasRun='snow';mode='royale';start()}else if(a==='xmasRefresh'){loadXmas()}else if(a==='xmasClaim'){claimXmas()}else if(a==='sendFeedback'){sendFeedback()}else if(a==='refreshFeedback'){loadFeedback()}else if(['likeFeedback','replyFeedback','deleteFeedback','deleteReply'].includes(a)){feedbackAction(a,b)}else if(a==='redeemCode'){redeemItemCode()}else if(a==='sendGift'){sendAdminGift()}else if(a==='closeAdmin'){adminPanelOpen=false;pendingAdminAction='';render()}else if(a.startsWith('equipTitle2:')){if(!isAdmin())return;const id=a.split(':')[1];unlockTitles();if(id!=='none'&&(!data.unlockedTitles[id]||!titleById(id)||id===data.selectedTitle))return;data.selectedTitle2=id==='none'?null:id;leaderboardPublished=null;save();publishLeaderboard().then(()=>{if(tab==='ranking')loadLeaderboard()});render()}else if(a.startsWith('claimMission:')){claimMission(a.split(':')[1])}else if(a.startsWith('equipTitle:')){const id=a.split(':')[1];unlockTitles();if(!data.unlockedTitles[id]||!titleById(id))return alert('未獲得の称号です');data.selectedTitle=id;leaderboardPublished=null;save();publishLeaderboard().then(()=>{if(tab==='ranking')loadLeaderboard()});render()}else if(a==='refreshLeaderboard'){if(!leaderboardLoading)loadLeaderboard()}else if(a==='toggleTitles'){titleCollectionOpen=!titleCollectionOpen;render()}else if(a==='toggleHistory'){newsHistoryOpen=!newsHistoryOpen;render()}else if(a==='start'){seriousBattle=false;xmasRun='';start();}else if(a==='openDrop')openDrop();else if(a.startsWith('tab:')){tab=a.split(':')[1];render();if(tab==='ranking')loadLeaderboard();if(tab==='feedback')loadFeedback()}else if(a.startsWith('detail:')){showHeroDetail(+a.split(':')[1])}else if(a.startsWith('select:')){data.selected=+a.split(':')[1];save();render()}else if(a==='upgrade'){let cost=150*level(data.selected);if(data.coins<cost)return alert('コインが足りません');if(level(data.selected)>=20)return alert('最大レベルです');data.coins-=cost;data.levels[data.selected]=level(data.selected)+1;save();render()}else if(a==='choosePumpkin'){if(!data.owned.includes(20)&&data.pumpkinPurchased===true)data.owned.push(20);if(!data.owned.includes(20))return alert('パンプキンの購入情報が見つかりません。Firebaseの所持キャラ一覧を確認してください。');data.selected=20;save();render();alert('🎃 パンプキンを使用キャラに設定しました！')}else if(a==='buyHalloween'){if(data.owned.includes(20))return alert('すでに購入済みです');if(data.coins<5000)return alert('コインが足りません（5000コイン必要）');if(!confirm('🎃 パンプキンを5000コインで購入しますか？'))return;data.coins-=5000;data.owned.push(20);data.pumpkinPurchased=true;data.selected=20;save();alert('🎉 🎃 パンプキンを購入し、使用キャラに設定しました！');render()}else if(a==='gacha'){let locked=randomUnlockableHeroIds();if(!locked.length)return alert('ヒーローボックスで解放できるキャラは全員解放済みです！ ショップ限定キャラはショップから購入してください。');if(data.coins<1000)return alert('コインが足りません');data.coins-=1000;let i=weightedHeroDraw(locked);data.owned.push(i);save();alert('🎉 '+h(i).icon+' '+h(i).name+' を獲得！');render()}});
 const canvas=$('gameCanvas'),ctx=canvas.getContext('2d');const rand=(a,b)=>a+Math.random()*(b-a);const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);const norm=(x,y)=>{let d=Math.hypot(x,y)||1;return{x:x/d,y:y/d}};function circleRect(x,y,r,w){let cx=clamp(x,w.x,w.x+w.w),cy=clamp(y,w.y,w.y+w.h);return (x-cx)**2+(y-cy)**2<r*r}
 function blocked(x,y,r=17){return x<r||y<r||x>worldW-r||y>worldH-r||walls.some(w=>circleRect(x,y,r,w))}
 function pos(radius=28){for(let k=0;k<350;k++){let p={x:rand(65,worldW-65),y:rand(65,worldH-65)};if(!blocked(p.x,p.y,radius+10)&&entities.every(e=>dist(e,p)>e.r+radius+48))return p}for(let y=65;y<worldH-65;y+=35)for(let x=65;x<worldW-65;x+=35){let p={x,y};if(!blocked(x,y,radius+10)&&entities.every(e=>dist(e,p)>e.r+radius+25))return p}return{x:worldW/2,y:worldH/2}}
 let powerCubes=[];let powerBoxes=[];
-function create(id,team,ai=true,p){let a=h(id),lv=ai?Math.min(20,Math.max(1,1+Math.floor(data.trophies/170)+Math.floor(rand(-1,2)))):level(id),hp=a.hp+lv*12;return{id,lv,team,ai,power:0,baseMaxhp:hp,baseDamage:a.damage+lv*3,x:p?.x??480,y:p?.y??300,r:a.bodySize,hp,maxhp:hp,speed:a.speed,damage:a.damage+lv*3,range:a.range,cooldown:a.cooldown,lastShot:0,super:0,dead:false,respawn:0,dir:0,lastHit:-10,think:0,tx:0,ty:0,score:0,invuln:0,slowUntil:0,boostUntil:0,poisonUntil:0,poisonOwner:null,aiStrafe:1,gasTick:0,ammo:AMMO_CAP[id],reloadProgress:0,revealedUntil:0,gadgetIndex:lv>=7?(ai?Math.floor(Math.random()*2):equippedGadget(id)):-1,starIndex:lv>=9&&ai?Math.floor(Math.random()*2):-1,gadgetCharges:lv>=7?3:0,gadgetShieldUntil:0,gadgetReloadUntil:0,gadgetDamageUntil:0,gadgetFlash:0,stealthUntil:0}}
+function create(id,team,ai=true,p){let a=h(id),lv=ai?(seriousBattle?Math.min(40,Math.max(1,1+Math.floor(data.trophies/170)+Math.floor(rand(-1,2)))*2):Math.min(20,Math.max(1,1+Math.floor(data.trophies/170)+Math.floor(rand(-1,2))))):level(id),hp=a.hp+lv*12;return{id,lv,team,ai,power:0,baseMaxhp:hp,baseDamage:a.damage+lv*3,x:p?.x??480,y:p?.y??300,r:a.bodySize,hp,maxhp:hp,speed:a.speed,damage:a.damage+lv*3,range:a.range,cooldown:a.cooldown,lastShot:0,super:0,dead:false,respawn:0,dir:0,lastHit:-10,think:0,tx:0,ty:0,score:0,invuln:0,slowUntil:0,boostUntil:0,poisonUntil:0,poisonOwner:null,aiStrafe:1,gasTick:0,ammo:AMMO_CAP[id],reloadProgress:0,revealedUntil:0,gadgetIndex:lv>=7?(ai?Math.floor(Math.random()*2):equippedGadget(id)):-1,starIndex:lv>=9&&ai?Math.floor(Math.random()*2):-1,gadgetCharges:lv>=7?3:0,gadgetShieldUntil:0,gadgetReloadUntil:0,gadgetDamageUntil:0,gadgetFlash:0,stealthUntil:0}}
 function mapBuild(){
 worldW=mode==='royale'?3000:mode==='boss'?1300:1080;
 worldH=mode==='royale'?2200:mode==='boss'?850:720;
@@ -911,7 +999,10 @@ function cameraUpdate(){let focus=mode==='boss'&&player.dead?entities.find(e=>e.
 function gasState(){let phase=Math.floor(elapsed/30),progress=clamp((elapsed%30-10)/20,0,1);return{phase,inset:Math.min(worldW*.43,phase*165+progress*165)}}
 function inGas(e){return e.x<gasInset+e.r||e.y<gasInset+e.r||e.x>worldW-gasInset-e.r||e.y>worldH-gasInset-e.r}
 let knockoutRound=1,roundBreak=0;
-function start(){if(mode==='boss'){const difficultySelect=$('bossDifficultySelect');if(difficultySelect)bossDifficulty=Math.max(0,Math.min(4,Number(difficultySelect.value)||0));}powerCubes=[];powerBoxes=[];snowGifts=[];snowGiftCollected=0;snowStormPhase=0;cancelAnimationFrame(raf);playing=true;matchOver=false;entities=[];shots=[];particles=[];effects=[];elapsed=0;spawnTimer=0;kills=0;score=0;teamScore=[0,0];gasInset=0;gasPhase=0;bossWarnings=[];bossCooldown=3.2;bossPattern=0;bossRageStage=0;bossRageMessageUntil=0;killFeed=[];knockoutRound=1;roundBreak=0;last=performance.now();mapBuild();player=create(data.selected,0,false,{x:worldW/2,y:worldH/2}); if(blocked(player.x,player.y,player.r+20)){let safe=pos(player.r);player.x=safe.x;player.y=safe.y;}applyStar(player);entities.push(player);let count=mode==='royale'?9:mode==='team'?5:mode==='duel'?1:0;for(let i=0;i<count;i++){let team=mode==='team'?(i<2?0:1):1;let id=Math.floor(rand(0,21)),r=h(id).bodySize,p=null;for(let attempt=0;attempt<450;attempt++){let candidate={x:rand(110,worldW-110),y:rand(110,worldH-110)};if(!blocked(candidate.x,candidate.y,r+15)&&entities.every(e=>dist(e,candidate)>=Math.max(mode==='royale'?500:290,e.r+r+80))){p=candidate;break}}p??=pos(r);let bot=create(id,team,true,p);
+let seriousBattle=false;
+const SERIOUS_MODES=['royale','boss','team','duel'];
+function startSeriousBattle(){if((Number(data.trophies)||0)<1000){alert('ガチバトルは1000トロフィー以上で解放されます');return;}seriousBattle=true;xmasRun='';mode=SERIOUS_MODES[Math.floor(Math.random()*SERIOUS_MODES.length)];if(mode==='boss'){bossType=Math.random()<.5?'abyss':'storm';bossDifficulty=Math.floor(Math.random()*5);}start();}
+function start(){if(!seriousBattle)seriousBattle=false;if(mode==='boss'&&!seriousBattle){const difficultySelect=$('bossDifficultySelect');if(difficultySelect)bossDifficulty=Math.max(0,Math.min(4,Number(difficultySelect.value)||0));}powerCubes=[];powerBoxes=[];snowGifts=[];snowGiftCollected=0;snowStormPhase=0;cancelAnimationFrame(raf);playing=true;matchOver=false;entities=[];shots=[];particles=[];effects=[];elapsed=0;spawnTimer=0;kills=0;score=0;teamScore=[0,0];gasInset=0;gasPhase=0;bossWarnings=[];bossCooldown=3.2;bossPattern=0;bossRageStage=0;bossRageMessageUntil=0;killFeed=[];knockoutRound=1;roundBreak=0;last=performance.now();mapBuild();player=create(data.selected,0,false,{x:worldW/2,y:worldH/2}); if(blocked(player.x,player.y,player.r+20)){let safe=pos(player.r);player.x=safe.x;player.y=safe.y;}applyStar(player);entities.push(player);let count=mode==='royale'?9:mode==='team'?5:mode==='duel'?1:0;for(let i=0;i<count;i++){let team=mode==='team'?(i<2?0:1):1;let id=Math.floor(rand(0,21)),r=h(id).bodySize,p=null;for(let attempt=0;attempt<450;attempt++){let candidate={x:rand(110,worldW-110),y:rand(110,worldH-110)};if(!blocked(candidate.x,candidate.y,r+15)&&entities.every(e=>dist(e,candidate)>=Math.max(mode==='royale'?500:290,e.r+r+80))){p=candidate;break}}p??=pos(r);let bot=create(id,team,true,p);
 // ノックアウトの味方AIも敵AIと同様、各試合で固有能力をランダム装備。
 if(mode==='team'&&team===0){
  bot.gadgetIndex=bot.lv>=7?Math.floor(Math.random()*2):-1;
@@ -923,12 +1014,12 @@ if(mode==='royale'){for(let i=0;i<17;i++){let p=pos(32);if(!powerBoxes.some(c=>d
 if(mode==='boss'){
 let boss=create(18,1,true,{x:worldW/2+310,y:worldH/2});
 if(blocked(boss.x,boss.y,48)){let q=pos(48);boss.x=q.x;boss.y=q.y}
-boss.isBoss=true;boss.gadgetIndex=-1;boss.starIndex=-1;boss.gadgetCharges=0;boss.star=null;boss.lv=BOSS_DIFFICULTIES[bossDifficulty].lv;boss.difficulty=bossDifficulty;boss.bossName=selectedBoss().name;boss.bossType=bossType;boss.r=bossType==='storm'?39:bossType==='xmas'?43:46;
-boss.maxhp=Math.round((8200+boss.lv*550)*selectedBoss().hp*BOSS_DIFFICULTIES[bossDifficulty].hp);boss.hp=boss.maxhp;
-boss.damage=Math.round((52+boss.lv*6)*selectedBoss().damage*BOSS_DIFFICULTIES[bossDifficulty].damage);boss.speed=selectedBoss().speed;boss.range=bossType==='storm'?480:bossType==='xmas'?440:420;boss.cooldown*=selectedBoss().cooldown;boss.baseBossDamage=boss.damage;boss.baseBossSpeed=boss.speed;boss.baseBossCooldown=boss.cooldown;
+boss.isBoss=true;boss.gadgetIndex=-1;boss.starIndex=-1;boss.gadgetCharges=0;boss.star=null;boss.lv=seriousBattle?Math.min(40,BOSS_DIFFICULTIES[bossDifficulty].lv*2):BOSS_DIFFICULTIES[bossDifficulty].lv;boss.difficulty=bossDifficulty;boss.bossName=selectedBoss().name;boss.bossType=bossType;boss.r=bossType==='storm'?39:bossType==='xmas'?43:46;
+boss.maxhp=Math.round((8200+boss.lv*550)*selectedBoss().hp*BOSS_DIFFICULTIES[bossDifficulty].hp);if(seriousBattle)boss.maxhp*=2;boss.hp=boss.maxhp;
+boss.damage=Math.round((52+boss.lv*6)*selectedBoss().damage*BOSS_DIFFICULTIES[bossDifficulty].damage);if(seriousBattle)boss.damage*=2;boss.speed=selectedBoss().speed;boss.range=bossType==='storm'?480:bossType==='xmas'?440:420;boss.cooldown*=selectedBoss().cooldown;boss.baseBossDamage=boss.damage;boss.baseBossSpeed=boss.speed;boss.baseBossCooldown=boss.cooldown;
 boss.ammo=AMMO_CAP[boss.id];boss.lastShot=0;entities.push(boss);
 for(let i=0;i<2;i++){let ally=create(Math.floor(rand(0,21)),0,true,{x:player.x+(i===0?-85:85),y:player.y+75});if(blocked(ally.x,ally.y,ally.r+5)){let q=pos(ally.r);ally.x=q.x;ally.y=q.y}ally.isBossAlly=true;applyStar(ally);entities.push(ally)}
-}if(xmasRun==='snow')spawnSnowGifts(9);if(mode==='duel'||mode==='team')beginKnockoutRound();$('menu').style.display='none';$('gameArea').style.display='block';$('modeName').textContent={boss:(xmasRun==='boss'?'❄️ 氷冠の魔王':'👹 ボスバトル'),royale:(xmasRun==='snow'?'☃️ スノーサバイバル':'👑 バトルロイヤル'),team:'🔵 3vs3ノックアウト',duel:'⚔️ デュエル（1vs1）'}[mode];document.body.classList.add('playing');$('overlay').style.display='none';updateGadgetButton();raf=requestAnimationFrame(loop)}
+}if(xmasRun==='snow')spawnSnowGifts(9);if(mode==='duel'||mode==='team')beginKnockoutRound();$('menu').style.display='none';$('gameArea').style.display='block';$('modeName').textContent={boss:(xmasRun==='boss'?'❄️ 氷冠の魔王':'👹 ボスバトル'),royale:(xmasRun==='snow'?'☃️ スノーサバイバル':'👑 バトルロイヤル'),team:'🔵 3vs3ノックアウト',duel:'⚔️ デュエル（1vs1）'}[mode]+(seriousBattle?' 🔥ガチバトル':'');document.body.classList.add('playing');$('overlay').style.display='none';updateGadgetButton();raf=requestAnimationFrame(loop)}
 function beginKnockoutRound(){
  shots=[];particles=[];effects=[];killFeed=[];mapBuild();
  const allyY=[worldH/2,worldH/2-155,worldH/2+155];
@@ -1101,7 +1192,7 @@ function bossAttack(boss){
  const stormAvailable=bossRageStage>=2?8:bossRageStage>=1?7:6;
  const kind=boss.bossType==='xmas'?[17,18,19,20,21,22][(bossPattern++)%6]:boss.bossType==='storm'?stormPatterns[(bossPattern++)%stormAvailable]:bossPattern++%(5+(bossRageStage>=1?2:0)+(bossRageStage>=2?2:0));
  const delay=([1.0,.9,1.1,1.0,1.1,1.05,1.0,.95,1.05,.72,.85,.9,1.05,.95,1.1,1.0,1.15,1.25,1.15,1.4,1.1,1.35,1.45][kind]||1)*Math.max(.82,1-bossRageStage*.05)*BOSS_DIFFICULTIES[bossDifficulty].warning*1.17;
- const common={kind,delay,full:delay,damage:Math.round((49+boss.lv*4.4)*(1+bossRageStage*.20)*(boss.bossType==='storm'?1.25:1)*BOSS_DIFFICULTIES[bossDifficulty].damage)};
+ const common={kind,delay,full:delay,damage:Math.round((49+boss.lv*4.4)*(1+bossRageStage*.20)*(boss.bossType==='storm'?1.25:1)*BOSS_DIFFICULTIES[bossDifficulty].damage*(seriousBattle?2:1))};
  const warningStart=bossWarnings.length;
  const a=Math.atan2(victim.y-boss.y,victim.x-boss.x);
  if(kind===17){ // 氷の檻：狙われた味方の周囲を4方向から包囲。中央は安全
@@ -1166,10 +1257,10 @@ function bossAttack(boss){
 function balanceBossWarnings(warnings,start,isChristmas=false){
  for(let i=start;i<warnings.length;i++){
   const w=warnings[i];
-  if(Number.isFinite(w.r))w.r=Math.max(32,Math.round(w.r*(isChristmas?.87:.79)));
-  if(Number.isFinite(w.width))w.width=Math.max(22,Math.round(w.width*(isChristmas?.85:.77)));
+  if(Number.isFinite(w.r))w.r=Math.max(32,Math.round(w.r*(isChristmas?.94:.79)));
+  if(Number.isFinite(w.width))w.width=Math.max(22,Math.round(w.width*(isChristmas?.91:.77)));
   if(Number.isFinite(w.inner)&&Number.isFinite(w.outer)){
-   const mid=(w.inner+w.outer)/2,half=(w.outer-w.inner)*(isChristmas?.43:.39);
+   const mid=(w.inner+w.outer)/2,half=(w.outer-w.inner)*(isChristmas?.46:.39);
    w.inner=Math.max(0,mid-half);w.outer=mid+half;
   }
  }
@@ -1209,12 +1300,12 @@ function updateBossAttacks(dt){
    // ボスに近づくだけで鈍足。離れると短時間で回復する。
    if(dist(ally,boss)<175){
     ally.winterSlowUntil=Math.max(ally.winterSlowUntil||0,elapsed+.35);
-    applyWinterFrost(ally,dt*12);
+    applyWinterFrost(ally,dt*14);
    }
   }
  }
  bossCooldown-=dt;
- if(bossCooldown<=0&&bossWarnings.length===0){bossAttack(boss);bossCooldown=Math.max(boss.bossType==='xmas'?1.35:1.45,(3.25-bossRageStage*.32)*(boss.bossType==='storm'?.91:boss.bossType==='xmas'?.90:1)*BOSS_DIFFICULTIES[bossDifficulty].interval)}
+ if(bossCooldown<=0&&bossWarnings.length===0){bossAttack(boss);bossCooldown=Math.max(boss.bossType==='xmas'?1.35:1.45,(3.25-bossRageStage*.32)*(boss.bossType==='storm'?.91:boss.bossType==='xmas'?.84:1)*BOSS_DIFFICULTIES[bossDifficulty].interval)}
  for(let i=bossWarnings.length-1;i>=0;i--){
   const w=bossWarnings[i];w.delay-=dt;
   if(w.delay<=0){
@@ -1516,6 +1607,8 @@ if(mode==='royale'){
  // 通常ボス2体のみ難易度に応じて勝利トロフィーを変える。
  if(mode==='boss'&&bossType!=='xmas'&&win)trophyDelta=normalBossTrophies[bossDifficulty]??30;
 }
+if(seriousBattle)trophyDelta*=2;
+const wasSeriousBattle=seriousBattle;seriousBattle=false;
 matchOver=true;playing=false;cancelAnimationFrame(raf);attackHeld=false;superHeld=false;keys.autoAttack=false;
 if(xmasRun==='snow'&&win&&xmasActive())dropReward+=1;
 if(xmasRun==='boss'&&win&&xmasActive())xmasAddBossKill();
@@ -1526,7 +1619,7 @@ data.matches++;if(win)data.wins++;data.best=Math.max(data.best,score);save();
 const trophyLabel=trophyDelta>0?'+'+trophyDelta:String(trophyDelta);
 const resultTitle=mode==='royale'?(placement===1?'🏆 1位！':placement<=4?'🎉 上位入賞！':`🏁 ${placement}位`):(win?'🏆 勝利！':'💥 敗北');
 $('overlay').style.display='flex';
-$('result').innerHTML=`<div style="font-size:55px">${win?'🏆':'🏁'}</div><h1>${resultTitle}</h1>${mode==='royale'?`<p>順位：${placement}位 / 10人</p>`:''}<p>撃破数：${kills} ／ スコア：${score}</p><h2>🏆 トロフィー ${trophyLabel}　🌟 スタードロップ +${dropReward}</h2><p>${dropReward?'ホーム画面からスタードロップを開封できます。':'今回のスタードロップ報酬はありません。'}${trophyDelta<0?'（トロフィーは0未満になりません）':''}</p>${btn('ホームに戻る','back','orange')}`;
+$('result').innerHTML=`<div style="font-size:55px">${win?'🏆':'🏁'}</div><h1>${resultTitle}</h1>${mode==='royale'?`<p>順位：${placement}位 / 10人</p>`:''}<p>撃破数：${kills} ／ スコア：${score}</p>${wasSeriousBattle?'<p style="color:#ffb957;font-weight:bold">🔥 ガチバトル・トロフィー増減2倍</p>':''}<h2>🏆 トロフィー ${trophyLabel}　🌟 スタードロップ +${dropReward}</h2><p>${dropReward?'ホーム画面からスタードロップを開封できます。':'今回のスタードロップ報酬はありません。'}${trophyDelta<0?'（トロフィーは0未満になりません）':''}</p>${btn('ホームに戻る','back','orange')}`;
 $('result').querySelector('button').onclick=back;document.body.classList.remove('playing')}
 
 function back(){xmasRun='';playing=false;cancelAnimationFrame(raf);$('overlay').style.display='none';$('gameArea').style.display='none';$('menu').style.display='block';document.body.classList.remove('playing');attackHeld=false;superHeld=false;keys.autoAttack=false;mouse.active=false;render()}
