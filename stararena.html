@@ -730,21 +730,36 @@ function heroArtSVG(i,size=62){
  };
  const skin=getHeroSkin(i);
  const [base,accent,light,dark]=skin.colors;
- const ornament=[
- '<path d="M15 39 L22 19 L31 34 L41 15 L49 42Z"/>',
- '<path d="M17 14 L32 8 L47 14 L43 28 L21 28Z"/>',
- '<path d="M16 46 L21 15 L43 15 L49 46Z"/>',
- '<path d="M12 39 Q32 12 52 39 L44 49 H20Z"/>',
- '<path d="M17 16 L47 16 L55 32 L47 48 L17 48 L9 32Z"/>',
- '<path d="M14 20 L32 9 L50 20 L46 48 L18 48Z"/>',
- '<path d="M12 44 Q19 13 32 14 Q45 13 52 44 L39 54 H25Z"/>'
- ][i%7];
+ // キャラ固有の模様。汎用の線模様を重ねず、各モチーフが判別できるようにする。
+ const heroDetail={
+ 3:`<path d="M18 47 Q31 32 48 16" fill="none" stroke="${dark}" stroke-width="2.5" stroke-linecap="round"/><path d="M26 39 L18 28 M33 32 L31 20 M39 25 L48 29 M22 43 L34 47" fill="none" stroke="${accent}" stroke-width="2" stroke-linecap="round"/>`,
+ 6:`<path d="M32 11 L48 19 V35 Q45 47 32 54 Q19 47 16 35 V19Z" fill="none" stroke="${light}" stroke-width="2.2"/><path d="M32 19 V45 M23 29 L32 21 L41 29 M23 38 L32 46 L41 38" fill="none" stroke="${dark}" stroke-width="2.6" stroke-linejoin="round"/>`,
+ 9:`<path d="M19 12 L29 28 L14 37 M29 28 L40 14 L49 28 L39 42 L47 52 M29 28 L39 42 L22 52" fill="none" stroke="${dark}" stroke-width="2.5" stroke-linecap="round"/><path d="M18 21 L25 17 M43 21 L49 24" stroke="${light}" stroke-width="2" stroke-linecap="round"/>`,
+ 11:`<path d="M5 56 L22 33 L28 38 L12 58Z" fill="${accent}" opacity=".85"/><path d="M8 45 L18 30 L26 33 L16 49Z" fill="${light}" opacity=".7"/><path d="M34 17 L46 12 L53 22 L45 35 L32 36 L26 27Z" fill="${dark}" stroke="${light}" stroke-width="1.5"/><path d="M35 18 L41 26 L34 32" fill="none" stroke="${accent}" stroke-width="2"/>`,
+ 12:`<path d="M32 9 L50 29 L43 50 L21 50 L14 29Z" fill="none" stroke="${light}" stroke-width="2"/><path d="M14 29 H50 L32 51Z M32 9 L32 51 M14 29 L32 9 L50 29" fill="none" stroke="${dark}" stroke-width="2"/><path d="M23 19 L32 9 L41 19" fill="none" stroke="${accent}" stroke-width="2"/>`,
+ 15:`<circle cx="32" cy="32" r="10" fill="${dark}" stroke="${light}" stroke-width="2"/><circle cx="32" cy="32" r="5" fill="${accent}"/><circle cx="32" cy="32" r="2" fill="${light}"/>`,
+ 18:`<g stroke-linejoin="round" stroke-linecap="round">
+ <!-- 大型の岩石ゴーレム：厚い岩の肩、角ばった頭部、割れ目から光る魔力 -->
+ <path d="M7 41 L10 24 L20 18 L26 28 L22 50 L12 53Z" fill="#666c85" stroke="#333b53" stroke-width="2.2"/>
+ <path d="M57 41 L54 24 L44 18 L38 28 L42 50 L52 53Z" fill="#666c85" stroke="#333b53" stroke-width="2.2"/>
+ <path d="M12 30 L18 23 L23 33 L18 45 L10 44Z M52 30 L46 23 L41 33 L46 45 L54 44Z" fill="#a1a6b8" stroke="#d8e4f4" stroke-width="1.3"/>
+ <path d="M20 13 L31 9 L43 13 L49 26 L44 45 L33 54 L21 46 L15 29Z" fill="#646a82" stroke="#30374f" stroke-width="2.8"/>
+ <path d="M21 16 L31 12 L41 16 L44 25 L35 27 L30 21 L22 27 L18 25Z" fill="#a8b0c4" stroke="#e2e9f4" stroke-width="1.3"/>
+ <path d="M19 32 L29 30 L27 36 L18 37Z M45 32 L35 30 L37 36 L46 37Z" fill="#b6f8ff" stroke="#254a67" stroke-width="1.5"/>
+ <path d="M20 34 L27 32 M37 32 L44 34" stroke="#e5ffff" stroke-width="1.8"/>
+ <path d="M29 23 L33 29 L29 37 L35 42 L31 51" fill="none" stroke="#b5efff" stroke-width="2.4"/>
+ <path d="M28 25 L23 28 M35 42 L42 40 M31 47 L25 43" fill="none" stroke="#313a55" stroke-width="2.1"/>
+ <path d="M22 43 L31 47 L41 43 L39 51 L31 56 L23 51Z" fill="#4a516b" stroke="#c5d1e4" stroke-width="1.4"/>
+ <path d="M10 28 L16 30 L13 38 M51 27 L46 31 L50 38" fill="none" stroke="#c0e4ff" stroke-width="1.6"/>
+ </g>`,
+ 19:`<ellipse cx="32" cy="33" rx="24" ry="11" transform="rotate(-28 32 33)" fill="none" stroke="${accent}" stroke-width="2.5"/><ellipse cx="32" cy="33" rx="13" ry="22" transform="rotate(42 32 33)" fill="none" stroke="${light}" stroke-width="1.5"/><circle cx="32" cy="32" r="8" fill="${dark}" stroke="${light}" stroke-width="1.5"/><circle cx="29" cy="29" r="3" fill="${accent}"/><circle cx="49" cy="13" r="2" fill="${light}"/><circle cx="13" cy="49" r="2.5" fill="${accent}"/>`
+ };
  const id=`ha${i}_${skin.id}`;
  return `<svg class="hero-art-svg" width="${size}" height="${size}" viewBox="0 0 64 64" role="img" aria-label="${c.name}の${skin.name}スキン" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="${id}bg" cx="32%" cy="25%"><stop stop-color="${light}"/><stop offset=".55" stop-color="${base}"/><stop offset="1" stop-color="${dark}"/></radialGradient><linearGradient id="${id}metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="${light}"/><stop offset=".52" stop-color="${accent}"/><stop offset="1" stop-color="${dark}"/></linearGradient></defs>
  <circle cx="32" cy="32" r="30" fill="${dark}" stroke="${accent}" stroke-width="3"/>
  <circle cx="32" cy="32" r="26" fill="url(#${id}bg)" stroke="${light}" stroke-width=".9"/>
- <path d="M8 48 Q32 32 56 48 L52 57 Q32 65 12 57Z" fill="${dark}" opacity=".8"/>
- <g fill="url(#${id}metal)" stroke="${dark}" stroke-width="1.2" stroke-linejoin="round" stroke-linecap="round">${motifs[shape]}</g>
+ <g fill="url(#${id}metal)" stroke="${dark}" stroke-width="1.2" stroke-linejoin="round" stroke-linecap="round">${i===18?"":motifs[shape]}</g>
+ ${heroDetail[i]||''}
  ${i===20?`<g stroke="#63300c" stroke-width="1.4" stroke-linejoin="round"><path d="M22 27 L30 33 L19 35Z" fill="#241b20"/><path d="M42 27 L34 33 L45 35Z" fill="#241b20"/><path d="M32 34 L27 41 L37 41Z" fill="#5b2c14"/><path d="M17 43 L23 47 L28 44 L33 49 L39 44 L44 47 L49 42 L46 53 L18 53Z" fill="#2b2021"/><path d="M30 14 Q30 8 37 8 L38 15" fill="#378744" stroke="#245b32" stroke-width="2"/></g>`:''}
  <circle cx="15" cy="13" r="3" fill="${light}" opacity=".8"/>
  </svg>`;
@@ -919,6 +934,8 @@ else if(tab==='feedback'){v.innerHTML=feedbackHTML()}
 else if(tab==='news'){
 // 次回以降は先頭に最新更新を追加すると最新ニュースと過去5件が自動で切り替わる。
 const updates=[
+{ver:127,title:'🪨 ゴーレムの外観を岩石巨人に刷新',detail:'ゴーレムのデザインを、クラッシュ・ロワイヤルの岩石ゴーレムを参考にしたオリジナルの岩石巨人風へ変更。ごつごつした肩・角ばった岩の頭・青白く光る亀裂を追加。能力やほかのキャラは変更なし。',date:'2026年11月18日（日本時間）'},
+{ver:126,title:'🌿 キャラ固有のシンボルを復活',detail:'リーフの葉脈、タイタンの盾紋章、ロックのひび割れた岩、コメットの隕石と尾、ネオンのダイヤカット、ギアの歯車中心、ノヴァの宇宙模様を復活。汎用装飾を除去し、パンプキンの顔と多色デザインは維持。',date:'2026年11月18日（日本時間）'},
 {ver:125,title:'🎃 パンプキンの顔・一括受取・決戦演出',detail:'パンプキンだけジャック・オー・ランタンの顔を復活。達成済みミッションを一括受け取り可能に。バトルロイヤルで生存者が2人になった瞬間、中央にバトルロイヤルの大きな文字を短時間表示。',date:'2026年11月18日（日本時間）'},
 {ver:124,title:'✨ 攻撃エフェクト大幅強化',detail:'全キャラの通常攻撃・必殺技に個別の多色弾、光る輪郭、弾道の残像、発射時の光と火花を追加。キャラのスキン配色にも追従。攻撃力や射程は変更なし。',date:'2026年11月18日（日本時間）'},
 {ver:123,title:'🎨 キャラの余計な線を削除・パンプキンをオレンジに',detail:'キャラアイコン中央の重なった幾何学模様・線状装飾を削除。キャラクター固有のシルエットを見やすくし、パンプキンの基本色をオレンジに変更。スキン拡張基盤は維持。',date:'2026年11月18日（日本時間）'},
