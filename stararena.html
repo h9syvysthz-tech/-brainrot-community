@@ -62,6 +62,22 @@ body.playing #battleExit{display:block}
 
 .feedback-input{display:block;width:100%;box-sizing:border-box;padding:12px;margin:8px 0 14px;background:#101c36;color:#fff;border:1px solid #647ca6;border-radius:10px;font:inherit;font-size:16px}.feedback-input:focus{outline:2px solid #76b9ff}.feedback-hint{font-size:12px;color:#bcd1f5}.feedback-status{min-height:22px;font-size:13px;color:#ffe49c;white-space:pre-wrap}
 .hero-art-svg{display:block;max-width:100%;max-height:100%;margin:auto;filter:drop-shadow(0 2px 5px #0007)}
+
+/* Ver.132: スキン別のアニメーション。通常キャラには適用しない */
+.hero-art-svg.skin-animated{overflow:visible;filter:drop-shadow(0 0 5px var(--skin-glow)) drop-shadow(0 2px 4px #0008)}
+.skin-animated .skin-aura{transform-origin:32px 32px;animation:skin-aura-pulse 2.5s ease-in-out infinite}
+.skin-animated .skin-orbit{transform-origin:32px 32px;animation:skin-orbit 5s linear infinite}
+.skin-animated .skin-orbit.reverse{animation-direction:reverse;animation-duration:7s}
+.skin-animated .skin-spark{animation:skin-sparkle 1.8s ease-in-out infinite;transform-origin:center}
+.skin-animated .skin-spark:nth-child(2n){animation-delay:-.8s}
+.skin-animated .skin-float{animation:skin-float 2.8s ease-in-out infinite;transform-origin:32px 32px}
+.skin-animated .skin-shimmer{animation:skin-shimmer 2.2s linear infinite}
+@keyframes skin-aura-pulse{0%,100%{opacity:.24;transform:scale(.93)}50%{opacity:.8;transform:scale(1.07)}}
+@keyframes skin-orbit{to{transform:rotate(360deg)}}
+@keyframes skin-sparkle{0%,100%{opacity:.25;transform:scale(.65)}50%{opacity:1;transform:scale(1.35)}}
+@keyframes skin-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+@keyframes skin-shimmer{0%{opacity:.2}50%{opacity:.9}100%{opacity:.2}}
+@media(prefers-reduced-motion:reduce){.skin-animated *{animation:none!important}}
 </style></head><body><div id="app"><header><div class="logo">⭐ STAR ARENA</div><div class="row"><span class="pill" id="coins">🪙 0</span><span class="pill" id="trophies">🏆 0</span></div></header><div id="menu"><div id="cloudTools" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0;padding:9px;border:1px solid #4d85b1;border-radius:12px;background:#152b44"><span id="cloudStatus" style="flex:1;min-width:160px">☁️ Firebase接続待機中</span><button id="cloudSync" type="button" class="btn">☁️ 今すぐ保存</button><button id="cloudLogout" type="button" class="btn">ログアウト</button></div><div id="saveTools" style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0;padding:9px;border:1px solid #506080;border-radius:12px;background:#14203d">
 <button type="button" id="exportSave" class="btn">💾 セーブデータを書き出す</button>
 <button type="button" id="importSave" class="btn">📂 セーブデータを読み込む</button>
@@ -121,7 +137,7 @@ const BOSS_NAME='👹 深淵の覇王';const BOSS_TYPES=[{id:'abyss',name:'👹 
 {name:'エキスパート',lv:19,hp:1.45,damage:1.35,interval:.97,warning:1.0,rage:[45,85,130]},
 {name:'ナイトメア',lv:27,hp:1.90,damage:1.75,interval:.88,warning:.96,rage:[35,75,115]}
 ];let bossDifficulty=1;document.addEventListener('change',e=>{if(e.target?.id==='bossDifficultySelect')bossDifficulty=Math.max(0,Math.min(4,Number(e.target.value)||0));if(e.target?.id==='bossTypeSelect'){bossType=e.target.value;render()}});
-const KEY='starArenaSave_v1';const freshData=()=>({coins:450,trophies:0,selected:0,owned:[0,1,2],levels:{},wins:0,matches:0,best:0,drops:0,redeemedCodes:{},unlockedTitles:{},selectedTitle:"rookie"});let data;try{data=JSON.parse(localStorage.getItem(KEY)||sessionStorage.getItem(KEY))}catch(e){}if(!data||!Array.isArray(data.owned)){data=freshData()};if(data.pumpkinPurchased===true&&!data.owned.includes(20))data.owned.push(20);if(data.owned.includes(20))data.pumpkinPurchased=true;if(data.xmas2026Claimed===true&&!data.owned.includes(21))data.owned.push(21);if(!Number.isInteger(data.drops)||data.drops<0)data.drops=0;const $=id=>document.getElementById(id);let tab='home',mode='royale',playing=false,raf=0,entities=[],shots=[],walls=[],bushes=[],particles=[],player=null,elapsed=0,spawnTimer=0,kills=0,score=0,last=0,mouse={x:480,y:300,active:false},keys={},move={x:0,y:0},attackHeld=false,superHeld=false,touchAim={active:false,dx:1,dy:0},gameTime=90,matchOver=false,teamScore=[0,0],effects=[],worldW=960,worldH=600,camX=0,camY=0,gasInset=0,gasPhase=0,bossWarnings=[],bossCooldown=0,bossPattern=0,bossRageStage=0,bossRageMessageUntil=0,killFeed=[],royaleFinalTwoUntil=0,royaleFinalTwoShown=false;
+const KEY='starArenaSave_v1';const freshData=()=>({coins:450,trophies:0,selected:0,owned:[0,1,2],levels:{},wins:0,matches:0,best:0,drops:0,redeemedCodes:{},unlockedTitles:{},selectedTitle:"rookie",ownedSkins:{},equippedSkins:{}});let data;try{data=JSON.parse(localStorage.getItem(KEY)||sessionStorage.getItem(KEY))}catch(e){}if(!data||!Array.isArray(data.owned)){data=freshData()};if(data.pumpkinPurchased===true&&!data.owned.includes(20))data.owned.push(20);if(data.owned.includes(20))data.pumpkinPurchased=true;if(data.xmas2026Claimed===true&&!data.owned.includes(21))data.owned.push(21);if(!Number.isInteger(data.drops)||data.drops<0)data.drops=0;const $=id=>document.getElementById(id);let tab='home',mode='royale',playing=false,raf=0,entities=[],shots=[],walls=[],bushes=[],particles=[],player=null,elapsed=0,spawnTimer=0,kills=0,score=0,last=0,mouse={x:480,y:300,active:false},keys={},move={x:0,y:0},attackHeld=false,superHeld=false,touchAim={active:false,dx:1,dy:0},gameTime=90,matchOver=false,teamScore=[0,0],effects=[],worldW=960,worldH=600,camX=0,camY=0,gasInset=0,gasPhase=0,bossWarnings=[],bossCooldown=0,bossPattern=0,bossRageStage=0,bossRageMessageUntil=0,killFeed=[],royaleFinalTwoUntil=0,royaleFinalTwoShown=false;
 // キャラ別の弾数と1発のリロード時間（秒）
 const AMMO_CAP=[3,3,4,3,2,3,4,3,3,4,3,2,3,4,3,3,4,3,4,2,1,3];
 const RELOAD_SEC=[1.35, 2.65, 1.35, 1.5, 0.72, 2.95, 1.45, 1.65, 0.78, 2.75, 1.12, 2.25, 0.65, 2.6, 1.5, 1.6, 0.82, 3.1, 1.48, 2.9,3.3,1.8];
@@ -639,6 +655,8 @@ const normalizeSave=d=>{
  const abilityState=normalizeAbilityEquipment(d);
  x.abilityOwned=abilityState.abilityOwned;
  x.equipment=abilityState.equipment;
+ x.ownedSkins=normalizeOwnedSkins(d.ownedSkins);
+ x.equippedSkins=normalizeEquippedSkins(d.equippedSkins,x.ownedSkins);
  x.drops=Number.isInteger(d.drops)&&d.drops>=0?d.drops:0;
  x.unlockedTitles=(d.unlockedTitles&&typeof d.unlockedTitles==='object'&&!Array.isArray(d.unlockedTitles))?d.unlockedTitles:{};
  x.selectedTitle=typeof d.selectedTitle==='string'?d.selectedTitle:'rookie';
@@ -751,9 +769,135 @@ const HERO_SKIN_PALETTES=[
 const HERO_SKINS=HERO_SKIN_PALETTES.map((colors,i)=>({
  default:{id:'default',name:'オリジナル',colors}
 }));
-// 将来の追加例: HERO_SKINS[0].winter={id:'winter',name:'ウィンター',colors:['#4daaff','#e4ffff','#fff','#224b88']};
-function getHeroSkin(i){
- const skinId=data.equippedSkins?.[i]||'default';
+// Ver.131: 22キャラ x 2スキン = 44種。通常スキンは無料。
+const SKIN_THEMES=[
+ {id:'frost',name:'フロスト',rarity:'ウルトラレア',price:5250,colors:['#62bdf7','#a9f4ff','#f1ffff','#244e91'],effect:'ice'},
+ {id:'gold',name:'ゴールド',rarity:'レジェンド',price:11250,colors:['#e3a638','#ffe46b','#fff9d6','#83512e'],effect:'gold'},
+ {id:'shadow',name:'シャドウ',rarity:'スーパーレア',price:2250,colors:['#6953b0','#dc88fa','#f6d8ff','#211b52'],effect:'shadow'},
+ {id:'forest',name:'エメラルド',rarity:'ウルトラレア',price:5250,colors:['#2eaa70','#a9fa98','#e9ffd9','#175742'],effect:'leaf'},
+ {id:'solar',name:'ソーラー',rarity:'スーパーレア',price:2250,colors:['#ee7249','#ffe08a','#fff9d5','#993144'],effect:'fire'},
+ {id:'galaxy',name:'ギャラクシー',rarity:'ディバイン',price:22500,colors:['#5d5ac8','#f58eff','#e6e7ff','#231a60'],effect:'cosmos'},
+ {id:'storm',name:'ストーム',rarity:'スーパーレア',price:2250,colors:['#3c98db','#b4e8ff','#f3fcff','#22447c'],effect:'lightning'},
+ {id:'ruby',name:'ルビー',rarity:'ウルトラレア',price:5250,colors:['#d64763','#ffa8a0','#fff0db','#812641'],effect:'gem'},
+ {id:'steel',name:'スチール',rarity:'レア',price:2250,colors:['#6b829b','#d9f0ff','#f6fcff','#293d60'],effect:'metal'},
+ {id:'prism',name:'プリズム',rarity:'ウルトラレア',price:5250,colors:['#5dcfc5','#f1b3ff','#f8ffff','#4d3d8c'],effect:'prism'},
+ {id:'abyss',name:'アビス',rarity:'レジェンド',price:11250,colors:['#43346c','#e26bff','#f9ddff','#16142f'],effect:'void'},
+ {id:'blossom',name:'ブロッサム',rarity:'レア',price:750,colors:['#ec8db4','#ffe5ee','#fff8f5','#9b436d'],effect:'petal'}
+];
+const SKIN_RARITY_COLORS={'レア':'#6ee7a0','スーパーレア':'#c4a0ff','ウルトラレア':'#ffdf79','レジェンド':'#ff9c56','ディバイン':'#ff86e7'};
+for(let i=0;i<HEROES.length;i++){
+ const t1=SKIN_THEMES[(i*5)%SKIN_THEMES.length],t2=SKIN_THEMES[(i*5+3)%SKIN_THEMES.length];
+ for(const [slot,t] of [[1,t1],[2,t2]]){
+  const id='skin'+slot;
+  HERO_SKINS[i][id]={id,name:t.name+' '+HEROES[i].name,rarity:t.rarity,price:t.price,colors:t.colors,effect:t.effect,ornament:slot};
+ }
+}
+function normalizeOwnedSkins(raw){
+ const result={};if(!raw||typeof raw!=='object')return result;
+ for(let i=0;i<HEROES.length;i++){
+  const val=raw[i];if(!val)continue;
+  const ids=Array.isArray(val)?val:Object.values(val);
+  const filtered=[...new Set(ids.filter(v=>typeof v==='string'&&v!=='default'&&!!HERO_SKINS[i][v]))];
+  if(filtered.length)result[i]=filtered;
+ }
+ return result;
+}
+function normalizeEquippedSkins(raw,owned){
+ const result={};if(!raw||typeof raw!=='object')return result;
+ for(let i=0;i<HEROES.length;i++){
+  const id=raw[i];if(typeof id==='string'&&id!=='default'&&HERO_SKINS[i][id]&&(owned[i]||[]).includes(id))result[i]=id;
+ }
+ return result;
+}
+function skinOwned(i,id){return id==='default'||(data.ownedSkins?.[i]||[]).includes(id)}
+function selectedSkin(i){const id=data.equippedSkins?.[i]||'default';return skinOwned(i,id)&&HERO_SKINS[i]?.[id]?id:'default'}
+function skinPreviewSVG(i,id,size=92){
+ const prev=skinPreviewOverride;skinPreviewOverride={hero:i,id};
+ try{return heroArtSVG(i,size)}finally{skinPreviewOverride=prev}
+}
+let skinPreviewOverride=null;
+function skinCardHTML(i,id){
+ const skin=HERO_SKINS[i][id],owned=skinOwned(i,id),equipped=selectedSkin(i)===id,rarity=skin.rarity||'通常';
+ return `<div class="card" style="min-width:0;border:1px solid ${SKIN_RARITY_COLORS[rarity]||'#65748c'};text-align:center"><div class="avatar" style="margin:auto">${skinPreviewSVG(i,id,80)}</div><b>${skin.name}</b><p class="small" style="color:${SKIN_RARITY_COLORS[rarity]||'#d7e6fa'}">${rarity}</p><p class="small">${id==='default'?'無料':skin.price.toLocaleString()+' 🪙'}</p>${equipped?'<button class="btn green" disabled>✓ 装備中</button>':owned?`<button class="btn green" type="button" data-skin-action="equip:${i}:${id}">装備する</button>`:`<button class="btn orange" type="button" data-skin-action="buy:${i}:${id}">購入する</button>`}</div>`;
+}
+function skinCollectionHTML(i){
+ if(!ownsHero(i))return '<p class="small">キャラクターを解放するとスキンを購入・装備できます。</p>';
+ return `<div class="detail-move"><h3>🎨 スキン（${Object.keys(HERO_SKINS[i]).length}種類）</h3><p id="skinActionStatus" role="status" style="display:none;padding:10px;border:1px solid #d7b75b;border-radius:8px;color:#ffe8a3;background:#29354e"></p><p class="small">スキンごとの動く光輪・回転粒子・きらめきと、攻撃色・必殺技の光・残像が変化します。能力値は変わりません。</p><div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr))">${Object.keys(HERO_SKINS[i]).map(id=>skinCardHTML(i,id)).join('')}</div></div>`;
+}
+function skinShopHTML(){return `<section class="panel"><h2>🎨 スキンショップ</h2><p class="muted">全22キャラ・新スキン44種類。キャラクターをタップすると購入・装備できます。購入はボタンを2回押して確定します。確認画面はゲーム内に表示されます。</p><p>所持コイン：🪙 ${data.coins}</p><div class="grid">${HEROES.map((c,i)=>`<button class="hero-tile ${ownsHero(i)?'':'locked'}" data-act="skinDetail:${i}"><span class="avatar">${heroArtSVG(i,62)}</span><b>${c.name}</b><span class="small">${ownsHero(i)?'スキンを見る':'🔒 キャラ未解放'}</span></button>`).join('')}</div></section>`}
+function clearSkinCanvasCache(){heroArtCanvasCache.clear()}
+let skinPurchaseBusy=false;
+let pendingSkinPurchase=null;
+// ボタンに直接紐づけることで、モーダル内の他のクリック処理に妨げられない。
+window.starSkinClick=function(event,button){
+ if(event){event.preventDefault();event.stopPropagation();}
+ if(!button||button.disabled)return false;
+ const action=button.getAttribute('data-skin-action');
+ button.dataset.originalText=button.textContent;
+ button.textContent='⏳ 確認中…';
+ button.setAttribute('aria-busy','true');
+ button.disabled=true;
+ Promise.resolve().then(()=>applySkinAction(action)).catch(err=>{
+  console.error('スキンボタン処理エラー',err);
+  alert('スキン操作でエラーが発生しました：'+(err?.message||String(err)));
+ }).finally(()=>{if(button.isConnected){button.disabled=false;button.removeAttribute('aria-busy');button.textContent=button.dataset.originalText||'再試行';}});
+ return false;
+};
+// Capturing on document ensures dynamically rendered modal buttons always receive input.
+// It runs before modal-level click listeners and works after every innerHTML refresh.
+document.addEventListener('pointerdown',e=>{
+ const b=e.target.closest?.('[data-skin-action]');
+ if(b&&!b.disabled){b.style.filter='brightness(1.3)';b.style.transform='scale(.97)';}
+},true);
+document.addEventListener('pointerup',e=>{
+ const b=e.target.closest?.('[data-skin-action]');if(b){b.style.filter='';b.style.transform='';}
+},true);
+document.addEventListener('click',e=>{
+ const b=e.target.closest?.('[data-skin-action]');if(!b)return;
+ e.preventDefault();e.stopImmediatePropagation();
+ window.starSkinClick(e,b);
+},true);
+async function applySkinAction(action){
+ const [type,hero,id]=String(action||'').split(':'),i=Number(hero);
+ const skin=Number.isInteger(i)&&i>=0&&i<HEROES.length?HERO_SKINS[i]?.[id]:null;
+ const notify=msg=>{const el=document.getElementById('skinActionStatus');if(el){el.textContent=msg;el.style.display='block'}else alert(msg)};
+ if(!skin||!['buy','equip'].includes(type))return notify('⚠️ スキン情報が見つかりません。');
+ if(!ownsHero(i))return notify('⚠️ このキャラクターを先に解放してください。');
+ if(skinPurchaseBusy)return notify('⏳ 前のスキン操作を処理中です。');
+ data.ownedSkins??={};data.equippedSkins??={};
+ if(type==='buy'&&skinOwned(i,id))return notify('このスキンは購入済みです。装備してください。');
+ if(type==='buy'&&data.coins<skin.price)return notify('⚠️ コイン不足：必要 '+skin.price.toLocaleString()+' 🪙 / 所持 '+data.coins.toLocaleString()+' 🪙');
+ if(type==='equip'&&!skinOwned(i,id))return notify('⚠️ このスキンは未購入です。');
+ if(type==='buy'){
+  const purchaseKey=i+':'+id;
+  if(pendingSkinPurchase!==purchaseKey){
+   pendingSkinPurchase=purchaseKey;
+   const button=document.querySelector('[data-skin-action="'+action+'"]');
+   if(button){button.dataset.originalText='✓ 購入を確定';button.textContent='✓ 購入を確定';button.disabled=false;button.removeAttribute('aria-busy');}
+   return notify('🛒 '+skin.name+'：'+skin.price.toLocaleString()+'コインで購入します。もう一度「購入を確定」を押してください。');
+  }
+  pendingSkinPurchase=null;
+ }
+ skinPurchaseBusy=true;
+ try{
+  if(type==='buy'){
+   data.coins-=skin.price;
+   data.ownedSkins[i]=[...new Set([...(data.ownedSkins[i]||[]),id])];
+  }
+  data.equippedSkins[i]=id;
+  clearSkinCanvasCache();save();refresh();render();showHeroDetail(i);
+  notify(type==='buy'?'🎉 '+skin.name+'を購入・装備しました！':'✓ '+skin.name+'を装備しました！');
+  if(cloudReady&&cloudUid){
+   const saved=await flushCloud();
+   if(!saved){cloudDirty=true;notify('⚠️ 購入情報はこの端末に保存しましたが、Firebase同期に失敗しました。ログアウト・別端末への移動はせず、画面上部の「クラウド保存」で再試行してください。');}
+  }else{
+   notify('⚠️ この端末に購入情報を保存しました。Firebase未ログインのため、ログイン後に同期が必要です。');
+  }
+ }catch(e){console.error('スキン購入エラー',e);notify('⚠️ スキン処理エラー：'+(e?.message||String(e)));}
+ finally{skinPurchaseBusy=false}
+}
+function getHeroSkin(i,forcedId=null){
+ const skinId=forcedId|| (skinPreviewOverride?.hero===i?skinPreviewOverride.id:selectedSkin(i));
  return HERO_SKINS[i]?.[skinId]||HERO_SKINS[i]?.default||{id:'default',name:'オリジナル',colors:HERO_SKIN_PALETTES[0]};
 }
 function heroArtSVG(i,size=62){
@@ -784,6 +928,7 @@ function heroArtSVG(i,size=62){
  };
  const skin=getHeroSkin(i);
  const [base,accent,light,dark]=skin.colors;
+ const skinDecoration=skin.id==='default'?'':skin.effect==='cosmos'?`<g fill="${light}" opacity=".95"><circle cx="12" cy="25" r="1.7"/><circle cx="49" cy="18" r="2"/><circle cx="46" cy="48" r="1.5"/></g>`:skin.effect==='gold'?`<path d="M12 36 L20 27 L25 33 M39 33 L45 26 L52 36" stroke="${light}" stroke-width="3" fill="none"/>`:skin.effect==='ice'?`<path d="M12 33 L20 27 L25 33 M39 33 L44 27 L52 33" stroke="${light}" stroke-width="2.2" fill="none"/>`:skin.effect==='lightning'?`<path d="M15 20 L21 26 L16 32 M48 20 L43 26 L49 32" stroke="${light}" stroke-width="2.4" fill="none"/>`:`<circle cx="15" cy="34" r="2.5" fill="${light}"/><circle cx="49" cy="34" r="2.5" fill="${light}"/>`;
  // キャラ固有の模様。汎用の線模様を重ねず、各モチーフが判別できるようにする。
  const heroDetail={
  3:`<path d="M18 47 Q31 32 48 16" fill="none" stroke="${dark}" stroke-width="2.5" stroke-linecap="round"/><path d="M26 39 L18 28 M33 32 L31 20 M39 25 L48 29 M22 43 L34 47" fill="none" stroke="${accent}" stroke-width="2" stroke-linecap="round"/>`,
@@ -808,36 +953,64 @@ function heroArtSVG(i,size=62){
  </g>`,
  19:`<ellipse cx="32" cy="33" rx="24" ry="11" transform="rotate(-28 32 33)" fill="none" stroke="${accent}" stroke-width="2.5"/><ellipse cx="32" cy="33" rx="13" ry="22" transform="rotate(42 32 33)" fill="none" stroke="${light}" stroke-width="1.5"/><circle cx="32" cy="32" r="8" fill="${dark}" stroke="${light}" stroke-width="1.5"/><circle cx="29" cy="29" r="3" fill="${accent}"/><circle cx="49" cy="13" r="2" fill="${light}"/><circle cx="13" cy="49" r="2.5" fill="${accent}"/>`
  };
+ const isSpecialSkin=skin.id!=='default';
+ const rarityTier={'レア':1,'スーパーレア':2,'ウルトラレア':3,'レジェンド':4,'ディバイン':5}[skin.rarity]||1;
+ const theme=skin.effect||'normal';
+ const orbitR=rarityTier>=4?27:24;
+ const starPath=(x,y,r)=>`<path d="M${x} ${y-r} L${x+r*.24} ${y-r*.24} L${x+r} ${y} L${x+r*.24} ${y+r*.24} L${x} ${y+r} L${x-r*.24} ${y+r*.24} L${x-r} ${y} L${x-r*.24} ${y-r*.24}Z"/>`;
+ const skinAnimatedDetails=!isSpecialSkin?'':`<g class="skin-aura" fill="none" stroke="${accent}" stroke-width="${rarityTier>=4?2.2:1.4}" opacity=".6"><circle cx="32" cy="32" r="${orbitR}" stroke-dasharray="${rarityTier>=3?'6 4':'3 9'}"/></g>
+ <g class="skin-orbit" fill="${light}" opacity=".9"><circle cx="32" cy="${32-orbitR}" r="${rarityTier>=4?2.6:1.5}"/><circle cx="${32+orbitR}" cy="32" r="1.6"/></g>
+ ${rarityTier>=3?`<g class="skin-orbit reverse" stroke="${accent}" stroke-width="1.4" fill="none" opacity=".7"><ellipse cx="32" cy="32" rx="28" ry="12" transform="rotate(30 32 32)"/></g>`:''}
+ <g class="skin-spark" fill="${light}">${starPath(13,17,rarityTier>=4?3:2)}${starPath(50,45,rarityTier>=4?3:2)}</g>
+ ${rarityTier>=4?`<g class="skin-spark" fill="${accent}" opacity=".8">${starPath(50,15,2)}${starPath(12,48,2)}</g>`:''}
+ ${theme==='ice'?`<g class="skin-shimmer" stroke="${light}" stroke-width="1.4"><path d="M10 32l6-4m-3 7l7-5M47 23l6-4"/></g>`:theme==='lightning'?`<g class="skin-shimmer" fill="none" stroke="${light}" stroke-width="2"><path d="M8 20l7-5-2 8 6-4M45 48l8-6-3 9"/></g>`:theme==='cosmos'||theme==='void'?`<g class="skin-spark" fill="${light}"><circle cx="12" cy="34" r="1.4"/><circle cx="53" cy="25" r="1.8"/></g>`:theme==='leaf'||theme==='petal'?`<g class="skin-orbit reverse" fill="${accent}"><ellipse cx="14" cy="23" rx="3" ry="1.4" transform="rotate(35 14 23)"/><ellipse cx="49" cy="41" rx="3" ry="1.4" transform="rotate(-35 49 41)"/></g>`:''}`;
  const id=`ha${i}_${skin.id}`;
- return `<svg class="hero-art-svg" width="${size}" height="${size}" viewBox="0 0 64 64" role="img" aria-label="${c.name}の${skin.name}スキン" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="${id}bg" cx="32%" cy="25%"><stop stop-color="${light}"/><stop offset=".55" stop-color="${base}"/><stop offset="1" stop-color="${dark}"/></radialGradient><linearGradient id="${id}metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="${light}"/><stop offset=".52" stop-color="${accent}"/><stop offset="1" stop-color="${dark}"/></linearGradient></defs>
+ return `<svg class="hero-art-svg ${isSpecialSkin?'skin-animated':''}" style="--skin-glow:${accent}" width="${size}" height="${size}" viewBox="0 0 64 64" role="img" aria-label="${c.name}の${skin.name}スキン" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="${id}bg" cx="32%" cy="25%"><stop stop-color="${light}"/><stop offset=".55" stop-color="${base}"/><stop offset="1" stop-color="${dark}"/></radialGradient><linearGradient id="${id}metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="${light}"/><stop offset=".52" stop-color="${accent}"/><stop offset="1" stop-color="${dark}"/></linearGradient></defs>
  <circle cx="32" cy="32" r="30" fill="${dark}" stroke="${accent}" stroke-width="3"/>
  <circle cx="32" cy="32" r="26" fill="url(#${id}bg)" stroke="${light}" stroke-width=".9"/>
  <g fill="url(#${id}metal)" stroke="${dark}" stroke-width="1.2" stroke-linejoin="round" stroke-linecap="round">${i===18?"":motifs[shape]}</g>
  ${heroDetail[i]||''}
  ${i===20?`<g stroke="#63300c" stroke-width="1.4" stroke-linejoin="round"><path d="M22 27 L30 33 L19 35Z" fill="#241b20"/><path d="M42 27 L34 33 L45 35Z" fill="#241b20"/><path d="M32 34 L27 41 L37 41Z" fill="#5b2c14"/><path d="M17 43 L23 47 L28 44 L33 49 L39 44 L44 47 L49 42 L46 53 L18 53Z" fill="#2b2021"/><path d="M30 14 Q30 8 37 8 L38 15" fill="#378744" stroke="#245b32" stroke-width="2"/></g>`:''}
  <circle cx="15" cy="13" r="3" fill="${light}" opacity=".8"/>
- </svg>`;
+ ${skinDecoration}
+ ${skinAnimatedDetails}</svg>`;
 
 }
 // バトル中も選択画面と同一のSVGを使う。画像はキャラごとに1回だけ生成・キャッシュする。
 const heroArtCanvasCache=new Map();
 const heroArtCacheKey=i=>`${i}:${getHeroSkin(i).id}`;
-function heroArtCanvasImage(i){
+function heroArtCanvasImage(i,skinId=null){
  if(!Number.isInteger(i)||i<0||i>=HEROES.length)return null;
- const cacheKey=heroArtCacheKey(i);
+ const cacheKey=`${i}:${skinId||selectedSkin(i)}`;
  if(heroArtCanvasCache.has(cacheKey))return heroArtCanvasCache.get(cacheKey);
  const img=new Image();
  const entry={img,ready:false};heroArtCanvasCache.set(cacheKey,entry);
  img.onload=()=>{entry.ready=true};
  img.onerror=()=>{entry.failed=true};
- img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(heroArtSVG(i,128));
+ const old=skinPreviewOverride;skinPreviewOverride=skinId?{hero:i,id:skinId}:null;
+ try{img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(heroArtSVG(i,128));}finally{skinPreviewOverride=old}
  return entry;
 }
 function drawHeroArt(ctx,e){
- const r=e.r,entry=heroArtCanvasImage(e.id);
+ const r=e.r,entry=heroArtCanvasImage(e.id,e.skinId);
  ctx.save();
  ctx.fillStyle=e===player?'#ffdf4a':e.team===0?'#56a8ff':'#f76679';
  ctx.beginPath();ctx.arc(e.x,e.y,r+5,0,Math.PI*2);ctx.fill();
+ const skin=getHeroSkin(e.id,e.skinId);
+ if(skin.id!=='default'){
+  const tier={'レア':1,'スーパーレア':2,'ウルトラレア':3,'レジェンド':4,'ディバイン':5}[skin.rarity]||1;
+  const t=typeof elapsed==='number'?elapsed:0;
+  const pulse=.5+.5*Math.sin(t*3+e.id);
+  const rr=r+8+Math.sin(t*2+e.id)*2.2;
+  ctx.save();ctx.globalAlpha=.25+pulse*.32;ctx.shadowColor=skin.colors[1];ctx.shadowBlur=8+tier*3;
+  ctx.strokeStyle=skin.colors[1];ctx.lineWidth=tier>=4?3:1.7;
+  ctx.beginPath();ctx.arc(e.x,e.y,rr,0,Math.PI*2);ctx.stroke();
+  if(tier>=2){for(let k=0;k<Math.min(5,tier+1);k++){
+   const a=t*(tier>=4?1.6:1.1)+k*Math.PI*2/Math.min(5,tier+1)+e.id;
+   const px=e.x+Math.cos(a)*(rr+2),py=e.y+Math.sin(a)*(rr+2);
+   ctx.fillStyle=k%2?skin.colors[2]:skin.colors[1];ctx.beginPath();ctx.arc(px,py,tier>=4?2.4:1.6,0,Math.PI*2);ctx.fill();
+  }}ctx.restore();
+ }
  if(entry&&entry.ready){
   // SVGの丸枠・装飾・色まで選択画面と完全に同じ画像を描画
   ctx.drawImage(entry.img,e.x-r,e.y-r,r*2,r*2);
@@ -849,8 +1022,9 @@ function drawHeroArt(ctx,e){
 }
 const speedLabel=i=>h(i).speed>=2.32?'速い':h(i).speed>=1.96?'普通':'遅い';const sizeLabel=i=>h(i).bodySize>=24?'大型':h(i).bodySize>=19?'中型':'小型';const heroCard=i=>{let own=ownsHero(i);return `<button type="button" class="hero-tile ${data.selected===i?'current':''} ${own?'':'locked'}" data-act="detail:${i}" aria-label="${h(i).name}のステータスを見る"><span class="avatar">${heroArtSVG(i,62)}</span><b>${h(i).name}</b>${rarityTag(i)}<span class="small">Lv.${level(i)} ${own?'':'🔒 未解放'}</span>${data.selected===i?'<span class="badge">✓ 選択中</span>':''}</button>`};
 const attackLabel=i=>[0,8,12,16].includes(i)?'超広範囲の必殺散弾':[5,17,19].includes(i)?'超長距離貫通狙撃':[4,10].includes(i)?'無敵突撃':[6,18].includes(i)?'防御シールド＋自己回復':SUPERS[h(i).superType];
-function showHeroDetail(i){if(!Number.isInteger(i)||i<0||i>=HEROES.length)return;const c=h(i),own=ownsHero(i),selected=data.selected===i;const role=c.range<=120?'超短射程':c.range<=205?'短〜中射程':c.range>=540?'超長射程':c.range>=400?'長射程':'中射程';const description=c.range<=120?'高速で接近して高火力を出す近距離特化。':c.range>=400?'遠距離から高威力で狙撃する。近づかれると不利。':'弾数・攻撃の広がり・貫通を活かして戦う。';$('detailPanel').innerHTML=`<button class="detail-close" data-detail="close" aria-label="閉じる">✕</button><div class="detail-top"><div class="detail-portrait">${heroArtSVG(i,96)}</div><div><div class="detail-name">${c.name}</div>${rarityTag(i)}<div class="detail-tag">${role}</div><div class="small" style="margin-top:8px">Lv.${level(i)}　${own?'解放済み':'🔒 未解放'}</div></div></div><p class="muted">${i===21?'🔔 クリスマス限定：氷晶弾が敵を減速し、3回命中すると氷結追加ダメージ！必殺技は周囲の敵にダメージと減速を与え、味方のHPを32%回復＆3.5秒間の防護シールドを付与する。':description}</p><div class="detail-stats"><div class="detail-stat">❤️ 最大HP<strong>${c.hp+level(i)*12}</strong></div><div class="detail-stat">💥 攻撃力<strong>${c.damage+level(i)*3}</strong></div><div class="detail-stat">🎯 1回の攻撃弾数<strong>${ATTACK_CONFIG[i][0]} 発</strong></div><div class="detail-stat">📏 キャラサイズ<strong>${c.bodySize}（${sizeLabel(i)}）</strong></div><div class="detail-stat">🎯 射程<strong>${c.range}</strong></div><div class="detail-stat">👟 移動速度<strong>${c.speed.toFixed(2)}</strong></div><div class="detail-stat">🔋 最大弾数<strong>${AMMO_CAP[i]} 発</strong></div><div class="detail-stat">⏱️ リロード<strong>${RELOAD_SEC[i]} 秒/発</strong></div></div><div class="detail-move"><b>🎯 通常攻撃：${ATTACKS[i]}</b><p class="small">特徴：${SPECIAL[i]}</p></div><div class="detail-move"><b>⚡ 必殺技：${attackLabel(i)}</b></div>${gadgetPanel(i)}<div class="detail-actions">${own?(selected?'<button class="btn green" disabled>✓ 選択中</button>':`<button class="btn green" data-detail="choose:${i}">このキャラを選択</button>`):'<button class="btn" disabled>🔒 未解放</button>'}<button class="btn red" data-detail="close">戻る</button></div>`;$('heroDetail').classList.add('open');}
+function showHeroDetail(i){if(!Number.isInteger(i)||i<0||i>=HEROES.length)return;const c=h(i),own=ownsHero(i),selected=data.selected===i;const role=c.range<=120?'超短射程':c.range<=205?'短〜中射程':c.range>=540?'超長射程':c.range>=400?'長射程':'中射程';const description=c.range<=120?'高速で接近して高火力を出す近距離特化。':c.range>=400?'遠距離から高威力で狙撃する。近づかれると不利。':'弾数・攻撃の広がり・貫通を活かして戦う。';$('detailPanel').innerHTML=`<button class="detail-close" data-detail="close" aria-label="閉じる">✕</button><div class="detail-top"><div class="detail-portrait">${heroArtSVG(i,96)}</div><div><div class="detail-name">${c.name}</div>${rarityTag(i)}<div class="detail-tag">${role}</div><div class="small" style="margin-top:8px">Lv.${level(i)}　${own?'解放済み':'🔒 未解放'}</div></div></div><p class="muted">${i===21?'🔔 クリスマス限定：氷晶弾が敵を減速し、3回命中すると氷結追加ダメージ！必殺技は周囲の敵にダメージと減速を与え、味方のHPを32%回復＆3.5秒間の防護シールドを付与する。':description}</p><div class="detail-stats"><div class="detail-stat">❤️ 最大HP<strong>${c.hp+level(i)*12}</strong></div><div class="detail-stat">💥 攻撃力<strong>${c.damage+level(i)*3}</strong></div><div class="detail-stat">🎯 1回の攻撃弾数<strong>${ATTACK_CONFIG[i][0]} 発</strong></div><div class="detail-stat">📏 キャラサイズ<strong>${c.bodySize}（${sizeLabel(i)}）</strong></div><div class="detail-stat">🎯 射程<strong>${c.range}</strong></div><div class="detail-stat">👟 移動速度<strong>${c.speed.toFixed(2)}</strong></div><div class="detail-stat">🔋 最大弾数<strong>${AMMO_CAP[i]} 発</strong></div><div class="detail-stat">⏱️ リロード<strong>${RELOAD_SEC[i]} 秒/発</strong></div></div><div class="detail-move"><b>🎯 通常攻撃：${ATTACKS[i]}</b><p class="small">特徴：${SPECIAL[i]}</p></div><div class="detail-move"><b>⚡ 必殺技：${attackLabel(i)}</b></div>${gadgetPanel(i)}${skinCollectionHTML(i)}<div class="detail-actions">${own?(selected?'<button class="btn green" disabled>✓ 選択中</button>':`<button class="btn green" data-detail="choose:${i}">このキャラを選択</button>`):'<button class="btn" disabled>🔒 未解放</button>'}<button class="btn red" data-detail="close">戻る</button></div>`;$('heroDetail').classList.add('open');}
 function closeHeroDetail(){pendingAbilityPurchase=null;$('heroDetail').classList.remove('open')}
+// スキンボタンは window.starSkinClick で直接処理（重複イベントを防止）
 $('heroDetail').addEventListener('click',e=>{
  const b=e.target.closest('[data-ability-action]');if(!b)return;
  e.preventDefault();e.stopImmediatePropagation();
@@ -977,10 +1151,10 @@ function xmasEventHTML(){const n=xmasCount(),joined=Number(xmasParticipant().bos
  <section class="panel"><h2>🌐 全サーバー共通ミッション</h2><p>全員で「氷冠の魔王」を合計500体討伐！ 1体以上討伐した参加者全員が、全体達成後に報酬を受け取れます。</p><div class="big">${xmasSynced?n.toLocaleString('ja-JP'):'—'} / ${XMAS_GOALS[2]} 体</div><div style="height:15px;background:#0c1a30;border-radius:20px;overflow:hidden"><div style="height:100%;width:${Math.min(100,n/XMAS_GOALS[2]*100)}%;background:linear-gradient(90deg,#64c8fa,#b3fbe7)"></div></div><p class="small">あなたの討伐：${joined}体</p><p>🎯 30体：第1目標 ／ 🎯 150体：第2目標 ／ 🎯 500体：最終目標</p><p>🏅 限定称号「聖夜の守護者」<br>🔔 限定キャラ「スノーベル」<br>🪙 12,000コイン<br>🌟 スタードロップ35個</p><p class="small">報酬は最終目標達成後、参加したアカウントが各自1回受け取れます。</p>${btn('🔄 全体進捗を更新','xmasRefresh')} ${btn(data.xmas2026Claimed?'✓ 受け取り済み':'🎁 全体達成報酬を受け取る','xmasClaim','orange')}<p class="small">${xmasError||'※Firebaseで全プレイヤーの討伐数を合算します。新しいFirebaseルールの追加が必要です。ブラウザ側の討伐判定には不正対策の限界があります。'}</p></section>`;
 }
 
-function render(){refresh();document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x.dataset.tab===tab));let v=$('view');if(tab==='home'){v.innerHTML=`<section class="panel hero"><div class="portrait">${heroArtSVG(data.selected,104)}</div><div><div class="big">${h(data.selected).name} ${rarityTag(data.selected)} <span class="badge">Lv.${level(data.selected)}</span></div><p class="muted">勝利 ${data.wins}回 ／ 対戦 ${data.matches}回 ／ 最高スコア ${data.best}</p>${btn('▶ バトルへ','tab:battle','orange')} ${btn('キャラクター変更','tab:heroes')}<p>🌟 スタードロップ：${data.drops}個（スーパーレア以上はキャラや特殊能力も出現！ ウルトラレア以上からは限定称号も超低確率で出現）</p>${btn('🌟 スタードロップを開封','openDrop','orange')}<p class="small">🟢 ガジェット Lv.7で購入（1000コイン） ／ ⭐ スターパワー Lv.9で購入（2000コイン）。ドロップでも入手可能！</p></div></section><section class="panel"><h3>🎟️ アイテムコード</h3><p class="muted">特別なコードを入力するとアイテムを受け取れます。各コードは1アカウントにつき1回だけ使用可能です。</p><div style="display:flex;gap:8px;flex-wrap:wrap"><input id="itemCodeInput" type="text" maxlength="32" autocomplete="off" spellcheck="false" placeholder="アイテムコードを入力" style="flex:1;min-width:140px;padding:12px;border-radius:10px;border:1px solid #64748b;background:#101c36;color:white"><button type="button" class="btn" data-act="redeemCode" id="redeemCodeButton">🎁 受け取る</button></div><p class="small" id="redeemCodeMessage">※ログイン中のアカウントに付与します。</p></section>${isAdmin()&&adminPanelOpen?adminPanelHTML():''}<section class="panel"><h3>⌨️ パソコンの操作方法</h3><p><strong>移動：</strong>矢印キー（↑ ↓ ← →）または W・S（上下）</p><p><strong>Dキー：</strong>自動照準で通常攻撃（長押しで連射）</p><p><strong>Aキー：</strong>自動照準で必殺技</p><p><strong>マウス：</strong>照準を合わせてクリックで攻撃</p><p><strong>スペースキー：</strong>必殺技</p><p><strong>Fキー：</strong>ガジェットを使用（1試合3回）</p><p class="small">自動照準では近くの敵やパワーキューブの箱を狙います。</p></section><section class="panel"><h3>🎮 遊び方</h3><p>ボス・3vs3ノックアウト勝利でトロフィー+30とスタードロップ1個、敗北で-15。バトルロイヤルは順位ごとに報酬が変わります。ホーム画面で開封するとコインを獲得できます。スーパーレア以上からは低確率で未解放キャラクターやガジェット・スターパワー、ウルトラレア以上からは限定称号も登場します。敗北時はスタードロップを獲得できません。 キャラごとに弾数とリロード時間が異なり、弾は1発ずつ自動装填されます。草むらから攻撃すると1.2秒間、攻撃を受けると1秒間姿が見えます。 攻撃を当てると必殺技ゲージがたまります。最後にダメージを受けるか、自分が攻撃してから5秒経つと、最大HPの約16%を毎秒自動回復します。攻撃すると自動回復は中断されます。</p><p class="small">※このゲームはオリジナル作品です。通常バトルはCPU対戦です。オンラインデュエル試験版は専用アリーナで対人対戦できます。</p></section>`}
+function render(){refresh();document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x.dataset.tab===tab));let v=$('view');if(tab==='home'){v.innerHTML=`<section class="panel hero"><div class="portrait">${heroArtSVG(data.selected,104)}</div><div><div class="big">${h(data.selected).name} ${rarityTag(data.selected)} <span class="badge">Lv.${level(data.selected)}</span></div><p class="muted">勝利 ${data.wins}回 ／ 対戦 ${data.matches}回 ／ 最高スコア ${data.best}</p>${btn('▶ バトルへ','tab:battle','orange')} ${btn('キャラクター変更','tab:heroes')} ${btn('🎨 スキンショップ','tab:shop')}<p>🌟 スタードロップ：${data.drops}個（スーパーレア以上はキャラや特殊能力も出現！ ウルトラレア以上からは限定称号も超低確率で出現）</p>${btn('🌟 スタードロップを開封','openDrop','orange')}<p class="small">🟢 ガジェット Lv.7で購入（1000コイン） ／ ⭐ スターパワー Lv.9で購入（2000コイン）。ドロップでも入手可能！</p></div></section><section class="panel"><h3>🎟️ アイテムコード</h3><p class="muted">特別なコードを入力するとアイテムを受け取れます。各コードは1アカウントにつき1回だけ使用可能です。</p><div style="display:flex;gap:8px;flex-wrap:wrap"><input id="itemCodeInput" type="text" maxlength="32" autocomplete="off" spellcheck="false" placeholder="アイテムコードを入力" style="flex:1;min-width:140px;padding:12px;border-radius:10px;border:1px solid #64748b;background:#101c36;color:white"><button type="button" class="btn" data-act="redeemCode" id="redeemCodeButton">🎁 受け取る</button></div><p class="small" id="redeemCodeMessage">※ログイン中のアカウントに付与します。</p></section>${isAdmin()&&adminPanelOpen?adminPanelHTML():''}<section class="panel"><h3>⌨️ パソコンの操作方法</h3><p><strong>移動：</strong>矢印キー（↑ ↓ ← →）または W・S（上下）</p><p><strong>Dキー：</strong>自動照準で通常攻撃（長押しで連射）</p><p><strong>Aキー：</strong>自動照準で必殺技</p><p><strong>マウス：</strong>照準を合わせてクリックで攻撃</p><p><strong>スペースキー：</strong>必殺技</p><p><strong>Fキー：</strong>ガジェットを使用（1試合3回）</p><p class="small">自動照準では近くの敵やパワーキューブの箱を狙います。</p></section><section class="panel"><h3>🎮 遊び方</h3><p>ボス・3vs3ノックアウト勝利でトロフィー+30とスタードロップ1個、敗北で-15。バトルロイヤルは順位ごとに報酬が変わります。ホーム画面で開封するとコインを獲得できます。スーパーレア以上からは低確率で未解放キャラクターやガジェット・スターパワー、ウルトラレア以上からは限定称号も登場します。敗北時はスタードロップを獲得できません。 キャラごとに弾数とリロード時間が異なり、弾は1発ずつ自動装填されます。草むらから攻撃すると1.2秒間、攻撃を受けると1秒間姿が見えます。 攻撃を当てると必殺技ゲージがたまります。最後にダメージを受けるか、自分が攻撃してから5秒経つと、最大HPの約16%を毎秒自動回復します。攻撃すると自動回復は中断されます。</p><p class="small">※このゲームはオリジナル作品です。通常バトルはCPU対戦です。オンラインデュエル試験版は専用アリーナで対人対戦できます。</p></section>`}
 else if(tab==='battle'){const modeCards=[['boss','👹 ボスバトル','味方AI2人と協力して180秒以内にボスを討伐。仲間が生存していれば20秒後に復活できます。'],['royale','👑 バトルロイヤル','10人で生き残りを競います。箱からパワーキューブを集め、縮小する毒ガスを避けて戦おう。'],['team','🔵 3vs3ノックアウト','味方AI2人と敵チーム3人で対戦。ラウンド中は復活なし。先に2ラウンド勝利したチームの勝ち。'],['duel','⚔️ デュエル（1vs1）','自分と敵AIの一騎打ち。3ラウンド制で先に2勝した側の勝ち。'],['serious','🔥 ガチバトル','1000トロフィー以上限定。4つの通常モードからランダム抽選！ AIレベル最大40、通常ボスのHPと攻撃力は2倍、トロフィー増減も2倍。']];const info=modeCards.find(x=>x[0]===mode)||modeCards[0];v.innerHTML=`<section class="panel"><h2>⚔️ バトルモードを選択</h2><p class="muted">遊びたいモードを押すと、ルールや設定が表示されます。</p><div class="grid">${modeCards.map(m=>`<button type="button" class="hero-tile ${mode===m[0]?'current':''}" data-act="chooseMode:${m[0]}" style="min-height:100px;cursor:pointer"><span class="avatar">${m[1].split(' ')[0]}</span><b>${m[1]}</b><span class="small">${mode===m[0]?'✓ 選択中':m[0]==='serious'&&data.trophies<1000?'🔒 あと'+(1000-data.trophies)+'🏆':'詳細を見る'}</span></button>`).join('')}</div><div class="panel" style="margin-top:15px;border:2px solid #7ea8ff"><h2>${info[1]}</h2><p>${info[2]}</p><p class="small">${mode==='royale'?'順位に応じてトロフィーとスタードロップを獲得。1〜4位は報酬あり。':'勝利：🏆 +30・🌟 1個 ／ 敗北：🏆 −15・ドロップなし'}</p>${mode==='serious'?`<p class="small">現在のトロフィー：🏆 ${data.trophies} ／ ${data.trophies>=1000?'解放済み':'あと'+(1000-data.trophies)+'で解放'}</p><p class="small">抽選対象：バトルロイヤル／通常ボスバトル／3vs3ノックアウト／デュエル。ボス戦では通常ボス2体と難易度をランダム抽選します。</p>`:''}${mode==='boss'?`<h3>👹 戦うボスを選択</h3><div class="grid">${BOSS_TYPES.filter(b=>b.id!=='xmas').map(b=>`<button type="button" class="hero-tile ${bossType===b.id?'current':''}" data-act="chooseBoss:${b.id}" style="cursor:pointer"><span class="avatar" style="display:inline-flex;align-items:center;justify-content:center;width:112px;height:112px;background:#0e1d36;border-radius:14px"><img src="${bossPortrait(b.id)}" alt="${b.name}のバトル中の姿" style="width:108px;height:108px;object-fit:contain"></span><b>${b.name}</b><span class="small">${bossType===b.id?'✓ 選択中':'このボスと戦う'}</span></button>`).join('')}</div><p>${selectedBoss().description}</p><p class="small">HP倍率：${selectedBoss().hp}倍 ／ 攻撃力倍率：${selectedBoss().damage}倍 ／ 攻撃頻度：${selectedBoss().cooldown<1?'高い':'標準'}</p><h3>🎚️ 難易度を選択</h3><select id="bossDifficultySelect" style="width:100%;padding:12px;background:#101c36;color:white;border:1px solid #a78bfa;border-radius:9px">${BOSS_DIFFICULTIES.map((d,i)=>`<option value="${i}" ${bossDifficulty===i?'selected':''}>${i+1}. ${d.name}</option>`).join('')}</select><p class="small">通常ボス勝利時のトロフィー：ビギナー+15／ノーマル+25／ハード+35／エキスパート+50／ナイトメア+80。<br>ボスのHP・攻撃力・攻撃間隔・怒りになる時間が難易度で大きく変化します。プレイヤーのレベルは変更されません。</p>`:''}${mode==='serious'?`<button type="button" class="btn orange" data-act="startSerious" ${data.trophies<1000?'disabled':''}>🔥 ガチバトルを開始（ランダム抽選）</button>`:btn('▶ '+info[1]+'を開始','start','orange')}</div></section>`}
 else if(tab==='heroes'){v.innerHTML=`<section class="panel"><h2>👥 キャラクター（${new Set([...(Array.isArray(data.owned)?data.owned:[]),...(ownsHero(20)?[20]:[])]).size}/${HEROES.length}）</h2><p class="muted">レアリティ：🟦 ノーマル ／ 🟩 レア ／ 🟪 スーパーレア ／ 🟨 ウルトラレア ／ 🌟 レジェンド</p><p class="muted">キャラクターをタップすると、ステータス・ガジェット2種類・スターパワー2種類を確認して装備できます。詳細画面から選択するか、戻るかを決められます。購入済みの🎃パンプキンもここから選択できます。</p>${btn('選択キャラを強化：'+(150*level(data.selected))+'🪙','upgrade','green')}<p class="small">現在：${h(data.selected).name} Lv.${level(data.selected)}</p><div class="grid">${HEROES.map((_,i)=>heroCard(i)).join('')}</div></section>`}
-else if(tab==='shop'){v.innerHTML=`<section class="panel"><h2>🛒 ショップ</h2><p>所持コイン：🪙 ${data.coins}</p><div class="grid"><div class="card"><div class="avatar">🎁</div><b>ヒーローボックス</b><p class="small">未解放キャラを1体獲得。高レアほど出にくい・重複なし。</p>${btn('1000🪙 で開封','gacha','orange')}</div><div class="card"><div class="avatar">⬆️</div><b>キャラ強化</b><p class="small">${h(data.selected).name} Lv.${level(data.selected)}</p>${btn((150*level(data.selected))+'🪙 で強化','upgrade','green')}</div><h3 style="margin:24px 0 12px">🎃❄️ 期間限定キャラクター</h3><p class="muted">ハロウィン限定キャラは販売中！ クリスマス限定キャラは近日公開です。</p><div class="grid"><div class="card" style="border:2px solid #f19a49;background:linear-gradient(145deg,#443049,#28253f)"><div class="avatar" style="font-size:48px">🎃</div><b>🎃 パンプキン</b>${rarityTag(20)}<p class="small">HP${h(20).hp} / 攻撃力${h(20).damage} / ${ATTACK_CONFIG[20][0]}発の集中散弾・中射程・まとまりのある弾道 / 弾数1 / リロード3.3秒 / 低速 / 必殺技：自身のHPを65%回復</p>${data.owned.includes(20)?(data.selected===20?'<button class="btn green" disabled>✓ 使用中</button>':btn('✓ 購入済み・使用キャラに設定','choosePumpkin','green')):btn('5000🪙 で購入','buyHalloween','orange')}</div><div class="card" style="border:2px solid #85d6f1;background:linear-gradient(145deg,#264b62,#293349)"><div class="avatar" style="font-size:48px">🎄</div><b>🎄 クリスマス限定キャラ</b><p class="small">クリスマス限定の特別なキャラクターが登場予定！</p><button class="btn" type="button" disabled style="opacity:.65;cursor:not-allowed;width:100%;background:#416c80">🔒 近日公開・購入不可</button></div></div></section>`}
+else if(tab==='shop'){v.innerHTML=`<section class="panel"><h2>🛒 ショップ</h2><p>所持コイン：🪙 ${data.coins}</p><div class="grid"><div class="card"><div class="avatar">🎁</div><b>ヒーローボックス</b><p class="small">未解放キャラを1体獲得。高レアほど出にくい・重複なし。</p>${btn('1000🪙 で開封','gacha','orange')}</div><div class="card"><div class="avatar">⬆️</div><b>キャラ強化</b><p class="small">${h(data.selected).name} Lv.${level(data.selected)}</p>${btn((150*level(data.selected))+'🪙 で強化','upgrade','green')}</div><h3 style="margin:24px 0 12px">🎃❄️ 期間限定キャラクター</h3><p class="muted">ハロウィン限定キャラは販売中！ クリスマス限定キャラは近日公開です。</p><div class="grid"><div class="card" style="border:2px solid #f19a49;background:linear-gradient(145deg,#443049,#28253f)"><div class="avatar" style="font-size:48px">🎃</div><b>🎃 パンプキン</b>${rarityTag(20)}<p class="small">HP${h(20).hp} / 攻撃力${h(20).damage} / ${ATTACK_CONFIG[20][0]}発の集中散弾・中射程・まとまりのある弾道 / 弾数1 / リロード3.3秒 / 低速 / 必殺技：自身のHPを65%回復</p>${data.owned.includes(20)?(data.selected===20?'<button class="btn green" disabled>✓ 使用中</button>':btn('✓ 購入済み・使用キャラに設定','choosePumpkin','green')):btn('5000🪙 で購入','buyHalloween','orange')}</div><div class="card" style="border:2px solid #85d6f1;background:linear-gradient(145deg,#264b62,#293349)"><div class="avatar" style="font-size:48px">🎄</div><b>🎄 クリスマス限定キャラ</b><p class="small">クリスマス限定の特別なキャラクターが登場予定！</p><button class="btn" type="button" disabled style="opacity:.65;cursor:not-allowed;width:100%;background:#416c80">🔒 近日公開・購入不可</button></div></div></section>${skinShopHTML()}`}
 else if(tab==='missions'){v.innerHTML=missionsHTML()}
 else if(tab==='events'){v.innerHTML=xmasEventHTML()}
 
@@ -988,6 +1162,13 @@ else if(tab==='feedback'){v.innerHTML=feedbackHTML()}
 else if(tab==='news'){
 // 次回以降は先頭に最新更新を追加すると最新ニュースと過去5件が自動で切り替わる。
 const updates=[
+{ver:137,title:'🛒 スキン購入確認の無反応を修正',detail:'Googleサイト埋め込みで標準確認ダイアログが抑制される場合に備え、スキン購入を画面内の2回タップ確認に変更。ルビー・エメラルドは5250コイン、ソーラーはスーパーレア2250コインに変更。',date:'2026年11月19日'},
+{ver:136,title:'🎨 スキン購入と価格調整',detail:'購入時にローカルへ即保存し、クラウド同期エラーを明示。全スキン約1.5倍の価格に調整。ルビー・エメラルドをウルトラレア、スチールをレアへ変更。',date:'2026年11月19日'},
+{ver:136,title:'🎨 スキン購入ボタンとAIスキン修正',detail:'購入ボタンのイベントを画面全体で確実に受け取る方式に変更。敵・味方AIもランダムなスキンを使用し、光輪と攻撃色にも反映。',date:'2026年11月19日（日本時間）'},
+{ver:134,title:'🛠️ スキン購入ボタンの無反応を修正',detail:'スキン購入・装備ボタンに直接クリック処理を登録。押した直後に確認中表示を出し、処理中の二重操作とイベントの競合を防止。',date:'2026年11月19日（日本時間）'},
+{ver:133,title:'🛒 スキン購入・装備の保存処理を修正',detail:'スキン購入時のコイン・所持・装備情報をまとめてクラウド保存し、保存に失敗した場合はコインと購入状態を元に戻すよう改善。エラー内容も表示。',date:'2026年11月19日（日本時間）'},
+{ver:132,title:'✨ スキンに動きと発光演出を追加',detail:'44種類のスキンに動く光輪・回転する光粒・点滅する装飾を追加。高レアほど豪華な二重リングや粒子演出。バトル中もアニメーション表示。通常スキンと性能は変更なし。',date:'2026年11月19日（日本時間）'},
+{ver:131,title:'🎨 スキンショップ開店・新スキン44種類',detail:'全22キャラに各2種類、計44種類の新スキンを追加。コイン購入・装備・キャラ別所持管理、攻撃色・発光・残像の変更、Firebaseクラウド保存に対応。能力値は変化しません。',date:'2026年11月19日（日本時間）'},
 {ver:130,title:'🏆 トロフィーランキング同期修正',detail:'新称号のFirebaseルール対応、ランキングの送信競合防止、戦闘終了後の即時同期、更新失敗時の原因表示を追加。FirebaseルールVer.130への更新が必要です。',date:'2026年11月18日（日本時間）'},
 {ver:129,title:'🛠️ ガジェット・スターパワー装備保存修正',detail:'購入済み能力の装備状態をFirebase読み込み時に復元・補正。スターパワーも未装備状態を自動修復し、装備変更はクラウドに即時保存。既存の所持状況は維持。',date:'2026年11月18日（日本時間）'},
 {ver:128,title:'🟢 購入済みガジェットの自動装備修正',detail:'Lv.7以上で購入済みガジェットがあるのに装備情報が未設定・不整合の場合、所持済みのものを自動装備してバトルで使用可能に修正。旧セーブの数値文字列にも対応。未購入品は自動解放しない。',date:'2026年11月18日（日本時間）'},
@@ -1081,12 +1262,12 @@ v.innerHTML=`<section class="panel news-panel"><div class="row" style="justify-c
 else{v.innerHTML=`<section class="panel"><h2>🏆 ランク</h2><div class="big" style="color:${trophyRank(data.trophies).color}">${rank()}</div><p>現在のトロフィー：${data.trophies} 🏆</p><p class="muted">ブロンズ 0 ／ シルバー 100 ／ ゴールド 300 ／ ダイヤ 650 ／ プラチナ 1100 ／ レジェンド 1800 ／ マスター 3000 ／ プロ 5000 ／ ディバイン 10000</p><p>勝利数：${data.wins} ／ 対戦数：${data.matches}</p></section><section class="panel"><div class="row" style="justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><h2 style="margin:0">🏅 称号コレクション</h2><button type="button" class="btn" data-act="toggleTitles" aria-expanded="${titleCollectionOpen}">${titleCollectionOpen?'▲ 閉じる':'🏅 称号を表示・選択'}</button></div><p class="muted">装備中：${equippedTitlesHTML()}</p>${titleCollectionOpen?titleCollectionHTML():''}</section>${leaderboardHTML()}`}}
 document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{tab=b.dataset.tab;render();if(tab==='feedback')loadFeedback();if(tab==='events')loadXmas()});
 $('view').addEventListener('change',e=>{if(e.target.name==='mode'){mode=e.target.value;render()}});
-$('view').addEventListener('click',e=>{let b=e.target.closest('[data-act]');if(!b)return;let a=b.dataset.act;if(a.startsWith('missionFilter:')){missionViewFilter=a.split(':')[1];render()}else if(a==='startSerious'){startSeriousBattle()}else if(a.startsWith('chooseMode:')){seriousBattle=false;mode=a.split(':')[1];if(bossType==='xmas')bossType='abyss';render()}else if(a.startsWith('chooseBoss:')){bossType=a.split(':')[1];render()}else if(a==='xmasBoss'){seriousBattle=false;if(!xmasActive())return alert('開催期間外です');xmasRun='boss';mode='boss';bossType='xmas';bossDifficulty=1;start()}else if(a==='xmasSnow'){seriousBattle=false;if(!xmasActive())return alert('開催期間外です');xmasRun='snow';mode='royale';start()}else if(a==='xmasRefresh'){loadXmas()}else if(a==='xmasClaim'){claimXmas()}else if(a==='sendFeedback'){sendFeedback()}else if(a==='refreshFeedback'){loadFeedback()}else if(['likeFeedback','replyFeedback','deleteFeedback','deleteReply'].includes(a)){feedbackAction(a,b)}else if(a==='redeemCode'){redeemItemCode()}else if(a==='sendGift'){sendAdminGift()}else if(a==='closeAdmin'){adminPanelOpen=false;pendingAdminAction='';render()}else if(a.startsWith('equipTitle2:')){if(!isAdmin())return;const id=a.split(':')[1];unlockTitles();if(id!=='none'&&(!data.unlockedTitles[id]||!titleById(id)||id===data.selectedTitle))return;data.selectedTitle2=id==='none'?null:id;leaderboardPublished=null;save();publishLeaderboard().then(()=>{if(tab==='ranking')loadLeaderboard()});render()}else if(a==='claimAllMissions'){claimAllMissions()}else if(a.startsWith('claimMission:')){claimMission(a.split(':')[1])}else if(a.startsWith('equipTitle:')){const id=a.split(':')[1];unlockTitles();if(!data.unlockedTitles[id]||!titleById(id))return alert('未獲得の称号です');data.selectedTitle=id;leaderboardPublished=null;save();publishLeaderboard().then(()=>{if(tab==='ranking')loadLeaderboard()});render()}else if(a==='refreshLeaderboard'){if(!leaderboardLoading)loadLeaderboard()}else if(a==='toggleTitles'){titleCollectionOpen=!titleCollectionOpen;render()}else if(a==='toggleHistory'){newsHistoryOpen=!newsHistoryOpen;render()}else if(a==='start'){seriousBattle=false;xmasRun='';start();}else if(a==='openDrop')openDrop();else if(a.startsWith('tab:')){tab=a.split(':')[1];render();if(tab==='ranking')loadLeaderboard();if(tab==='feedback')loadFeedback()}else if(a.startsWith('detail:')){showHeroDetail(+a.split(':')[1])}else if(a.startsWith('select:')){data.selected=+a.split(':')[1];save();render()}else if(a==='upgrade'){let cost=150*level(data.selected);if(data.coins<cost)return alert('コインが足りません');if(level(data.selected)>=20)return alert('最大レベルです');data.coins-=cost;data.levels[data.selected]=level(data.selected)+1;save();render()}else if(a==='choosePumpkin'){if(!data.owned.includes(20)&&data.pumpkinPurchased===true)data.owned.push(20);if(!data.owned.includes(20))return alert('パンプキンの購入情報が見つかりません。Firebaseの所持キャラ一覧を確認してください。');data.selected=20;save();render();alert('🎃 パンプキンを使用キャラに設定しました！')}else if(a==='buyHalloween'){if(data.owned.includes(20))return alert('すでに購入済みです');if(data.coins<5000)return alert('コインが足りません（5000コイン必要）');if(!confirm('🎃 パンプキンを5000コインで購入しますか？'))return;data.coins-=5000;data.owned.push(20);data.pumpkinPurchased=true;data.selected=20;save();alert('🎉 🎃 パンプキンを購入し、使用キャラに設定しました！');render()}else if(a==='gacha'){let locked=randomUnlockableHeroIds();if(!locked.length)return alert('ヒーローボックスで解放できるキャラは全員解放済みです！ ショップ限定キャラはショップから購入してください。');if(data.coins<1000)return alert('コインが足りません');data.coins-=1000;let i=weightedHeroDraw(locked);data.owned.push(i);save();alert('🎉 '+h(i).icon+' '+h(i).name+' を獲得！');render()}});
+$('view').addEventListener('click',e=>{let b=e.target.closest('[data-act]');if(!b)return;let a=b.dataset.act;if(a.startsWith('missionFilter:')){missionViewFilter=a.split(':')[1];render()}else if(a==='startSerious'){startSeriousBattle()}else if(a.startsWith('chooseMode:')){seriousBattle=false;mode=a.split(':')[1];if(bossType==='xmas')bossType='abyss';render()}else if(a.startsWith('chooseBoss:')){bossType=a.split(':')[1];render()}else if(a==='xmasBoss'){seriousBattle=false;if(!xmasActive())return alert('開催期間外です');xmasRun='boss';mode='boss';bossType='xmas';bossDifficulty=1;start()}else if(a==='xmasSnow'){seriousBattle=false;if(!xmasActive())return alert('開催期間外です');xmasRun='snow';mode='royale';start()}else if(a==='xmasRefresh'){loadXmas()}else if(a==='xmasClaim'){claimXmas()}else if(a==='sendFeedback'){sendFeedback()}else if(a==='refreshFeedback'){loadFeedback()}else if(['likeFeedback','replyFeedback','deleteFeedback','deleteReply'].includes(a)){feedbackAction(a,b)}else if(a==='redeemCode'){redeemItemCode()}else if(a==='sendGift'){sendAdminGift()}else if(a==='closeAdmin'){adminPanelOpen=false;pendingAdminAction='';render()}else if(a.startsWith('equipTitle2:')){if(!isAdmin())return;const id=a.split(':')[1];unlockTitles();if(id!=='none'&&(!data.unlockedTitles[id]||!titleById(id)||id===data.selectedTitle))return;data.selectedTitle2=id==='none'?null:id;leaderboardPublished=null;save();publishLeaderboard().then(()=>{if(tab==='ranking')loadLeaderboard()});render()}else if(a==='claimAllMissions'){claimAllMissions()}else if(a.startsWith('claimMission:')){claimMission(a.split(':')[1])}else if(a.startsWith('equipTitle:')){const id=a.split(':')[1];unlockTitles();if(!data.unlockedTitles[id]||!titleById(id))return alert('未獲得の称号です');data.selectedTitle=id;leaderboardPublished=null;save();publishLeaderboard().then(()=>{if(tab==='ranking')loadLeaderboard()});render()}else if(a==='refreshLeaderboard'){if(!leaderboardLoading)loadLeaderboard()}else if(a==='toggleTitles'){titleCollectionOpen=!titleCollectionOpen;render()}else if(a==='toggleHistory'){newsHistoryOpen=!newsHistoryOpen;render()}else if(a==='start'){seriousBattle=false;xmasRun='';start();}else if(a==='openDrop')openDrop();else if(a.startsWith('tab:')){tab=a.split(':')[1];render();if(tab==='ranking')loadLeaderboard();if(tab==='feedback')loadFeedback()}else if(a.startsWith('skinDetail:')){showHeroDetail(+a.split(':')[1])}else if(a.startsWith('detail:')){showHeroDetail(+a.split(':')[1])}else if(a.startsWith('select:')){data.selected=+a.split(':')[1];save();render()}else if(a==='upgrade'){let cost=150*level(data.selected);if(data.coins<cost)return alert('コインが足りません');if(level(data.selected)>=20)return alert('最大レベルです');data.coins-=cost;data.levels[data.selected]=level(data.selected)+1;save();render()}else if(a==='choosePumpkin'){if(!data.owned.includes(20)&&data.pumpkinPurchased===true)data.owned.push(20);if(!data.owned.includes(20))return alert('パンプキンの購入情報が見つかりません。Firebaseの所持キャラ一覧を確認してください。');data.selected=20;save();render();alert('🎃 パンプキンを使用キャラに設定しました！')}else if(a==='buyHalloween'){if(data.owned.includes(20))return alert('すでに購入済みです');if(data.coins<5000)return alert('コインが足りません（5000コイン必要）');if(!confirm('🎃 パンプキンを5000コインで購入しますか？'))return;data.coins-=5000;data.owned.push(20);data.pumpkinPurchased=true;data.selected=20;save();alert('🎉 🎃 パンプキンを購入し、使用キャラに設定しました！');render()}else if(a==='gacha'){let locked=randomUnlockableHeroIds();if(!locked.length)return alert('ヒーローボックスで解放できるキャラは全員解放済みです！ ショップ限定キャラはショップから購入してください。');if(data.coins<1000)return alert('コインが足りません');data.coins-=1000;let i=weightedHeroDraw(locked);data.owned.push(i);save();alert('🎉 '+h(i).icon+' '+h(i).name+' を獲得！');render()}});
 const canvas=$('gameCanvas'),ctx=canvas.getContext('2d');const rand=(a,b)=>a+Math.random()*(b-a);const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);const norm=(x,y)=>{let d=Math.hypot(x,y)||1;return{x:x/d,y:y/d}};function circleRect(x,y,r,w){let cx=clamp(x,w.x,w.x+w.w),cy=clamp(y,w.y,w.y+w.h);return (x-cx)**2+(y-cy)**2<r*r}
 function blocked(x,y,r=17){return x<r||y<r||x>worldW-r||y>worldH-r||walls.some(w=>circleRect(x,y,r,w))}
 function pos(radius=28){for(let k=0;k<350;k++){let p={x:rand(65,worldW-65),y:rand(65,worldH-65)};if(!blocked(p.x,p.y,radius+10)&&entities.every(e=>dist(e,p)>e.r+radius+48))return p}for(let y=65;y<worldH-65;y+=35)for(let x=65;x<worldW-65;x+=35){let p={x,y};if(!blocked(x,y,radius+10)&&entities.every(e=>dist(e,p)>e.r+radius+25))return p}return{x:worldW/2,y:worldH/2}}
 let powerCubes=[];let powerBoxes=[];
-function create(id,team,ai=true,p){let a=h(id),lv=ai?(seriousBattle?Math.min(40,Math.max(1,1+Math.floor(data.trophies/170)+Math.floor(rand(-1,2)))*2):Math.min(20,Math.max(1,1+Math.floor(data.trophies/170)+Math.floor(rand(-1,2))))):level(id),hp=a.hp+lv*12;return{id,lv,team,ai,power:0,baseMaxhp:hp,baseDamage:a.damage+lv*3,x:p?.x??480,y:p?.y??300,r:a.bodySize,hp,maxhp:hp,speed:a.speed,damage:a.damage+lv*3,range:a.range,cooldown:a.cooldown,lastShot:0,super:0,dead:false,respawn:0,dir:0,lastHit:-10,think:0,tx:0,ty:0,score:0,invuln:0,slowUntil:0,boostUntil:0,poisonUntil:0,poisonOwner:null,aiStrafe:1,gasTick:0,ammo:AMMO_CAP[id],reloadProgress:0,revealedUntil:0,gadgetIndex:lv>=7?(ai?Math.floor(Math.random()*2):equippedGadget(id)):-1,starIndex:lv>=9&&ai?Math.floor(Math.random()*2):-1,gadgetCharges:lv>=7&&(ai||equippedGadget(id)>=0)?3:0,gadgetShieldUntil:0,gadgetReloadUntil:0,gadgetDamageUntil:0,gadgetFlash:0,stealthUntil:0}}
+function create(id,team,ai=true,p){let a=h(id),lv=ai?(seriousBattle?Math.min(40,Math.max(1,1+Math.floor(data.trophies/170)+Math.floor(rand(-1,2)))*2):Math.min(20,Math.max(1,1+Math.floor(data.trophies/170)+Math.floor(rand(-1,2))))):level(id),hp=a.hp+lv*12;return{id,lv,team,ai,skinId:ai?(Math.random()<.28?'default':(Math.random()<.5?'skin1':'skin2')):selectedSkin(id),power:0,baseMaxhp:hp,baseDamage:a.damage+lv*3,x:p?.x??480,y:p?.y??300,r:a.bodySize,hp,maxhp:hp,speed:a.speed,damage:a.damage+lv*3,range:a.range,cooldown:a.cooldown,lastShot:0,super:0,dead:false,respawn:0,dir:0,lastHit:-10,think:0,tx:0,ty:0,score:0,invuln:0,slowUntil:0,boostUntil:0,poisonUntil:0,poisonOwner:null,aiStrafe:1,gasTick:0,ammo:AMMO_CAP[id],reloadProgress:0,revealedUntil:0,gadgetIndex:lv>=7?(ai?Math.floor(Math.random()*2):equippedGadget(id)):-1,starIndex:lv>=9&&ai?Math.floor(Math.random()*2):-1,gadgetCharges:lv>=7&&(ai||equippedGadget(id)>=0)?3:0,gadgetShieldUntil:0,gadgetReloadUntil:0,gadgetDamageUntil:0,gadgetFlash:0,stealthUntil:0}}
 function mapBuild(){
 worldW=mode==='royale'?3000:mode==='boss'?1300:1080;
 worldH=mode==='royale'?2200:mode==='boss'?850:720;
@@ -1172,12 +1353,12 @@ function knockoutCheck(){
  knockoutRound++;roundBreak=2.8;
 }
 // Ver.124: ヒーロー別の攻撃色・発光・残像。スキンの配色も参照する。
-function attackPalette(id){
- const colors=getHeroSkin(id).colors;
- return {main:colors[1],core:colors[2],edge:colors[0],shadow:colors[3]};
+function attackPalette(id,skinId=null){
+ const skin=getHeroSkin(id,skinId),colors=skin.colors;
+ return {main:colors[1],core:colors[2],edge:colors[0],shadow:colors[3],effect:skin.effect||'normal',rarity:skin.rarity||'通常'};
 }
 function drawAttackProjectile(b){
- const id=b.owner?.id??0,p=attackPalette(id),superShot=!!b.superShot;
+ const id=b.owner?.id??0,p=attackPalette(id,b.owner?.skinId),superShot=!!b.superShot;
  const angle=Math.atan2(b.vy,b.vx),r=Math.max(4,b.r||5),pulse=1+Math.sin(elapsed*17+id)*.12;
  ctx.save();ctx.translate(b.x,b.y);ctx.rotate(angle);
  ctx.shadowColor=p.main;ctx.shadowBlur=superShot?24:13;
@@ -1192,6 +1373,11 @@ function drawAttackProjectile(b){
  else{ctx.beginPath();ctx.ellipse(0,0,r*1.35*pulse,r*.85*pulse,0,0,Math.PI*2);}
  ctx.fill();ctx.stroke();
  ctx.shadowBlur=0;ctx.fillStyle=p.core;ctx.beginPath();ctx.ellipse(r*.25,0,Math.max(2,r*.55),Math.max(1.5,r*.34),0,0,Math.PI*2);ctx.fill();
+ if(p.effect==='cosmos'||p.effect==='prism'){
+  ctx.globalAlpha=.9;ctx.fillStyle=p.core;for(let j=0;j<3;j++){const t=elapsed*3+j*2.094;ctx.beginPath();ctx.arc(Math.cos(t)*r*1.9,Math.sin(t)*r*1.9,Math.max(1.5,r*.19),0,Math.PI*2);ctx.fill()}ctx.globalAlpha=1;
+ }else if(p.effect==='ice'||p.effect==='gold'){
+  ctx.strokeStyle=p.core;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(-r*1.5,-r);ctx.lineTo(-r*2.3,-r*1.6);ctx.moveTo(-r*1.5,r);ctx.lineTo(-r*2.3,r*1.6);ctx.stroke();
+ }
  if(superShot){ctx.strokeStyle=p.core;ctx.lineWidth=2;ctx.globalAlpha=.8;ctx.beginPath();ctx.arc(0,0,r*1.8,0,Math.PI*2);ctx.stroke();}
  ctx.restore();
 }
@@ -1677,7 +1863,7 @@ if(mode==='royale')for(let cube of powerCubes){if(elapsed<cube.spawn)continue;ct
 drawSnowEvent();for(let ef of effects){ctx.beginPath();ctx.strokeStyle=ef.color;ctx.globalAlpha=Math.min(1,Math.max(0,ef.life/35));ctx.lineWidth=7;ctx.arc(ef.x,ef.y,Math.max(0.5,ef.max*(1-Math.min(ef.life,35)/35)),0,7);ctx.stroke()}ctx.globalAlpha=1;
 drawBossWarnings();
 for(let b of shots){
- const pal=attackPalette(b.owner?.id??0);
+ const pal=attackPalette(b.owner?.id??0,b.owner?.skinId);
  const trailLen=b.superShot?34:21,velocity=Math.hypot(b.vx,b.vy)||1;
  ctx.save();ctx.strokeStyle=pal.main;ctx.lineWidth=Math.max(3,b.r*.85);ctx.lineCap='round';ctx.globalAlpha=b.superShot?.48:.3;ctx.shadowColor=pal.main;ctx.shadowBlur=b.superShot?17:9;
  ctx.beginPath();ctx.moveTo(b.x-b.vx/velocity*trailLen,b.y-b.vy/velocity*trailLen);ctx.lineTo(b.x,b.y);ctx.stroke();
