@@ -1186,12 +1186,12 @@ const warDay=()=>new Date(Date.now()+9*3600000).toISOString().slice(0,10).replac
 const warPrevWeek=()=>{let w=clubWeek();return new Date(Date.UTC(+w.slice(0,4),+w.slice(4,6)-1,+w.slice(6,8)-7)).toISOString().slice(0,10).replace(/-/g,'')};
 function warWeekEnd(w){const y=+w.slice(0,4),m=+w.slice(4,6)-1,d=+w.slice(6,8);return Date.UTC(y,m,d+7)-9*3600000;}
 function warLeague(lp){return lp>=1500?'レジェンド':lp>=900?'マスター':lp>=500?'ダイヤ':lp>=250?'ゴールド':lp>=100?'シルバー':'ブロンズ';}
-function warScore(days){let users={};Object.values(days||{}).forEach(day=>Object.entries(day||{}).forEach(([uid,wp])=>{users[uid]=(users[uid]||0)+Math.max(0,Math.min(300,Number(wp)||0))}));return {total:Object.values(users).reduce((a,b)=>a+b,0),users};}
+function warScore(days){let users={};Object.values(days||{}).forEach(day=>Object.entries(day||{}).forEach(([uid,wp])=>{users[uid]=(users[uid]||0)+Math.max(0,(Number(wp)||0))}));return {total:Object.values(users).reduce((a,b)=>a+b,0),users};}
 function warOpponent(){if(!clubId)return null;let ids=clubList.filter(c=>c.memberCount>=3).map(c=>c.id);if(!ids.includes(clubId)&&Object.keys(clubInfo?.members||{}).length>=3)ids.push(clubId);ids.sort();let ix=ids.indexOf(clubId);return ix<0?null:ids[ix%2===0?ix+1:ix-1]||null;}
 async function loadWar(){if(!cloudReady||!clubId)return;warLoading=true;warError='';try{const week=clubWeek(),opp=warOpponent();let [ours,theirs,claims,prevOurs,prevTheirs,prevClaim]=await Promise.all([clubApi('GET','clubs/'+clubId+'/warDays/'+week),opp?clubApi('GET','clubs/'+opp+'/warDays/'+week):Promise.resolve(null),clubApi('GET','clubWarClaims/'+cloudUid+'/'+week),clubApi('GET','clubs/'+clubId+'/warDays/'+warPrevWeek()),opp?clubApi('GET','clubs/'+opp+'/warDays/'+warPrevWeek()):Promise.resolve(null),clubApi('GET','clubWarClaims/'+cloudUid+'/'+warPrevWeek())]);warBoard={week,opp,ours:warScore(ours),theirs:warScore(theirs),claimed:claims,previous:{week:warPrevWeek(),ours:warScore(prevOurs),theirs:warScore(prevTheirs),claimed:prevClaim}};}catch(e){warError=e.message}finally{warLoading=false;if(tab==='clubs')render()}}
 function warHTML(){if(!clubId)return '';let b=warBoard,w=clubWeek(),eligible=Object.keys(clubInfo?.members||{}).length>=3,opp=warOpponent(),oppName=clubList.find(c=>c.id===opp)?.name||'対戦相手待ち';if(!b||b.week!==w||b.opp!==opp)return '<section class="panel"><h3>⚔️ クラブ対抗戦</h3><p>今週のデータを読み込んでください。</p>'+btn('🔄 対抗戦を更新','war:refresh')+'</section>';
 let a=b.ours.total,z=b.theirs.total,ended=Date.now()>=warWeekEnd(w),mine=b.ours.users[cloudUid]||0,previous=b.previous,canClaim=(previous?.ours.users[cloudUid]||0)>=100&&!previous?.claimed,win=a>z,draw=a===z;
-return '<section class="panel"><h2>🛡️ CLUB WARS — Ver.146</h2><p class="small">週間対抗戦（月曜0時〜翌月曜0時・日本時間）／1日300WPまで。通常のAI戦で獲得。</p><h3>'+clubEsc(clubInfo?.info?.name||'自クラブ')+' 🆚 '+clubEsc(oppName)+'</h3><p>🔵 '+a.toLocaleString()+' WP　／　🔴 '+z.toLocaleString()+' WP</p><p>あなたの今週の貢献：<b>'+mine+' WP</b>　｜　'+(ended?'終了':'開催中')+'</p><p class="small">対戦相手はクラブID順の暫定組み合わせです。新規クラブ追加・削除で変わる場合があります。</p><h3>👥 貢献度ランキング</h3>'+(Object.entries(b.ours.users).sort((x,y)=>y[1]-x[1]).map(([uid,n],i)=>'<p>'+(i+1)+'位 '+clubEsc(clubInfo?.members?.[uid]?.username||uid.slice(0,8))+'　<b>'+n+' WP</b></p>').join('')||'<p>まだポイントがありません。</p>')+'<p>🏅 リーグ：'+warLeague(Math.floor(a/100))+'（今週の暫定表示）</p><p>🎁 '+(win?'勝利：2000コイン・ドロップ5個':draw?'引き分け：1400コイン・ドロップ3個':'敗北：800コイン・ドロップ2個')+'</p>'+(canClaim?btn('🎁 先週の対抗戦報酬を受け取る','war:claim','green'):'<p class="small">'+(previous?.claimed?'✓ 先週の報酬は受取済み':'先週の報酬には100WP以上必要です')+'</p>')+'<p class="small">'+clubEsc(warError)+'</p>'+btn('🔄 対抗戦を更新','war:refresh')+'</section>';
+return '<section class="panel"><h2>🛡️ CLUB WARS — Ver.146</h2><p class="small">週間対抗戦（月曜0時〜翌月曜0時・日本時間）／1日の獲得上限なし。通常のAI戦で獲得。</p><h3>'+clubEsc(clubInfo?.info?.name||'自クラブ')+' 🆚 '+clubEsc(oppName)+'</h3><p>🔵 '+a.toLocaleString()+' WP　／　🔴 '+z.toLocaleString()+' WP</p><p>あなたの今週の貢献：<b>'+mine+' WP</b>　｜　'+(ended?'終了':'開催中')+'</p><p class="small">対戦相手はクラブID順の暫定組み合わせです。新規クラブ追加・削除で変わる場合があります。</p><h3>👥 貢献度ランキング</h3>'+(Object.entries(b.ours.users).sort((x,y)=>y[1]-x[1]).map(([uid,n],i)=>'<p>'+(i+1)+'位 '+clubEsc(clubInfo?.members?.[uid]?.username||uid.slice(0,8))+'　<b>'+n+' WP</b></p>').join('')||'<p>まだポイントがありません。</p>')+'<p>🏅 リーグ：'+warLeague(Math.floor(a/100))+'（今週の暫定表示）</p><p>🎁 '+(win?'勝利：12000コイン・ドロップ10個':draw?'引き分け：1400コイン・ドロップ3個':'敗北：800コイン・ドロップ2個')+'</p>'+(canClaim?btn('🎁 先週の対抗戦報酬を受け取る','war:claim','green'):'<p class="small">'+(previous?.claimed?'✓ 先週の報酬は受取済み':'先週の報酬には100WP以上必要です')+'</p>')+'<p class="small">'+clubEsc(warError)+'</p>'+btn('🔄 対抗戦を更新','war:refresh')+'</section>';
 }
 let warQueue=Promise.resolve();
 function warRecordMatch(won,placement,modeId,bossWon,serious){
@@ -1199,19 +1199,19 @@ function warRecordMatch(won,placement,modeId,bossWon,serious){
  let wp=serious?50:modeId==='royale'?(placement===1?40:20):modeId==='boss'?35:30;
  if(!Number.isFinite(wp)||wp<=0)return;
  const uid=cloudUid,week=clubWeek(),day=warDay();
- warQueue=warQueue.catch(()=>{}).then(async()=>{try{let id=await clubApi('GET','clubMembership/'+uid);if(typeof id!=='string'||!id)return;let path='clubs/'+id+'/warDays/'+week+'/'+day+'/'+uid,old=Number(await clubApi('GET',path))||0;if(old>=300)return;await clubApi('PUT',path,Math.min(300,old+wp));if(clubId===id&&warBoard?.week===week)loadWar();}catch(e){warError='WARポイント同期エラー：'+e.message;console.warn(warError)}});
+ warQueue=warQueue.catch(()=>{}).then(async()=>{try{let id=await clubApi('GET','clubMembership/'+uid);if(typeof id!=='string'||!id)return;let path='clubs/'+id+'/warDays/'+week+'/'+day+'/'+uid,old=Number(await clubApi('GET',path))||0;await clubApi('PUT',path,old+wp);if(clubId===id&&warBoard?.week===week)loadWar();}catch(e){warError='WARポイント同期エラー：'+e.message;console.warn(warError)}});
 }
-async function warAction(act){if(act==='refresh'){await loadClubs();return loadWar()}if(act!=='claim'||!warBoard||!cloudUid||!clubId)return;let b=warBoard,p=b.previous;if(!p||Date.now()<warWeekEnd(p.week))return alert('まだ受け取れません');if((p.ours.users[cloudUid]||0)<100)return alert('先週の報酬には100WP以上必要です');if(p.claimed)return alert('受取済みです');try{let path='clubWarClaims/'+cloudUid+'/'+p.week,existing=await clubApi('GET',path);if(existing)return alert('受取済みです');let result=p.ours.total>p.theirs.total?'win':p.ours.total===p.theirs.total?'draw':'lose';await clubApi('PUT',path,{club:clubId,result,at:Date.now()});data.coins+=result==='win'?2000:result==='draw'?1400:800;data.drops+=result==='win'?5:result==='draw'?3:2;save();p.claimed=true;alert('🎁 先週の対抗戦報酬を受け取りました！');render();}catch(e){alert('報酬の記録に失敗：'+e.message)}}
+async function warAction(act){if(act==='refresh'){await loadClubs();return loadWar()}if(act!=='claim'||!warBoard||!cloudUid||!clubId)return;let b=warBoard,p=b.previous;if(!p||Date.now()<warWeekEnd(p.week))return alert('まだ受け取れません');if((p.ours.users[cloudUid]||0)<100)return alert('先週の報酬には100WP以上必要です');if(p.claimed)return alert('受取済みです');try{let path='clubWarClaims/'+cloudUid+'/'+p.week,existing=await clubApi('GET',path);if(existing)return alert('受取済みです');let result=p.ours.total>p.theirs.total?'win':p.ours.total===p.theirs.total?'draw':'lose';await clubApi('PUT',path,{club:clubId,result,at:Date.now()});data.coins+=result==='win'?12000:result==='draw'?1400:800;data.drops+=result==='win'?10:result==='draw'?3:2;save();p.claimed=true;alert('🎁 先週の対抗戦報酬を受け取りました！');render();}catch(e){alert('報酬の記録に失敗：'+e.message)}}
 
 // Ver.147: weekly cooperative raid, shared HP from eligible boss-mode wins.
 // Client-reported wins are provisional; production anti-cheat requires server verification.
-const RAID_MAX_HP=50000, RAID_DAMAGE_PER_WIN=1000, RAID_DEMON_DAMAGE=3000, RAID_DAILY_CAP=9000;
+const RAID_MAX_HP=100000, RAID_DAMAGE_PER_WIN=1000, RAID_DEMON_DAMAGE=3000;
 let raidBoard=null,raidLoading=false,raidError='',raidQueue=Promise.resolve();
-function raidTotals(days){let users={};Object.values(days||{}).forEach(day=>Object.entries(day||{}).forEach(([uid,damage])=>{users[uid]=(users[uid]||0)+Math.max(0,Math.min(RAID_DAILY_CAP,Number(damage)||0))}));return {users,total:Object.values(users).reduce((a,b)=>a+b,0)};}
+function raidTotals(days){let users={};Object.values(days||{}).forEach(day=>Object.entries(day||{}).forEach(([uid,damage])=>{users[uid]=(users[uid]||0)+Math.max(0,(Number(damage)||0))}));return {users,total:Object.values(users).reduce((a,b)=>a+b,0)};}
 async function loadRaid(){if(!cloudReady||!cloudUid||!clubId)return;raidLoading=true;raidError='';try{const week=clubWeek();const [days,claim]=await Promise.all([clubApi('GET','clubs/'+clubId+'/raidDays/'+week),clubApi('GET','clubRaidClaims/'+cloudUid+'/'+week)]);raidBoard={club:clubId,week,...raidTotals(days),claimed:!!claim};}catch(e){raidError=e.message}finally{raidLoading=false;if(tab==='clubs')render()}}
-function raidHTML(){if(!clubId)return '';let b=raidBoard,w=clubWeek(),valid=b&&b.week===w&&b.club===clubId,total=valid?b.total:0,remaining=Math.max(0,RAID_MAX_HP-total),pct=Math.min(100,total/RAID_MAX_HP*100),mine=valid?(b.users[cloudUid]||0):0;let top=valid?Object.entries(b.users).sort((a,b)=>b[1]-a[1]).slice(0,10):[];return '<section class="panel" style="border:2px solid #aa79ff;background:linear-gradient(135deg,#252044,#162641)"><h2>👑 CLUB RAID — Ver.147.4</h2><p>👑 レイドボス：終焉の魔王アザゼル</p><p class="small">毎週月曜0時（日本時間）に新しいボスが出現。クラブ全員でHPを削ろう！</p><h3>❤️ ボスの残りHP：'+remaining.toLocaleString('ja-JP')+' / '+RAID_MAX_HP.toLocaleString('ja-JP')+'</h3><div style="height:18px;border-radius:12px;background:#101b30;overflow:hidden"><div style="height:100%;width:'+(100-pct)+'%;background:linear-gradient(90deg,#e93458,#a647ff)"></div></div><p>💥 合計ダメージ：'+total.toLocaleString('ja-JP')+' ／ あなたの貢献：'+mine.toLocaleString('ja-JP')+'</p><p class="small">全ボスの討伐で1000ダメージ、アザゼルの討伐だけ3000ダメージ。1人1日最大9000ダメージ。勝利後に同期されます。</p>'+(remaining===0?'<p>🎉 ボス討伐成功！</p>':'<p>⚔️ クラブ全員で討伐を目指そう！</p>')+'<p>'+btn('🔄 レイドを更新','raid:refresh')+' '+(remaining===0&&mine>=1000?(b.claimed?'<b>✓ 報酬受取済み</b>':btn('🎁 討伐報酬を受け取る','raid:claim','green')):'')+'</p>'+(raidLoading?'<p>読み込み中…</p>':'')+(raidError?'<p style="color:#ffaaaa">⚠️ '+clubEsc(raidError)+'</p>':'')+'<h3>🏅 レイド貢献度ランキング</h3>'+(top.length?top.map(([uid,dmg],i)=>'<div class="card">'+(i+1)+'位 '+clubEsc(clubInfo?.members?.[uid]?.username||uid.slice(0,8))+'：'+dmg.toLocaleString('ja-JP')+' ダメージ</div>').join(''):'<p class="small">まだ記録がありません。更新ボタンで取得してください。</p>')+'<p class="small">報酬：2000コイン＋スタードロップ3個（討伐成功・1000ダメージ以上の参加者、週1回）</p><p class="small">※ブラウザ側で判定したボス勝利を集計する試験版です。サーバーによる試合結果の検証は未実装です。</p></section>';}
-function raidRecordBossWin(defeatedBoss){if(!cloudReady||!cloudUid)return;const uid=cloudUid,week=clubWeek(),day=warDay();raidQueue=raidQueue.catch(()=>{}).then(async()=>{try{const id=await clubApi('GET','clubMembership/'+uid);if(typeof id!=='string'||!id)return;const path='clubs/'+id+'/raidDays/'+week+'/'+day+'/'+uid;const old=Math.max(0,Number(await clubApi('GET',path))||0);if(old>=RAID_DAILY_CAP)return;await clubApi('PUT',path,Math.min(RAID_DAILY_CAP,old+(defeatedBoss==='demon'?RAID_DEMON_DAMAGE:RAID_DAMAGE_PER_WIN)));if(clubId===id)await loadRaid();}catch(e){raidError='レイドの同期に失敗：'+e.message;console.warn(raidError);if(tab==='clubs')render()}});}
-async function raidAction(action){if(action==='refresh'){await loadClubs();return loadRaid()}if(action!=='claim'||!raidBoard||raidBoard.week!==clubWeek()||raidBoard.club!==clubId)return;let b=raidBoard;if(b.total<RAID_MAX_HP||Number(b.users[cloudUid]||0)<1000)return alert('まだ受取条件を満たしていません');try{const path='clubRaidClaims/'+cloudUid+'/'+b.week;if(await clubApi('GET',path))return alert('受取済みです');await clubApi('PUT',path,{club:clubId,at:Date.now()});data.coins+=2000;data.drops+=3;save();b.claimed=true;render();alert('🎁 レイド討伐報酬：2000コインとスタードロップ3個を獲得！')}catch(e){raidError='報酬の記録に失敗：'+e.message;render()}}
+function raidHTML(){if(!clubId)return '';let b=raidBoard,w=clubWeek(),valid=b&&b.week===w&&b.club===clubId,total=valid?b.total:0,remaining=Math.max(0,RAID_MAX_HP-total),pct=Math.min(100,total/RAID_MAX_HP*100),mine=valid?(b.users[cloudUid]||0):0;let top=valid?Object.entries(b.users).sort((a,b)=>b[1]-a[1]).slice(0,10):[];return '<section class="panel" style="border:2px solid #aa79ff;background:linear-gradient(135deg,#252044,#162641)"><h2>👑 CLUB RAID — Ver.147.7</h2><p>👑 レイドボス：終焉の魔王アザゼル</p><p class="small">毎週月曜0時（日本時間）に新しいボスが出現。クラブ全員でHPを削ろう！</p><h3>❤️ ボスの残りHP：'+remaining.toLocaleString('ja-JP')+' / '+RAID_MAX_HP.toLocaleString('ja-JP')+'</h3><div style="height:18px;border-radius:12px;background:#101b30;overflow:hidden"><div style="height:100%;width:'+(100-pct)+'%;background:linear-gradient(90deg,#e93458,#a647ff)"></div></div><p>💥 合計ダメージ：'+total.toLocaleString('ja-JP')+' ／ あなたの貢献：'+mine.toLocaleString('ja-JP')+'</p><p class="small">全ボスの討伐で1000ダメージ、アザゼルの討伐だけ3000ダメージ。1日の貢献上限なし。勝利後に同期されます。</p>'+(remaining===0?'<p>🎉 ボス討伐成功！</p>':'<p>⚔️ クラブ全員で討伐を目指そう！</p>')+'<p>'+btn('🔄 レイドを更新','raid:refresh')+' '+(remaining===0&&mine>=1000?(b.claimed?'<b>✓ 報酬受取済み</b>':btn('🎁 討伐報酬を受け取る','raid:claim','green')):'')+'</p>'+(raidLoading?'<p>読み込み中…</p>':'')+(raidError?'<p style="color:#ffaaaa">⚠️ '+clubEsc(raidError)+'</p>':'')+'<h3>🏅 レイド貢献度ランキング</h3>'+(top.length?top.map(([uid,dmg],i)=>'<div class="card">'+(i+1)+'位 '+clubEsc(clubInfo?.members?.[uid]?.username||uid.slice(0,8))+'：'+dmg.toLocaleString('ja-JP')+' ダメージ</div>').join(''):'<p class="small">まだ記録がありません。更新ボタンで取得してください。</p>')+'<p class="small">報酬：8000コイン＋スタードロップ7個（討伐成功・1000ダメージ以上の参加者、週1回）</p><p class="small">※ブラウザ側で判定したボス勝利を集計する試験版です。サーバーによる試合結果の検証は未実装です。</p></section>';}
+function raidRecordBossWin(defeatedBoss){if(!cloudReady||!cloudUid)return;const uid=cloudUid,week=clubWeek(),day=warDay();raidQueue=raidQueue.catch(()=>{}).then(async()=>{try{const id=await clubApi('GET','clubMembership/'+uid);if(typeof id!=='string'||!id)return;const path='clubs/'+id+'/raidDays/'+week+'/'+day+'/'+uid;const old=Math.max(0,Number(await clubApi('GET',path))||0);const earned=defeatedBoss==='demon'?RAID_DEMON_DAMAGE:RAID_DAMAGE_PER_WIN;await clubApi('PUT',path,old+earned);if(clubId===id)await loadRaid();}catch(e){raidError='レイドの同期に失敗：'+e.message;console.warn(raidError);if(tab==='clubs')render()}});}
+async function raidAction(action){if(action==='refresh'){await loadClubs();return loadRaid()}if(action!=='claim'||!raidBoard||raidBoard.week!==clubWeek()||raidBoard.club!==clubId)return;let b=raidBoard;if(b.total<RAID_MAX_HP||Number(b.users[cloudUid]||0)<1000)return alert('まだ受取条件を満たしていません');try{const path='clubRaidClaims/'+cloudUid+'/'+b.week;if(await clubApi('GET',path))return alert('受取済みです');await clubApi('PUT',path,{club:clubId,at:Date.now()});data.coins+=8000;data.drops+=7;save();b.claimed=true;render();alert('🎁 レイド討伐報酬：8000コインとスタードロップ7個を獲得！')}catch(e){raidError='報酬の記録に失敗：'+e.message;render()}}
 
 function clubHTML(){let info=clubInfo?.info||{},members=clubInfo?.members||{},ids=Object.keys(members).sort((a,b)=>(Number(members[b]?.trophies)||0)-(Number(members[a]?.trophies)||0)||String(members[a]?.username||a).localeCompare(String(members[b]?.username||b),'ja')),contrib=clubInfo?.contributions?.[clubWeek()]||{},totals={wins:0,kills:0,boss:0};Object.values(contrib).forEach(x=>{for(let k of Object.keys(totals))totals[k]+=Math.max(0,Number(x?.[k])||0)});let xp=totals.wins*10+totals.kills*2+totals.boss*25;let lvl=1+Math.floor(xp/1000);let rankList=[...clubList].sort((a,b)=>(b.trophies||0)-(a.trophies||0)).slice(0,30);
 let rankingHTML='<section class="panel"><h3>🏆 クラブランキング（全クラブ）</h3><p class="small">登録済みメンバーのトロフィー合計で表示。更新ボタンで最新情報を取得できます。</p>'+ (rankList.map((c,i)=>'<p>'+(i+1)+'位 '+clubEsc(c.icon)+' '+clubEsc(c.name)+' <b>🏆 '+Number(c.trophies||0).toLocaleString()+'</b> <span class="small">('+c.memberCount+'人)</span>'+(isAdmin()?' '+btn('🗑️ 管理者削除','club:adminDelete:'+c.id,'red'):'')+'</p>').join('')||'<p>クラブがありません。</p>')+'</section>';
@@ -1287,6 +1287,9 @@ else if(tab==='clubs'){v.innerHTML=clubHTML()}
 else if(tab==='news'){
 // 次回以降は先頭に最新更新を追加すると最新ニュースと過去5件が自動で切り替わる。
 const updates=[
+ {ver:'147.7',title:'🎁 クラブ対抗戦＆レイド報酬アップ',detail:'クラブ対抗戦の勝利報酬を12000コイン＋スタードロップ10個に増加。レイド討伐報酬を8000コイン＋スタードロップ7個に変更。',date:'2026年11月20日（日本時間）'},
+ {ver:'147.6',title:'👑 魔王専用攻撃＆クラブ上限撤廃',detail:'アザゼルの攻撃範囲を微調整し、影のチェス盤・影縫い・魔王の玉座・黒曜の封印を追加。クラブ対抗戦とレイドの1日上限を撤廃。レイドHP10万、報酬5000コイン＋7ドロップ。',date:'2026年11月20日（日本時間）'},
+ {ver:'147.5',title:'🛠️ レイド同期＆AI経路探索修正',detail:'アザゼル討伐のレイド加算が日次上限で拒否される問題を修正。AIが壁を迂回する際の停止を改善。',date:'2026年11月20日（日本時間）'},
  {ver:'147.4',title:'👑 魔王バランス調整＆ショップ価格改定',detail:'アザゼルの攻撃範囲を少し縮小し、攻撃間隔を短縮。パンプキン15000コイン、ヒーローボックス2000コインに変更。',date:'2026年11月20日（日本時間）'},
  {ver:'147.3',title:'👑 魔王強化＆レイド報酬調整',detail:'アザゼル討伐トロフィー2倍・スタードロップ2個。すべてのボス討伐でレイド1000ダメージ、アザゼルは3000ダメージ。魔王の攻撃力・範囲を強化し、攻撃頻度を下げて新攻撃4種類を追加。',date:'2026年11月20日（日本時間）'},
  {ver:'147.2',title:'👑 終焉の魔王アザゼル登場！',detail:'クラブレイドを残りHPが減る形式に変更。トロフィー1500以上で挑める超高難易度の3体目の通常ボスを追加。自分と味方AI4人で戦う5人パーティ。魔王討伐でクラブレイドに1000ダメージ。',date:'2026年11月20日（日本時間）'},
@@ -1668,7 +1671,7 @@ function bossAttack(boss){
  const victim=living[Math.floor(Math.random()*living.length)];
  const stormPatterns=[9,10,11,12,13,14,15,16];
  const stormAvailable=bossRageStage>=2?8:bossRageStage>=1?7:6;
- const kind=boss.bossType==='xmas'?[17,18,19,20,21,22][(bossPattern++)%6]:boss.bossType==='storm'?stormPatterns[(bossPattern++)%stormAvailable]:boss.bossType==='demon'?[0,3,5,7,2,8,4,6,23,24,25,26][(bossPattern++)%12]:bossPattern++%(5+(bossRageStage>=1?2:0)+(bossRageStage>=2?2:0));
+ const kind=boss.bossType==='xmas'?[17,18,19,20,21,22][(bossPattern++)%6]:boss.bossType==='storm'?stormPatterns[(bossPattern++)%stormAvailable]:boss.bossType==='demon'?[23,27,24,28,25,29,26,30,5,7,23,30][(bossPattern++)%12]:bossPattern++%(5+(bossRageStage>=1?2:0)+(bossRageStage>=2?2:0));
  const delay=([1.0,.9,1.1,1.0,1.1,1.05,1.0,.95,1.05,.72,.85,.9,1.05,.95,1.1,1.0,1.15,1.25,1.15,1.4,1.1,1.35,1.45][kind]||1)*Math.max(.82,1-bossRageStage*.05)*BOSS_DIFFICULTIES[bossDifficulty].warning*1.17;
  const common={kind,delay,full:delay,damage:Math.round((49+boss.lv*4.4)*(1+bossRageStage*.20)*(boss.bossType==='demon'?2.3:boss.bossType==='storm'?1.25:1)*BOSS_DIFFICULTIES[bossDifficulty].damage*(seriousBattle?2:1))};
  const warningStart=bossWarnings.length;
@@ -1706,6 +1709,21 @@ function bossAttack(boss){
  }else if(kind===16){ // 雷嵐：全味方への雷雨＋全方位の細い雷ビーム
   for(const e of living)bossWarnings.push({...common,kind:16,x:e.x,y:e.y,r:95,damage:Math.round(common.damage*.68)});
   for(let j=0;j<8;j++)bossWarnings.push({...common,kind:16,x:boss.x,y:boss.y,angle:j*Math.PI/4+elapsed*.08,length:720,width:48,delay:delay+.25,full:delay+.25,damage:Math.round(common.damage*.5)});
+ }else if(kind===27){ // 魔王専用・影のチェス盤：互い違いの危険マスと安全な通路
+  const cx=clamp(victim.x,240,worldW-240),cy=clamp(victim.y,240,worldH-240);
+  for(let ix=-2;ix<=2;ix++)for(let iy=-2;iy<=2;iy++)if((ix+iy+10)%2===0)
+   bossWarnings.push({...common,kind:27,x:cx+ix*145,y:cy+iy*145,r:64,damage:Math.round(common.damage*.53)});
+ }else if(kind===28){ // 魔王専用・影縫い：移動方向を予測した3段階の細い斬撃
+  const vx=victim.x-(victim.prevX??victim.x),vy=victim.y-(victim.prevY??victim.y);
+  const theta=Math.atan2(vy||Math.sin(a),vx||Math.cos(a));
+  for(let j=0;j<3;j++)bossWarnings.push({...common,kind:28,x:clamp(victim.x+Math.cos(theta)*j*125,45,worldW-45),y:clamp(victim.y+Math.sin(theta)*j*125,45,worldH-45),angle:theta+Math.PI/2,length:390,width:64,delay:delay+j*.24,full:delay+j*.24,damage:Math.round(common.damage*.68)});
+ }else if(kind===29){ // 魔王専用・魔王の玉座：ボスの周囲を扇状に封鎖、背後に安全地帯
+  for(let j=-2;j<=2;j++){const theta=a+j*.32;
+   bossWarnings.push({...common,kind:29,x:boss.x,y:boss.y,angle:theta,length:540,width:68,damage:Math.round(common.damage*.62)});}
+ }else if(kind===30){ // 魔王専用・黒曜の封印：4つの印が時間差で爆発、中心に回避可能な隙間
+  const cx=clamp(victim.x,190,worldW-190),cy=clamp(victim.y,190,worldH-190);
+  for(let j=0;j<4;j++){const theta=j*Math.PI/2+Math.PI/4;
+   bossWarnings.push({...common,kind:30,x:cx+Math.cos(theta)*185,y:cy+Math.sin(theta)*185,r:105,delay:delay+j*.18,full:delay+j*.18,damage:Math.round(common.damage*.67)});}
  }else if(kind===23){ // 魔王：深淵の星 — 広範囲の五芒星状メテオ
   for(let j=0;j<5;j++){const theta=j*Math.PI*2/5+elapsed*.14;bossWarnings.push({...common,x:clamp(victim.x+Math.cos(theta)*210,65,worldW-65),y:clamp(victim.y+Math.sin(theta)*210,65,worldH-65),r:148,damage:Math.round(common.damage*.68)});}
  }else if(kind===24){ // 魔王：終末の十字架 — 太い十字レーザー
@@ -1744,10 +1762,10 @@ function bossAttack(boss){
 function balanceBossWarnings(warnings,start,isChristmas=false,isDemon=false){
  for(let i=start;i<warnings.length;i++){
   const w=warnings[i];
-  if(Number.isFinite(w.r))w.r=Math.max(32,Math.round(w.r*(isDemon?.94:isChristmas?.94:.79)));
-  if(Number.isFinite(w.width))w.width=Math.max(22,Math.round(w.width*(isDemon?.94:isChristmas?.91:.77)));
+  if(Number.isFinite(w.r))w.r=Math.max(32,Math.round(w.r*(isDemon?.88:isChristmas?.94:.79)));
+  if(Number.isFinite(w.width))w.width=Math.max(22,Math.round(w.width*(isDemon?.88:isChristmas?.91:.77)));
   if(Number.isFinite(w.inner)&&Number.isFinite(w.outer)){
-   const mid=(w.inner+w.outer)/2,half=(w.outer-w.inner)*(isDemon?.44:isChristmas?.46:.39);
+   const mid=(w.inner+w.outer)/2,half=(w.outer-w.inner)*(isDemon?.40:isChristmas?.46:.39);
    w.inner=Math.max(0,mid-half);w.outer=mid+half;
   }
  }
@@ -1900,7 +1918,7 @@ if(!target&&!wantsObjective)continue;
 let focus=wantsObjective?objective:target;
 let d=dist(e,focus),n=norm(focus.x-e.x,focus.y-e.y);const waypoint=aiWaypoint(e,focus);if(waypoint){n=norm(waypoint.x-e.x,waypoint.y-e.y);d=Math.max(d,Math.max(190,e.range*.9));}e.think-=dt;if(e.think<=0){e.think=rand(.5,1.3);e.tx=rand(-1,1);e.ty=rand(-1,1);e.aiStrafe=Math.random()<.5?-1:1}let ideal=wantsObjective?(objective.box?Math.min(e.range*.65,110):0):e.isBoss?220:e.range<=120?Math.max(22,e.range*.32):e.range>=400?e.range*.91:e.range*.73;
 let retreat=!wantsObjective&&!e.isBoss&&e.hp/e.maxhp<.36;
-let toward=retreat?-1:d>ideal+12?1:d<ideal-12?-1:0;
+let toward=waypoint?1:retreat?-1:d>ideal+12?1:d<ideal-12?-1:0;
 let strafe=waypoint?0:d<e.range?e.aiStrafe*(e.range>=400?.35:.75):0;
 let mx=n.x*toward-n.y*strafe+e.tx*(waypoint?0:e.range>=400?.07:.28),my=n.y*toward+n.x*strafe+e.ty*(waypoint?0:e.range>=400?.07:.28);
 if(retreat){ // 低HP時は敵から離れ、味方の近くを優先する
@@ -1909,7 +1927,15 @@ if(retreat){ // 低HP時は敵から離れ、味方の近くを優先する
 }
 
 // Prefer a clear path, and choose a different side if a wall blocks movement.
-if(blocked(e.x+mx*e.speed*step*2,e.y+my*e.speed*step*2,e.r)){e.aiStrafe*=-1;mx=-n.y*e.aiStrafe+n.x*.2;my=n.x*e.aiStrafe+n.y*.2}
+if(blocked(e.x+mx*e.speed*step*2,e.y+my*e.speed*step*2,e.r)){
+ if(waypoint){
+  // A*で見つけた迂回経路を優先。壁際で横移動へ上書きしない。
+  const pathDir=norm(waypoint.x-e.x,waypoint.y-e.y);
+  mx=pathDir.x;my=pathDir.y;
+ }else{
+  e.aiStrafe*=-1;mx=-n.y*e.aiStrafe+n.x*.2;my=n.x*e.aiStrafe+n.y*.2;
+ }
+}
 if(mode==='royale'&&gasInset>0){
  // Predict the next movement and refuse routes into the poisonous boundary.
  const safePad=e.r+35, left=gasInset+safePad,right=worldW-gasInset-safePad,top=gasInset+safePad,bottom=worldH-gasInset-safePad;
