@@ -486,7 +486,7 @@ async function viewProfile(uid){
   try{raw=await profileApi('GET',uid)}catch(e){console.warn('プロフィール未取得:',e.message)}
   let live=entry;
   if(!live){try{live=await leaderboardAPI('GET',uid)}catch(e){console.warn('ランキング参照:',e.message)}}
-  const fallback={username:live?.username||'プレイヤー',trophies:live?.trophies||0,wins:0,matches:0,hero:0,icon:0,theme:0,title:live?.title||'none'};
+  const fallback={username:live?.username||'プレイヤー',trophies:live?.trophies||0,wins:null,matches:null,hero:null,icon:0,theme:0,title:live?.title||'none'};
   profileViewed={...fallback,...(raw&&typeof raw==='object'?raw:{})};
   // トロフィーと称号はランキングの最新情報を優先する。
   if(live&&Number.isSafeInteger(live.trophies)){profileViewed.trophies=live.trophies;profileViewed.title=live.title||profileViewed.title;}
@@ -500,8 +500,10 @@ async function viewProfile(uid){
 function profileHTML(){
  const own=!profileOpenUid||profileOpenUid===cloudUid,p=own?{...profilePayload(),clubName:profileViewed?.clubName}:profileViewed;
  if(!p)return '<section class="panel"><h2>🪪 プレイヤープロフィール</h2><p>'+escapeBoard(profileMessage)+'</p>'+btn('← ランキングに戻る','profile:close')+'</section>';
- const theme=PROFILE_THEMES[Math.min(PROFILE_THEMES.length-1,Number(p.theme)||0)],hero=HEROES[Number(p.hero)||0];
- return `<section class="panel"><h2>🪪 プレイヤープロフィール</h2><div style="border:2px solid ${theme[2]};border-radius:18px;padding:18px;background:linear-gradient(135deg,${theme[1]},#101a30);text-align:center"><div style="font-size:48px">${PROFILE_ICONS[Number(p.icon)||0]}</div><h2>${escapeBoard(p.username)}</h2><p>🏆 ${p.trophies}　⚔️ ${p.wins}勝 / ${p.matches}戦</p><p>お気に入りの使用キャラ：${hero?escapeBoard(hero.name):'不明'}</p><p>🏅 称号：${escapeBoard(titleById(p.title)?.name||'なし')}</p><p>🛡️ 所属クラブ：${escapeBoard(own?(clubInfo?.info?.name||p.clubName||'未所属'):(p.clubName||'未所属'))}</p><p class="small">背景：${theme[0]}</p></div>${own?`<h3>🎨 プロフィールを編集</h3><p>アイコン：${PROFILE_ICONS.map((ic,i)=>btn(ic+(profileChoice('profileIcon',PROFILE_ICONS.length)===i?' ✓':''),'profile:icon:'+i)).join(' ')}</p><p>背景：${PROFILE_THEMES.map((t,i)=>btn(t[0]+(profileChoice('profileTheme',PROFILE_THEMES.length)===i?' ✓':''),'profile:theme:'+i)).join(' ')}</p>${btn('☁️ プロフィールを公開・更新','profile:publish','green')}`:''}<p class="small">${escapeBoard(profileMessage)}</p>${btn('← ランキングに戻る','profile:close')}</section>`;
+ const theme=PROFILE_THEMES[Math.min(PROFILE_THEMES.length-1,Number(p.theme)||0)],hero=Number.isInteger(p.hero)&&p.hero>=0&&p.hero<HEROES.length?HEROES[p.hero]:null;
+ const winsText=Number.isInteger(p.wins)&&p.wins>=0?String(p.wins):'未同期';
+ const matchesText=Number.isInteger(p.matches)&&p.matches>=0?String(p.matches):'未同期';
+ return `<section class="panel"><h2>🪪 プレイヤープロフィール</h2><div style="border:2px solid ${theme[2]};border-radius:18px;padding:18px;background:linear-gradient(135deg,${theme[1]},#101a30);text-align:center"><div style="font-size:48px">${PROFILE_ICONS[Number(p.icon)||0]}</div><h2>${escapeBoard(p.username)}</h2><p>🏆 ${p.trophies}　⚔️ ${winsText}勝 / ${matchesText}戦</p><p>現在の使用キャラ：${hero?escapeBoard(hero.name):'未同期'}</p><p>🏅 称号：${escapeBoard(titleById(p.title)?.name||'なし')}</p><p>🛡️ 所属クラブ：${escapeBoard(own?(clubInfo?.info?.name||p.clubName||'未所属'):(p.clubName||'未所属'))}</p><p class="small">背景：${theme[0]}</p></div>${own?`<h3>🎨 プロフィールを編集</h3><p>アイコン：${PROFILE_ICONS.map((ic,i)=>btn(ic+(profileChoice('profileIcon',PROFILE_ICONS.length)===i?' ✓':''),'profile:icon:'+i)).join(' ')}</p><p>背景：${PROFILE_THEMES.map((t,i)=>btn(t[0]+(profileChoice('profileTheme',PROFILE_THEMES.length)===i?' ✓':''),'profile:theme:'+i)).join(' ')}</p>${btn('☁️ プロフィールを公開・更新','profile:publish','green')}`:''}<p class="small">${escapeBoard(profileMessage)}</p>${btn('← ランキングに戻る','profile:close')}</section>`;
 }
 
 let leaderboardEntries=[],leaderboardState='読み込み前',leaderboardLoading=false,leaderboardRequest=0,leaderboardPublished=null;
@@ -1341,6 +1343,7 @@ else if(tab==='clubs'){v.innerHTML=clubHTML()}
 else if(tab==='news'){
 // 次回以降は先頭に最新更新を追加すると最新ニュースと過去5件が自動で切り替わる。
 const updates=[
+ {ver:'148.3',title:'🪪 プロフィール戦績・使用キャラ表示修正',detail:'未同期プレイヤーの勝利数・対戦数を0と誤表示せず「未同期」に変更。使用キャラをブレイズと誤表示する問題を修正し、「現在の使用キャラ」に名称変更。',date:'2026年11月20日（日本時間）'},
  {ver:'148.2',title:'🛠️ クラブトロフィー・プロフィール表示修正',detail:'クラブメンバーのトロフィー表示をオンラインランキングと同期。ランキングの項目順を変更。プロフィール未設定でも初期表示し、所属クラブ名を表示。',date:'2026年11月20日（日本時間）'},
  {ver:'148.1',title:'📱 iPhoneバトル画面の拡大防止',detail:'バトル中のダブルタップによるSafariの拡大を抑止。通常のメニュー操作・セーブデータは変更なし。',date:'2026年11月20日（日本時間）'},
  {ver:'148',title:'🪪 プレイヤープロフィール実装・ニュース履歴拡張',detail:'ランキングからプレイヤープロフィールを閲覧可能に。ゲーム内アイコン8種・背景4種を選択でき、勝利数・対戦数・トロフィー・使用キャラ・称号を表示。ニュースではVer.147.7を含む細かな更新履歴もすべて確認可能。',date:'2026年11月20日（日本時間）'},
