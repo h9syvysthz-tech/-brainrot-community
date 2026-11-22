@@ -84,7 +84,7 @@ body.playing #battleExit{display:block}
 body.playing,body.playing #gameArea,body.playing #battleStage,body.playing #gameCanvas,body.playing #touchUI,body.playing #touchUI *{touch-action:none!important;-ms-touch-action:none!important;-webkit-user-select:none!important;user-select:none!important;-webkit-touch-callout:none!important;}
 body.playing #battleExit{touch-action:manipulation!important;}
 </style></head><body><div id="app"><header><div class="logo">⭐ STAR ARENA</div><div class="row"><span class="pill" id="coins">🪙 0</span><span class="pill" id="trophies">🏆 0</span></div></header><div id="menu"><div id="cloudTools" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0;padding:9px;border:1px solid #4d85b1;border-radius:12px;background:#152b44"><span id="cloudStatus" style="flex:1;min-width:160px">☁️ Firebase接続待機中</span><button id="cloudSync" type="button" class="btn">☁️ 今すぐ保存</button><button id="cloudLogout" type="button" class="btn">ログアウト</button></div><nav class="tabs"><button data-tab="home" class="active">ホーム</button><button data-tab="battle">バトル</button><button data-tab="heroes">キャラ</button><button data-tab="shop">ショップ</button><button data-tab="missions">ミッション</button><button data-tab="clubs">クラブ</button><button data-tab="events">イベント</button><button data-tab="ranking">ランク</button><button data-tab="news">ニュース</button><button data-tab="feedback">フィードバック</button></nav><div id="view"></div></div><div id="gameArea"><div class="row"><button class="btn red" id="leave">退出</button><span id="modeName" class="pill"></span><span id="status"></span></div><div id="battleStage"><button id="battleExit" type="button" aria-label="バトルから退出">退出</button><canvas id="gameCanvas" width="960" height="600"></canvas><div id="touchUI"><div id="moveJoy" class="joy"><div class="knob"></div></div><div class="actions"><button id="gadgetBtn" class="action gadget" aria-label="ガジェット">🟢3</button><button id="superBtn" class="action super">⚡</button><button id="attackBtn" class="action" aria-label="通常攻撃">🎯</button></div></div></div><p class="small">PC：矢印キーで移動／Dで自動照準攻撃（長押し連射）／Aで自動照準必殺技／マウスで照準・クリックで攻撃／スペースで必殺技／Fでガジェット。スマホ：画面左下のスティックで移動。攻撃ボタンをタップすると自動照準、ドラッグして離すと指定方向へ攻撃。</p></div></div><div id="overlay"><div id="result"></div></div><div id="starDropScreen" role="dialog" aria-modal="true" aria-label="スタードロップ開封"><div class="drop-wrap" id="starDropContent"></div></div><div id="heroDetail" role="dialog" aria-modal="true" aria-label="キャラクター詳細"><div class="detail-panel" id="detailPanel"></div></div>
-<div id="cloudGate"><div id="cloudPanel"><div style="font-size:12px;color:#a6e8ff;text-align:right">Ver.149.0.6 / ボタン操作修正版</div><h2>☁️ STAR ARENA オンラインセーブ</h2><p style="font-size:14px">ユーザー名とパスワードで登録・ログインできます。ユーザー名は半角英数字・_・- の3〜20文字。クラウドからの読み込みが完了するまでゲームは開始できません。</p><label>ユーザー名<input id="cloudUsername" type="text" autocomplete="username" maxlength="20" placeholder="例：player123"></label><label>パスワード（6文字以上）<input id="cloudPassword" type="password" autocomplete="current-password" placeholder="6文字以上"></label><div class="cloudActions"><button id="cloudLogin" class="btn green" type="button">ログイン</button><button id="cloudRegister" class="btn orange" type="button">新規登録</button></div><div id="cloudMessage" role="status">Firebaseに接続しています…</div></div></div>
+<div id="cloudGate"><div id="cloudPanel"><div style="font-size:12px;color:#a6e8ff;text-align:right">Ver.149.0.7 / ボタン操作修正版</div><h2>☁️ STAR ARENA オンラインセーブ</h2><p style="font-size:14px">ユーザー名とパスワードで登録・ログインできます。ユーザー名は半角英数字・_・- の3〜20文字。クラウドからの読み込みが完了するまでゲームは開始できません。</p><label>ユーザー名<input id="cloudUsername" type="text" autocomplete="username" maxlength="20" placeholder="例：player123"></label><label>パスワード（6文字以上）<input id="cloudPassword" type="password" autocomplete="current-password" placeholder="6文字以上"></label><div class="cloudActions"><button id="cloudLogin" class="btn green" type="button">ログイン</button><button id="cloudRegister" class="btn orange" type="button">新規登録</button></div><div id="cloudMessage" role="status">Firebaseに接続しています…</div></div></div>
 <script>
 (()=>{'use strict';
 const NAMES=['ブレイズ','フロスト','ボルト','リーフ','シャドウ','ルナ','タイタン','スパーク','ウェーブ','ロック','ファング','コメット','ネオン','ミスト','フェニックス','ギア','ヴァイパー','スター','ゴーレム','ノヴァ','パンプキン','スノーベル','深淵の覇王','雷霆の支配者'];
@@ -118,9 +118,9 @@ function weightedHeroDraw(ids){
 const ownsHero=i=>i===22?(data.owned.includes(22)||((data.bossHeroKills?.abyss||0)>=20)):i===23?(data.owned.includes(23)||((data.bossHeroKills?.storm||0)>=30)):i===20?(data.pumpkinPurchased===true||data.owned.includes(20)):i===21?(data.xmas2026Claimed===true||data.owned.includes(21)):data.owned.includes(i);
 const ensurePumpkinOwnership=()=>{if(data.pumpkinPurchased===true&&!data.owned.includes(20))data.owned.push(20);if(data.owned.includes(20))data.pumpkinPurchased=true;};
 const rarityTag=i=>`<span class="hero-rarity" style="--rarity-color:${heroRarity(i).color}">${heroRarity(i).icon} ${heroRarity(i).name}</span>`;
-const HEROES=NAMES.map((name,i)=>({name,icon:ICONS[i],color:COLORS[i],hp:[290, 125, 215, 180, 285, 125, 390, 170, 325, 375, 235, 155, 300, 185, 245, 175, 280, 120, 475, 160, 350,255,450,185][i],speed:[2.12, 1.62, 2.05, 1.88, 2.72, 1.52, 1.94, 1.91, 2.47, 1.58, 2.25, 1.78, 2.35, 1.64, 2.0, 1.83, 2.44, 1.49, 1.20, 1.7, 1.58,2.08,1.55,2.85][i],bodySize:i===22||i===23?15:i===21?15:i===18?23:11+(i*5%8),damage:[33, 61, 25, 30, 51, 76, 34, 32, 49, 72, 36, 52, 43, 64, 33, 34, 45, 83, 55, 105, 204,42,120,32][i],range:[76, 540, 225, 310, 105, 610, 195, 345, 90, 500, 165, 410, 65, 565, 205, 365, 112, 650, 205, 450,280,330,95,420][i],cooldown:[330, 990, 490, 550, 345, 1120, 520, 610, 310, 1040, 430, 840, 335, 980, 520, 580, 340, 1200, 700, 1060, 950,590,630,280][i],superType:i===21?2:i%5}));
+const HEROES=NAMES.map((name,i)=>({name,icon:ICONS[i],color:COLORS[i],hp:[290, 125, 215, 180, 285, 125, 390, 170, 325, 375, 235, 155, 300, 185, 245, 175, 280, 120, 475, 160, 350,255,450,185][i],speed:[2.12, 1.62, 2.05, 1.88, 2.72, 1.52, 1.94, 1.91, 2.47, 1.58, 2.25, 1.78, 2.35, 1.64, 2.0, 1.83, 2.44, 1.49, 1.20, 1.7, 1.58,2.08,1.55,2.85][i],bodySize:i===22?22:i===23?21:i===21?15:i===18?23:11+(i*5%8),damage:[33, 61, 25, 30, 51, 76, 34, 32, 49, 72, 36, 52, 43, 64, 33, 34, 45, 83, 55, 105, 204,42,120,32][i],range:[76, 540, 225, 310, 105, 610, 195, 345, 90, 500, 165, 410, 65, 565, 205, 365, 112, 650, 205, 450,280,330,95,420][i],cooldown:[330, 990, 490, 550, 345, 1120, 520, 610, 310, 1040, 430, 840, 335, 980, 520, 580, 340, 1200, 700, 1060, 950,590,630,280][i],superType:i===21?2:i%5}));
 // スノーベルはNAMESからID 21として1体だけ生成。
-const ROLE_NAMES=['近距離ファイター','長距離スナイパー','中距離バランス','中〜長距離アタッカー'];const ROLE_DESCS=['近距離で5発の散弾を放つ。近づくほど強力。','細くて高速な狙撃弾を遠距離まで飛ばす。接近戦は苦手。','射程と火力のバランスが良い。','中距離を保ちつつ牽制するタイプ。'];const ATTACKS=['灼熱散弾','氷結狙撃','電撃連鎖弾','葉の3連射','影の近距離連撃','月光貫通狙撃','重装破砕弾','流星2連射','水流散弾','岩石狙撃','牙の3連射','彗星加速弾','虹の8連散弾','霧の4連射','不死鳥の炎弾','機械2連射','猛毒散弾','星屑高速狙撃','巨岩範囲弾','宇宙貫通2連射','呪いの15連集中散弾','氷晶ベルの3連射'];
+const ROLE_NAMES=['近距離ファイター','長距離スナイパー','中距離バランス','中〜長距離アタッカー'];const ROLE_DESCS=['近距離で5発の散弾を放つ。近づくほど強力。','細くて高速な狙撃弾を遠距離まで飛ばす。接近戦は苦手。','射程と火力のバランスが良い。','中距離を保ちつつ牽制するタイプ。'];const ATTACKS=['灼熱散弾','氷結狙撃','電撃連鎖弾','葉の3連射','影の近距離連撃','月光貫通狙撃','重装破砕弾','流星2連射','水流散弾','岩石狙撃','牙の3連射','彗星加速弾','虹の8連散弾','霧の4連射','不死鳥の炎弾','機械2連射','猛毒散弾','星屑高速狙撃','巨岩範囲弾','宇宙貫通2連射','呪いの15連集中散弾','氷晶ベルの3連射','深淵の魔爪','雷霆の裁き'];
 const SUPERS=['火炎の7連散弾','氷結吹雪','電撃加速','自然の癒やし','影の貫通突撃','月光貫通砲','重装ノックバック','流星加速','水流の回復波','岩石の貫通砲','牙の9連散弾','彗星吹き飛ばし','虹の超加速','霧の全体回復','不死鳥の巨大炎弾','機械の連続砲撃','猛毒衝撃波','星屑の超加速','巨岩の回復波','宇宙貫通大砲','かぼちゃの生命回復','聖夜のスノードーム','深淵領域','雷神の暴走'];
 const SPECIAL=['炎上','減速','連鎖','3連射','近距離連撃','貫通','高威力','2連射','散弾','減速','3連射','高速','散弾','4連射','炎上','2連射','毒','高速','範囲','貫通','集中散弾','命中時に敵を減速・氷の印を付与。3回命中で追加氷結ダメージ','吸血の魔爪','射程内全員に落雷'];
 const ATTACK_CONFIG=[
@@ -178,7 +178,7 @@ const STAR_TYPES=[
  ['regen','damage'],['range','reload'],['speed','damage'],['regen','armor'],['hp','damage'],
  ['reload','ammo'],['damage','regen'],['range','supergain'],['hp','armor'],['range','reload'],['damage','regen'],['damage','speed']
 ];
-// Ver.149.0.6: 新ボス2体にも詳細画面・戦闘用の能力定義を用意。
+// Ver.149.0.7: 新ボス2体にも詳細画面・戦闘用の能力定義を用意。
 GADGET_TITLES.push(['深淵の吸命','暗黒障壁'],['雷速加速','雷霆再装填']);
 STAR_TITLES.push(['深淵の生命力','魔爪の威力'],['雷神の俊足','落雷の連射']);
 GADGET_TYPES.push(['drain','shield'],['haste','reload']);
@@ -903,9 +903,9 @@ function skinCardHTML(i,id){
 }
 function skinCollectionHTML(i){
  if(!ownsHero(i))return '<p class="small">キャラクターを解放するとスキンを購入・装備できます。</p>';
- return `<div class="detail-move"><h3>🎨 スキン（${Object.keys(HERO_SKINS[i]).length}種類）</h3><p id="skinActionStatus" role="status" style="display:none;padding:10px;border:1px solid #d7b75b;border-radius:8px;color:#ffe8a3;background:#29354e"></p><p class="small">スキンごとの動く光輪・回転粒子・きらめきと、攻撃色・必殺技の光・残像が変化します。ディバインは最高レア度です。能力値は変わりません。</p><div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr))">${Object.keys(HERO_SKINS[i]).map(id=>skinCardHTML(i,id)).join('')}</div></div>`;
+ return `<div class="detail-move"><h3>🎨 スキン（${Object.keys(HERO_SKINS[i]).length}種類）</h3><p id="skinActionStatus" role="status" style="display:none;padding:10px;border:1px solid #d7b75b;border-radius:8px;color:#ffe8a3;background:#29354e"></p><p class="small">スキンごとの動く光輪・回転粒子・きらめきと、攻撃色・必殺技の光・残像が変化します。ディバインは最高レア度です。ボスキャラのスキンも本体の装飾・光輪・宝石が変化します。能力値は変わりません。</p><div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr))">${Object.keys(HERO_SKINS[i]).map(id=>skinCardHTML(i,id)).join('')}</div></div>`;
 }
-function skinShopHTML(){return `<section class="panel"><h2>🎨 スキンショップ</h2><p class="muted">全22キャラのスキンに加え、ディバイン限定スキンが登場。キャラクターをタップすると購入・装備できます。購入はボタンを2回押して確定します。確認画面はゲーム内に表示されます。</p><p>所持コイン：🪙 ${data.coins}</p><div class="grid">${HEROES.map((c,i)=>`<button class="hero-tile ${ownsHero(i)?'':'locked'}" data-act="skinDetail:${i}"><span class="avatar">${heroArtSVG(i,62)}</span><b>${c.name}</b><span class="small">${ownsHero(i)?'スキンを見る':'🔒 キャラ未解放'}</span></button>`).join('')}</div></section>`}
+function skinShopHTML(){return `<section class="panel"><h2>🎨 スキンショップ</h2><p class="muted">全24キャラのスキンに加え、ディバイン限定スキンが登場。キャラクターをタップすると購入・装備できます。購入はボタンを2回押して確定します。確認画面はゲーム内に表示されます。</p><p>所持コイン：🪙 ${data.coins}</p><div class="grid">${HEROES.map((c,i)=>`<button class="hero-tile ${ownsHero(i)?'':'locked'}" data-act="skinDetail:${i}"><span class="avatar">${heroArtSVG(i,62)}</span><b>${c.name}</b><span class="small">${ownsHero(i)?'スキンを見る':'🔒 キャラ未解放'}</span></button>`).join('')}</div></section>`}
 function clearSkinCanvasCache(){heroArtCanvasCache.clear()}
 let skinPurchaseBusy=false;
 let pendingSkinPurchase=null;
@@ -1020,7 +1020,7 @@ function pumpkinAbyssKingSVG(){
  </g>`;
 }
 function heroArtSVG(i,size=62){
- if(i===22||i===23){const src=bossPortrait(i===22?'abyss':'storm');return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 124 124"><image href="${src}" width="124" height="124"/></svg>`;}
+ if(i===22||i===23){const skin=getHeroSkin(i);const src=playableBossPortrait(i,skin);return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 124 124"><image href="${src}" width="124" height="124"/></svg>`;}
 
  const c=HEROES[i],k=i%21,shape=i===21?'snowbell':HERO_ART_SHAPES[k];
  const motifs={
@@ -1116,8 +1116,13 @@ function heroArtCanvasImage(i,skinId=null){
 }
 function drawHeroArt(ctx,e){
  if(e.id===22||e.id===23){
-  ctx.save();ctx.fillStyle=e===player?'#ffdf4a':e.team===0?'#56a8ff':'#f76679';ctx.beginPath();ctx.arc(e.x,e.y,e.r+4,0,Math.PI*2);ctx.fill();
-  ctx.translate(e.x,e.y);ctx.scale(.38,.38);drawBossAppearance({x:0,y:0,r:39,bossType:e.id===22?'abyss':'storm'},ctx);ctx.restore();return;
+  // ボスと同じ本体デザイン。以前の黄色い円形の縁取りは描かない。
+  const skin=getHeroSkin(e.id,e.skinId);
+  ctx.save();ctx.translate(e.x,e.y);
+  ctx.scale(e.r/46,e.r/46);
+  drawBossAppearance({x:0,y:0,r:39,bossType:e.id===22?'abyss':'storm'},ctx);
+  drawPlayableBossSkin(ctx,e.id,skin,elapsed);
+  ctx.restore();return;
  }
 
  const r=e.r,entry=heroArtCanvasImage(e.id,e.skinId);
@@ -1423,7 +1428,7 @@ else if(tab==='news'){
 // 次回以降は先頭に最新更新を追加すると最新ニュースと過去5件が自動で切り替わる。
 const updates=[
  {ver:'149.0.3',title:'🛠️ ログイン初期化の再修正',detail:'クラブ状態の初期化をvar宣言に変更し、ログイン画面にバージョン表示を追加。既存セーブデータは変更しません。',date:'2026年11月22日（日本時間）'},
- {ver:'149.0.6',title:'👑 ウルトラレジェンドレア＆ボス解放進捗',detail:'深淵の覇王・雷霆の支配者のレアリティを新設のウルトラレジェンドレアに変更。キャラ一覧と詳細画面に討伐達成数・残り回数・進捗バーを追加。称号やスキンのレアリティは変更なし。',date:'2026年11月22日（日本時間）'},
+ {ver:'149.0.7',title:'👑 ウルトラレジェンドレア＆ボス解放進捗',detail:'深淵の覇王・雷霆の支配者のレアリティを新設のウルトラレジェンドレアに変更。キャラ一覧と詳細画面に討伐達成数・残り回数・進捗バーを追加。称号やスキンのレアリティは変更なし。',date:'2026年11月22日（日本時間）'},
  {ver:'149.0',title:'👹 BOSS UNLEASHED：ボス2体が参戦',detail:'深淵の覇王（近距離・吸血・深淵領域）と雷霆の支配者（高速・射程内全員への落雷）がプレイアブル化。通常ボスの討伐20回／30回で解放。ボス版と同じ見た目を通常キャラサイズで使用。称号のレア度は変更しません。',date:'2026年11月22日（日本時間）'},
 {ver:'148.4.5',title:'🎃 冥炎皇帝パンプキン＆スキン最高レア度ディバイン',detail:'パンプキンに50000コインの豪華スキン「冥炎皇帝パンプキン」を追加。氷晶のスノーベルとともにディバインへ変更。従来のディバインスキンはマスターへ名称変更。トロフィーランクは変更なし。',date:'2026年11月22日（日本時間）'},
  {ver:'148.4.4',title:'👑 氷晶のスノーベル豪華演出＆救済販売',detail:'氷晶のスノーベルに氷の王冠・二重の回転光輪・結晶の翼・12個の氷晶・雪のきらめきを追加。スノーベル本体をショップで30000コイン販売開始。第2章の限定スキンは引き続き報酬限定。',date:'2026年11月22日（日本時間）'},
@@ -2186,6 +2191,40 @@ function drawBossAppearance(e,bossCtx=ctx){
   bossCtx.strokeStyle='#ffcf8b';bossCtx.lineWidth=3;bossCtx.beginPath();bossCtx.arc(0,10,14,0,Math.PI);bossCtx.stroke();
  }
  bossCtx.restore();
+}
+// プレイアブルボス専用のスキン装飾。ボスのシルエットは全スキン共通。
+function drawPlayableBossSkin(c,id,skin,t=0){
+ if(!skin||skin.id==='default')return;
+ const accent=skin.colors?.[1]||'#d9a7ff',light=skin.colors?.[2]||'#ffffff';
+ c.save();c.lineCap='round';c.lineJoin='round';
+ const isGrand=skin.rarity==='マスター'||skin.rarity==='ディバイン';
+ c.shadowColor=accent;c.shadowBlur=isGrand?15:9;
+ c.strokeStyle=accent;c.lineWidth=isGrand?3.5:2.5;
+ // 角・王冠の色付き輪郭と体表の魔法刻印
+ c.beginPath();c.moveTo(-24,-15);c.lineTo(-31,-39);c.lineTo(-7,-26);c.lineTo(0,-34);c.lineTo(7,-26);c.lineTo(31,-39);c.lineTo(24,-15);c.stroke();
+ c.beginPath();c.moveTo(-28,19);c.lineTo(-18,29);c.lineTo(-8,23);c.moveTo(28,19);c.lineTo(18,29);c.lineTo(8,23);c.stroke();
+ c.fillStyle=light;
+ for(let k=0;k<(isGrand?8:4);k++){
+  const a=k*Math.PI*2/(isGrand?8:4)+t*.45;
+  const r=isGrand?48:44;
+  c.beginPath();c.arc(Math.cos(a)*r,Math.sin(a)*r,isGrand?2.4:1.7,0,Math.PI*2);c.fill();
+ }
+ if(isGrand){
+  c.shadowBlur=12;c.strokeStyle=light;c.lineWidth=1.6;
+  c.beginPath();c.ellipse(0,0,47,24,-.4+t*.08,0,Math.PI*2);c.stroke();
+  c.beginPath();c.ellipse(0,0,46,24,.5-t*.06,0,Math.PI*2);c.stroke();
+  c.fillStyle=accent;
+  for(let k=0;k<5;k++){let a=k*Math.PI*2/5+t*.25;
+   c.save();c.translate(Math.cos(a)*45,Math.sin(a)*45);c.rotate(a);
+   c.beginPath();c.moveTo(0,-5);c.lineTo(4,0);c.lineTo(0,5);c.lineTo(-4,0);c.closePath();c.fill();c.restore();}
+ }
+ c.restore();
+}
+function playableBossPortrait(id,skin){
+ const c=document.createElement('canvas');c.width=124;c.height=124;
+ const p=c.getContext('2d');p.save();p.translate(62,64);p.scale(.95,.95);
+ drawBossAppearance({x:0,y:0,r:39,bossType:id===22?'abyss':'storm'},p);
+ drawPlayableBossSkin(p,id,skin,0);p.restore();return c.toDataURL('image/png');
 }
 function bossPortrait(id){
  const c=document.createElement('canvas');c.width=124;c.height=124;
