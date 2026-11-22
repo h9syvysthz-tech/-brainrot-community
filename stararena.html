@@ -118,7 +118,7 @@ function weightedHeroDraw(ids){
 const ownsHero=i=>i===22?(data.owned.includes(22)||((data.bossHeroKills?.abyss||0)>=20)):i===23?(data.owned.includes(23)||((data.bossHeroKills?.storm||0)>=30)):i===20?(data.pumpkinPurchased===true||data.owned.includes(20)):i===21?(data.xmas2026Claimed===true||data.owned.includes(21)):data.owned.includes(i);
 const ensurePumpkinOwnership=()=>{if(data.pumpkinPurchased===true&&!data.owned.includes(20))data.owned.push(20);if(data.owned.includes(20))data.pumpkinPurchased=true;};
 const rarityTag=i=>`<span class="hero-rarity" style="--rarity-color:${heroRarity(i).color}">${heroRarity(i).icon} ${heroRarity(i).name}</span>`;
-const HEROES=NAMES.map((name,i)=>({name,icon:ICONS[i],color:COLORS[i],hp:[290, 125, 215, 180, 285, 125, 390, 170, 325, 375, 235, 155, 300, 185, 245, 175, 280, 120, 475, 160, 350,255,450,185][i],speed:[2.12, 1.62, 2.05, 1.88, 2.72, 1.52, 1.94, 1.91, 2.47, 1.58, 2.25, 1.78, 2.35, 1.64, 2.0, 1.83, 2.44, 1.49, 1.20, 1.7, 1.58,2.08,1.55,2.85][i],bodySize:i===22?22:i===23?21:i===21?15:i===18?23:11+(i*5%8),damage:[33, 61, 25, 30, 51, 76, 34, 32, 49, 72, 36, 52, 43, 64, 33, 34, 45, 83, 55, 105, 204,42,120,32][i],range:[76, 540, 225, 310, 105, 610, 195, 345, 90, 500, 165, 410, 65, 565, 205, 365, 112, 650, 205, 450,280,330,95,420][i],cooldown:[330, 990, 490, 550, 345, 1120, 520, 610, 310, 1040, 430, 840, 335, 980, 520, 580, 340, 1200, 700, 1060, 950,590,630,280][i],superType:i===21?2:i%5}));
+const HEROES=NAMES.map((name,i)=>({name,icon:ICONS[i],color:COLORS[i],hp:[290, 125, 215, 180, 285, 125, 390, 170, 325, 375, 235, 155, 300, 185, 245, 175, 280, 120, 475, 160, 350,255,450,195][i],speed:[2.12, 1.62, 2.05, 1.88, 2.72, 1.52, 1.94, 1.91, 2.47, 1.58, 2.25, 1.78, 2.35, 1.64, 2.0, 1.83, 2.44, 1.49, 1.20, 1.7, 1.58,2.08,1.55,2.65][i],bodySize:i===22?22:i===23?21:i===21?15:i===18?23:11+(i*5%8),damage:[33, 61, 25, 30, 51, 76, 34, 32, 49, 72, 36, 52, 43, 64, 33, 34, 45, 83, 55, 105, 204,42,120,38][i],range:[76, 540, 225, 310, 105, 610, 195, 345, 90, 500, 165, 410, 65, 565, 205, 365, 112, 650, 205, 450,280,330,95,240][i],cooldown:[330, 990, 490, 550, 345, 1120, 520, 610, 310, 1040, 430, 840, 335, 980, 520, 580, 340, 1200, 700, 1060, 950,590,630,280][i],superType:i===21?2:i%5}));
 // スノーベルはNAMESからID 21として1体だけ生成。
 const ROLE_NAMES=['近距離ファイター','長距離スナイパー','中距離バランス','中〜長距離アタッカー'];const ROLE_DESCS=['近距離で5発の散弾を放つ。近づくほど強力。','細くて高速な狙撃弾を遠距離まで飛ばす。接近戦は苦手。','射程と火力のバランスが良い。','中距離を保ちつつ牽制するタイプ。'];const ATTACKS=['灼熱散弾','氷結狙撃','電撃連鎖弾','葉の3連射','影の近距離連撃','月光貫通狙撃','重装破砕弾','流星2連射','水流散弾','岩石狙撃','牙の3連射','彗星加速弾','虹の8連散弾','霧の4連射','不死鳥の炎弾','機械2連射','猛毒散弾','星屑高速狙撃','巨岩範囲弾','宇宙貫通2連射','呪いの15連集中散弾','氷晶ベルの3連射','深淵の魔爪','雷霆の裁き'];
 const SUPERS=['火炎の7連散弾','氷結吹雪','電撃加速','自然の癒やし','影の貫通突撃','月光貫通砲','重装ノックバック','流星加速','水流の回復波','岩石の貫通砲','牙の9連散弾','彗星吹き飛ばし','虹の超加速','霧の全体回復','不死鳥の巨大炎弾','機械の連続砲撃','猛毒衝撃波','星屑の超加速','巨岩の回復波','宇宙貫通大砲','かぼちゃの生命回復','聖夜のスノードーム','深淵領域','雷神の暴走'];
@@ -870,6 +870,10 @@ for(let i=0;i<HEROES.length;i++){
   HERO_SKINS[i][id]={id,name:t.name+' '+HEROES[i].name,rarity:t.rarity,price:t.price,colors:t.colors,effect:t.effect,ornament:slot};
  }
 }
+HERO_SKINS[22].skin1.name='冥翼シャドウ・深淵の覇王';
+HERO_SKINS[22].skin2.name='星界皇帝・深淵の覇王';
+HERO_SKINS[23].skin1.name='蒼雷神・雷霆の支配者';
+HERO_SKINS[23].skin2.name='銀河雷帝・雷霆の支配者';
 HERO_SKINS[21].xmasCrystal={id:'xmasCrystal',name:'氷晶のスノーベル',rarity:'ディバイン',price:0,colors:['#5edaff','#f0ffff','#c7b6ff','#163b88'],effect:'ice',ornament:2};
 // Ver.148.4.5: パンプキン専用ディバインスキン。通常のスキン購入処理を使いセーブ互換を維持。
 HERO_SKINS[20].abyssKing={id:'abyssKing',name:'冥炎皇帝パンプキン',rarity:'ディバイン',price:50000,colors:['#a238ee','#ffad40','#ffe8a2','#241036'],effect:'inferno',ornament:2};
@@ -1500,6 +1504,7 @@ else if(tab==='news'){
 // 次回以降は先頭に最新更新を追加すると最新ニュースと過去5件が自動で切り替わる。
 const updates=[
  {ver:'149.0.3',title:'🛠️ ログイン初期化の再修正',detail:'クラブ状態の初期化をvar宣言に変更し、ログイン画面にバージョン表示を追加。既存セーブデータは変更しません。',date:'2026年11月22日（日本時間）'},
+ {ver:'150.3.2',title:'⚡ 雷霆の支配者の射程・性能調整＆ボス専用豪華スキン',detail:'雷霆の支配者の射程を420から240、攻撃力32から38、HP185から195、移動速度2.85から2.65に調整。ボス2体のスキンに専用の大翼・王冠・稲妻・魔法陣を追加。',date:'2026年11月22日（日本時間）'},
  {ver:'149.0.7',title:'👑 ウルトラレジェンドレア＆ボス解放進捗',detail:'深淵の覇王・雷霆の支配者のレアリティを新設のウルトラレジェンドレアに変更。キャラ一覧と詳細画面に討伐達成数・残り回数・進捗バーを追加。称号やスキンのレアリティは変更なし。',date:'2026年11月22日（日本時間）'},
  {ver:'149.0',title:'👹 BOSS UNLEASHED：ボス2体が参戦',detail:'深淵の覇王（近距離・吸血・深淵領域）と雷霆の支配者（高速・射程内全員への落雷）がプレイアブル化。通常ボスの討伐20回／30回で解放。ボス版と同じ見た目を通常キャラサイズで使用。称号のレア度は変更しません。',date:'2026年11月22日（日本時間）'},
 {ver:'148.4.5',title:'🎃 冥炎皇帝パンプキン＆スキン最高レア度ディバイン',detail:'パンプキンに50000コインの豪華スキン「冥炎皇帝パンプキン」を追加。氷晶のスノーベルとともにディバインへ変更。従来のディバインスキンはマスターへ名称変更。トロフィーランクは変更なし。',date:'2026年11月22日（日本時間）'},
@@ -2267,29 +2272,47 @@ function drawBossAppearance(e,bossCtx=ctx){
 // プレイアブルボス専用のスキン装飾。ボスのシルエットは全スキン共通。
 function drawPlayableBossSkin(c,id,skin,t=0){
  if(!skin||skin.id==='default')return;
- const accent=skin.colors?.[1]||'#d9a7ff',light=skin.colors?.[2]||'#ffffff';
+ const abyss=id===22,grand=skin.id==='skin2';
+ const accent=skin.colors?.[1]||'#e6b7ff',secondary=skin.colors?.[0]||'#ae70ff',light=skin.colors?.[2]||'#fff';
  c.save();c.lineCap='round';c.lineJoin='round';
- const isGrand=skin.rarity==='マスター'||skin.rarity==='ディバイン';
- c.shadowColor=accent;c.shadowBlur=isGrand?15:9;
- c.strokeStyle=accent;c.lineWidth=isGrand?3.5:2.5;
- // 角・王冠の色付き輪郭と体表の魔法刻印
- c.beginPath();c.moveTo(-24,-15);c.lineTo(-31,-39);c.lineTo(-7,-26);c.lineTo(0,-34);c.lineTo(7,-26);c.lineTo(31,-39);c.lineTo(24,-15);c.stroke();
- c.beginPath();c.moveTo(-28,19);c.lineTo(-18,29);c.lineTo(-8,23);c.moveTo(28,19);c.lineTo(18,29);c.lineTo(8,23);c.stroke();
- c.fillStyle=light;
- for(let k=0;k<(isGrand?8:4);k++){
-  const a=k*Math.PI*2/(isGrand?8:4)+t*.45;
-  const r=isGrand?48:44;
-  c.beginPath();c.arc(Math.cos(a)*r,Math.sin(a)*r,isGrand?2.4:1.7,0,Math.PI*2);c.fill();
+ // 専用スキンは単なる色変更ではなく、左右の巨大な翼・冠・紋章・武装を追加する。
+ c.shadowColor=accent;c.shadowBlur=grand?15:10;
+ if(abyss){
+  if(grand){ // ギャラクシー：六枚の宇宙翼、星冠、星雲リング
+   c.fillStyle='#251044';c.strokeStyle='#f7a4ff';c.lineWidth=2.6;
+   for(const side of [-1,1]){c.save();c.scale(side,1);
+    for(let j=0;j<3;j++){c.beginPath();c.moveTo(22,4+j*9);c.quadraticCurveTo(46+j*3,-30+j*13,58-j*3,-42+j*21);c.quadraticCurveTo(48,12+j*11,24,25+j*6);c.closePath();c.fill();c.stroke();}
+    c.restore();}
+   c.fillStyle='#f9cbff';c.strokeStyle='#e48aff';c.lineWidth=2;
+   c.beginPath();c.moveTo(-27,-32);c.lineTo(-23,-54);c.lineTo(-10,-42);c.lineTo(0,-60);c.lineTo(10,-42);c.lineTo(23,-54);c.lineTo(27,-32);c.closePath();c.fill();c.stroke();
+   c.strokeStyle='#c49bff';c.lineWidth=2.2;c.beginPath();c.ellipse(0,0,52,22,t*.22,0,Math.PI*2);c.stroke();
+   c.fillStyle='#ffffff';for(let j=0;j<9;j++){let a=t*.6+j*Math.PI*2/9;c.beginPath();c.arc(Math.cos(a)*51,Math.sin(a)*36,2.5,0,7);c.fill();}
+  }else{ // シャドウ：蝙蝠翼・深淵の大角・紫炎
+   c.fillStyle='#27103f';c.strokeStyle='#d77cff';c.lineWidth=3;
+   for(const side of [-1,1]){c.save();c.scale(side,1);c.beginPath();c.moveTo(22,-8);c.lineTo(51,-37);c.lineTo(45,-8);c.lineTo(59,0);c.lineTo(43,10);c.lineTo(44,29);c.lineTo(23,17);c.closePath();c.fill();c.stroke();c.restore();}
+   c.strokeStyle='#ff94e6';c.lineWidth=4;c.beginPath();c.moveTo(-23,-26);c.lineTo(-34,-50);c.lineTo(-14,-39);c.moveTo(23,-26);c.lineTo(34,-50);c.lineTo(14,-39);c.stroke();
+   c.fillStyle='#e58aff';for(let j=0;j<6;j++){let a=t*.8+j*Math.PI/3;c.beginPath();c.arc(Math.cos(a)*44,Math.sin(a)*42,2.4,0,7);c.fill();}
+  }
+ }else{
+  if(grand){ // ギャラクシー：雷神の翼・稲妻冠・複数の電気衛星
+   c.fillStyle='#13254d';c.strokeStyle='#ffe1ff';c.lineWidth=2.6;
+   for(const side of [-1,1]){c.save();c.scale(side,1);c.beginPath();c.moveTo(21,-15);c.lineTo(50,-42);c.lineTo(41,-15);c.lineTo(59,-20);c.lineTo(43,3);c.lineTo(55,12);c.lineTo(20,23);c.closePath();c.fill();c.stroke();c.restore();}
+   c.fillStyle='#e2baff';c.strokeStyle='#ffffff';c.lineWidth=1.6;c.beginPath();c.moveTo(-25,-30);c.lineTo(-18,-53);c.lineTo(-5,-40);c.lineTo(0,-61);c.lineTo(7,-41);c.lineTo(22,-52);c.lineTo(26,-30);c.closePath();c.fill();c.stroke();
+   c.strokeStyle='#c8faff';c.lineWidth=2;c.beginPath();c.ellipse(0,0,53,26,t*.3,0,7);c.stroke();
+   for(let j=0;j<8;j++){let a=t*.8+j*Math.PI/4;c.fillStyle=j%2?'#f9c5ff':'#fff';c.beginPath();c.arc(Math.cos(a)*51,Math.sin(a)*36,3,0,7);c.fill();}
+  }else{ // ストーム：巨大な二本角・雷光の翼・電撃鎖
+   c.fillStyle='#06385b';c.strokeStyle='#81f9ff';c.lineWidth=3;
+   for(const side of [-1,1]){c.save();c.scale(side,1);c.beginPath();c.moveTo(21,-5);c.lineTo(56,-33);c.lineTo(44,-9);c.lineTo(60,-4);c.lineTo(37,14);c.lineTo(48,30);c.lineTo(19,22);c.closePath();c.fill();c.stroke();c.restore();}
+   c.strokeStyle='#e1ffff';c.lineWidth=4;c.beginPath();c.moveTo(-22,-25);c.lineTo(-34,-48);c.lineTo(-23,-42);c.lineTo(-17,-53);c.moveTo(22,-25);c.lineTo(34,-48);c.lineTo(23,-42);c.lineTo(17,-53);c.stroke();
+   c.strokeStyle='#8afcff';c.lineWidth=2;c.beginPath();c.moveTo(-52,22);c.lineTo(-39,15);c.lineTo(-45,4);c.moveTo(52,22);c.lineTo(39,15);c.lineTo(45,4);c.stroke();
+  }
  }
- if(isGrand){
-  c.shadowBlur=12;c.strokeStyle=light;c.lineWidth=1.6;
-  c.beginPath();c.ellipse(0,0,47,24,-.4+t*.08,0,Math.PI*2);c.stroke();
-  c.beginPath();c.ellipse(0,0,46,24,.5-t*.06,0,Math.PI*2);c.stroke();
-  c.fillStyle=accent;
-  for(let k=0;k<5;k++){let a=k*Math.PI*2/5+t*.25;
-   c.save();c.translate(Math.cos(a)*45,Math.sin(a)*45);c.rotate(a);
-   c.beginPath();c.moveTo(0,-5);c.lineTo(4,0);c.lineTo(0,5);c.lineTo(-4,0);c.closePath();c.fill();c.restore();}
- }
+ // 顔と胴体にスキン固有の大きな魔法紋章を重ね、バトル中も違いが見えるようにする。
+ c.shadowBlur=7;c.strokeStyle=accent;c.lineWidth=grand?3.5:2.5;
+ c.beginPath();c.moveTo(-27,18);c.lineTo(-17,30);c.lineTo(0,25);c.lineTo(17,30);c.lineTo(27,18);c.stroke();
+ c.fillStyle=grand?'#fff5d5':light;
+ c.beginPath();c.moveTo(0,14);c.lineTo(8,23);c.lineTo(0,32);c.lineTo(-8,23);c.closePath();c.fill();
+ c.strokeStyle=secondary;c.lineWidth=2;c.stroke();
  c.restore();
 }
 function playableBossPortrait(id,skin){
