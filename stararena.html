@@ -79,6 +79,7 @@ body.playing #battleExit{display:block}
 @keyframes skin-shimmer{0%{opacity:.2}50%{opacity:.9}100%{opacity:.2}}
 @media(prefers-reduced-motion:reduce){.skin-animated *{animation:none!important}}
 
+/* Ver.148.4.2: ブレイズ・ネオン・ヴァイパーの必殺技命中による必殺チャージを従来の55%に調整。 */
 /* Ver.148.1: iOS Safari battle double-tap zoom protection. */
 body.playing,body.playing #gameArea,body.playing #battleStage,body.playing #gameCanvas,body.playing #touchUI,body.playing #touchUI *{touch-action:none!important;-ms-touch-action:none!important;-webkit-user-select:none!important;user-select:none!important;-webkit-touch-callout:none!important;}
 body.playing #battleExit{touch-action:manipulation!important;}
@@ -1740,7 +1741,7 @@ function aiWaypoint(e,focus){
  chain.reverse();e.navPath=chain;
  return chain[0]||null;
 }
-function hit(e,damage,owner){if(e.dead||e.invuln>elapsed)return;if(e.star==='armor')damage*=.88;if(e.gadgetShieldUntil>elapsed)damage*=.5;e.hp-=damage;e.lastHit=elapsed;e.revealedUntil=Math.max(e.revealedUntil,elapsed+1);if(owner===player)player.super=clamp(player.super+(player.star==='supergain'?19:12),0,100);for(let i=0;i<6;i++)particles.push({x:e.x,y:e.y,vx:rand(-3,3),vy:rand(-3,3),life:25,color:h(e.id).color});if(e.hp<=0){
+function hit(e,damage,owner,isSuperHit=false){if(e.dead||e.invuln>elapsed)return;if(e.star==='armor')damage*=.88;if(e.gadgetShieldUntil>elapsed)damage*=.5;e.hp-=damage;e.lastHit=elapsed;e.revealedUntil=Math.max(e.revealedUntil,elapsed+1);if(owner===player){const baseGain=player.star==='supergain'?19:12;const gain=isSuperHit&&[0,12,16].includes(player.id)?baseGain*.55:baseGain;player.super=clamp(player.super+gain,0,100);}for(let i=0;i<6;i++)particles.push({x:e.x,y:e.y,vx:rand(-3,3),vy:rand(-3,3),life:25,color:h(e.id).color});if(e.hp<=0){
 let killerName=owner?(owner===player?'YOU':owner.isBoss?'👹 ボス':h(owner.id).name):'☠️ 毒ガス';
 let victimName=e===player?'YOU':e.isBoss?'👹 ボス':h(e.id).name;
 killFeed.unshift({killer:killerName,victim:victimName,killerColor:owner?(owner.team===0?'#8dc7ff':'#ffb1b9'):'#dfb3ff',victimColor:e.team===0?'#8dc7ff':'#ffb1b9',time:elapsed});
@@ -2053,15 +2054,15 @@ moveEntity(e,mx,my,step*.87*(e.slowUntil>elapsed?.7:1)*(e.boostUntil>elapsed?1.4
 }}
 for(let i=shots.length-1;i>=0;i--){let b=shots[i];if(b.role===1){b.trail.push({x:b.x,y:b.y});if(b.trail.length>6)b.trail.shift()}b.x+=b.vx*step;b.y+=b.vy*step;b.life-=step;if(b.x<0||b.y<0||b.x>worldW||b.y>worldH){shots.splice(i,1);continue}let boxHit=mode==='royale'?powerBoxes.find(box=>Math.hypot(box.x-b.x,box.y-b.y)<box.r+b.r):null;
 if(boxHit){damagePowerBox(boxHit,b.damage,b.owner);shots.splice(i,1);continue}
-let victim=entities.find(e=>!e.dead&&e!==b.owner&&e.team!==b.owner.team&&!b.hitIds.has(e)&&dist(e,b)<e.r+b.r);if(victim){b.hitIds.add(victim);hit(victim,b.damage,b.owner);if([1,8,9].includes(b.owner.id))victim.slowUntil=elapsed+([1,9].includes(b.owner.id)?1.6:2);
+let victim=entities.find(e=>!e.dead&&e!==b.owner&&e.team!==b.owner.team&&!b.hitIds.has(e)&&dist(e,b)<e.r+b.r);if(victim){b.hitIds.add(victim);hit(victim,b.damage,b.owner,b.superShot===true);if([1,8,9].includes(b.owner.id))victim.slowUntil=elapsed+([1,9].includes(b.owner.id)?1.6:2);
 if(b.owner.id===21){
  victim.slowUntil=Math.max(victim.slowUntil,elapsed+1.9);
  if(victim.snowbellMarkUntil<elapsed)victim.snowbellMarks=0;
  victim.snowbellMarks=(victim.snowbellMarks||0)+1;victim.snowbellMarkUntil=elapsed+5;
- if(victim.snowbellMarks>=3){victim.snowbellMarks=0;hit(victim,b.owner.damage*1.05,b.owner);
+ if(victim.snowbellMarks>=3){victim.snowbellMarks=0;hit(victim,b.owner.damage*1.05,b.owner,b.superShot===true);
  effects.push({x:victim.x,y:victim.y,r:10,max:66,life:26,color:'#b6faff'});
  }
-}if([0,14,16].includes(b.owner.id)){victim.poisonUntil=elapsed+3;victim.poisonOwner=b.owner}if(b.owner.id===18){let splash=entities.filter(e=>e!==victim&&e!==b.owner&&!e.dead&&e.team!==b.owner.team&&dist(e,victim)<75);for(let e of splash)hit(e,b.damage*.45,b.owner)}if(b.owner.id===2){let extra=entities.filter(e=>e!==victim&&e!==b.owner&&!e.dead&&e.team!==b.owner.team&&dist(e,victim)<105).slice(0,2);for(let e of extra)hit(e,b.damage*.4,b.owner)}if(b.pierce>0)b.pierce--;else shots.splice(i,1)}else if(b.life<=0||blocked(b.x,b.y,b.r))shots.splice(i,1)}
+}if([0,14,16].includes(b.owner.id)){victim.poisonUntil=elapsed+3;victim.poisonOwner=b.owner}if(b.owner.id===18){let splash=entities.filter(e=>e!==victim&&e!==b.owner&&!e.dead&&e.team!==b.owner.team&&dist(e,victim)<75);for(let e of splash)hit(e,b.damage*.45,b.owner,b.superShot===true)}if(b.owner.id===2){let extra=entities.filter(e=>e!==victim&&e!==b.owner&&!e.dead&&e.team!==b.owner.team&&dist(e,victim)<105).slice(0,2);for(let e of extra)hit(e,b.damage*.4,b.owner,b.superShot===true)}if(b.pierce>0)b.pierce--;else shots.splice(i,1)}else if(b.life<=0||blocked(b.x,b.y,b.r))shots.splice(i,1)}
 for(let i=effects.length-1;i>=0;i--){effects[i].life-=step;if(effects[i].life<=0)effects.splice(i,1)}for(let i=particles.length-1;i>=0;i--){let p=particles[i];p.x+=p.vx*step;p.y+=p.vy*step;p.life-=step;if(p.life<=0)particles.splice(i,1)}
 if(mode==='boss'){
 updateBossAttacks(dt);if(!playing)return;
