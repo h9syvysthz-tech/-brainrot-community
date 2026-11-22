@@ -137,6 +137,9 @@ const BOSS_NAME='👹 深淵の覇王';const BOSS_TYPES=[{id:'abyss',name:'👹 
 {name:'エキスパート',lv:19,hp:1.45,damage:1.35,interval:.97,warning:1.0,rage:[45,85,130]},
 {name:'ナイトメア',lv:27,hp:1.90,damage:1.75,interval:.88,warning:.96,rage:[35,75,115]}
 ];let bossDifficulty=1;document.addEventListener('change',e=>{if(e.target?.id==='bossDifficultySelect')bossDifficulty=Math.max(0,Math.min(4,Number(e.target.value)||0));if(e.target?.id==='bossTypeSelect'){bossType=e.target.value;render()}});
+// Initialize club state before the first render (avoids temporal dead zone on login).
+let clubTrophyLive={};
+let clubId=null,clubInfo=null,clubList=[],clubBusy=false,clubStatusText='',clubView='main',clubDeleteConfirm=null,clubPendingSensitive=null;
 const KEY='starArenaSave_v1';const freshData=()=>({bossHeroKills:{abyss:0,storm:0},coins:450,trophies:0,selected:0,owned:[0,1,2],levels:{},wins:0,matches:0,best:0,drops:0,redeemedCodes:{},unlockedTitles:{},selectedTitle:"rookie",ownedSkins:{},equippedSkins:{}});let data;try{data=JSON.parse(localStorage.getItem(KEY)||sessionStorage.getItem(KEY))}catch(e){}if(!data||!Array.isArray(data.owned)){data=freshData()};if(data.pumpkinPurchased===true&&!data.owned.includes(20))data.owned.push(20);if(data.owned.includes(20))data.pumpkinPurchased=true;if(data.xmas2026Claimed===true&&!data.owned.includes(21))data.owned.push(21);
 for(const [type,id,need] of [['abyss',22,20],['storm',23,30]])if((data.bossHeroKills?.[type]||0)>=need&&!data.owned.includes(id))data.owned.push(id);if(!Number.isInteger(data.drops)||data.drops<0)data.drops=0;const $=id=>document.getElementById(id);let pumpkinPurchaseArmed=false,snowbellPurchaseArmed=false;let tab='home',mode='royale',playing=false,raf=0,entities=[],shots=[],walls=[],bushes=[],particles=[],player=null,elapsed=0,spawnTimer=0,kills=0,score=0,last=0,mouse={x:480,y:300,active:false},keys={},move={x:0,y:0},attackHeld=false,superHeld=false,touchAim={active:false,dx:1,dy:0},gameTime=90,matchOver=false,teamScore=[0,0],effects=[],worldW=960,worldH=600,camX=0,camY=0,gasInset=0,gasPhase=0,bossWarnings=[],bossCooldown=0,bossPattern=0,bossRageStage=0,bossRageMessageUntil=0,killFeed=[],royaleFinalTwoUntil=0,royaleFinalTwoShown=false;
 // キャラ別の弾数と1発のリロード時間（秒）
@@ -1282,8 +1285,8 @@ function xmasEventHTML(){const n=xmasCount(),joined=Number(xmasParticipant().bos
 
 
 // Ver.138: Firebase RTDB clubs. Membership and club data are separate from legacy save.
-let clubTrophyLive={};
-let clubId=null,clubInfo=null,clubList=[],clubBusy=false,clubStatusText='',clubView='main',clubDeleteConfirm=null,clubPendingSensitive=null;
+// Club state is initialized at startup, before any render or cloud login.
+
 const clubEsc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const clubWeek=()=>{let d=new Date(Date.now()+9*3600000);d.setUTCHours(0,0,0,0);let wd=(d.getUTCDay()+6)%7;d.setUTCDate(d.getUTCDate()-wd);return d.toISOString().slice(0,10).replace(/-/g,'')};
 const clubIconSet=['🛡️','👑','⭐','🔥','❄️','⚡','🌙','🐉','💎','🌿','🌌','🏆','🎯','🦁','🌈','🔱','☄️','🦅','💫','🤖'];
