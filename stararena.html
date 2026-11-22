@@ -474,8 +474,8 @@ function missionsHTML(){const claims=missionClaims(),done=MISSIONS.filter(m=>cla
 // オンライン順位：セーブデータとは別の公開プロフィールのみ共有する。
 
 // Ver.148: 公開するのはゲーム内の情報のみ。認証情報・セーブ全体は公開しない。
-const PROFILE_ICONS=['⭐','👑','⚔️','🛡️','🐉','🔥','❄️','💎'];
-const PROFILE_THEMES=[['深海','#123b68','#317db5'],['魔王城','#3d183f','#a44176'],['森林','#153d32','#409477'],['黄金','#493614','#c69b3a']];
+const PROFILE_ICONS=['⭐','👑','⚔️','🛡️','🐉','🔥','❄️','💎','🌋','🌌','🏅','⚡'];
+const PROFILE_THEMES=[['深海','#123b68','#317db5'],['魔王城','#3d183f','#a44176'],['森林','#153d32','#409477'],['黄金','#493614','#c69b3a'],['火山','#542b27','#ec7841'],['星空','#25214f','#a38bff']];
 let profileOpenUid=null,profileViewed=null,profileMessage='',profileBusy=false;
 function profileChoice(key,max){let n=Number(data[key]);return Number.isInteger(n)&&n>=0&&n<max?n:0}
 function profilePayload(){
@@ -516,7 +516,10 @@ function profileHTML(){
  const theme=PROFILE_THEMES[Math.min(PROFILE_THEMES.length-1,Number(p.theme)||0)],hero=Number.isInteger(p.hero)&&p.hero>=0&&p.hero<HEROES.length?HEROES[p.hero]:null;
  const winsText=Number.isInteger(p.wins)&&p.wins>=0?String(p.wins):'未同期';
  const matchesText=Number.isInteger(p.matches)&&p.matches>=0?String(p.matches):'未同期';
- return `<section class="panel"><h2>🪪 プレイヤープロフィール</h2><div style="border:2px solid ${theme[2]};border-radius:18px;padding:18px;background:linear-gradient(135deg,${theme[1]},#101a30);text-align:center"><div style="font-size:48px">${PROFILE_ICONS[Number(p.icon)||0]}</div><h2>${escapeBoard(p.username)}</h2><p>🏆 ${p.trophies}　⚔️ ${winsText}勝 / ${matchesText}戦</p><p>現在の使用キャラ：${hero?escapeBoard(hero.name):'未同期'}</p><p>🏅 称号：${escapeBoard(titleById(p.title)?.name||'なし')}</p><p>🛡️ 所属クラブ：${escapeBoard(own?(clubInfo?.info?.name||p.clubName||'未所属'):(p.clubName||'未所属'))}</p><p class="small">背景：${theme[0]}</p></div>${own?`<h3>🎨 プロフィールを編集</h3><p>アイコン：${PROFILE_ICONS.map((ic,i)=>btn(ic+(profileChoice('profileIcon',PROFILE_ICONS.length)===i?' ✓':''),'profile:icon:'+i)).join(' ')}</p><p>背景：${PROFILE_THEMES.map((t,i)=>btn(t[0]+(profileChoice('profileTheme',PROFILE_THEMES.length)===i?' ✓':''),'profile:theme:'+i)).join(' ')}</p>${btn('☁️ プロフィールを公開・更新','profile:publish','green')}`:''}<p class="small">${escapeBoard(profileMessage)}</p>${btn('← ランキングに戻る','profile:close')}</section>`;
+ const winRate=Number.isInteger(p.matches)&&p.matches>0&&Number.isInteger(p.wins)?Math.round(100*p.wins/p.matches)+'%':'—';
+ const earnedBadges=[Number(p.wins)>=10?'🥉 10勝達成':null,Number(p.wins)>=100?'🥈 100勝達成':null,Number(p.wins)>=500?'🥇 500勝達成':null,Number(p.trophies)>=1000?'💠 1000トロフィー':null,Number(p.trophies)>=5000?'👑 5000トロフィー':null].filter(Boolean);
+ const cardExtras=`<p>📊 勝率：${winRate}　🏆 ランク：${escapeBoard(trophyRank(Math.max(0,Number(p.trophies)||0)).name)}</p><div style="display:flex;justify-content:center;flex-wrap:wrap;gap:7px;margin:12px 0">${earnedBadges.map(b=>`<span style="border:1px solid ${theme[2]};border-radius:20px;padding:5px 10px;background:#ffffff18">${b}</span>`).join('')||'<span class="small">まだ獲得したバッジはありません</span>'}</div>`;
+ return `<section class="panel"><h2>🪪 プレイヤープロフィール</h2><div style="border:2px solid ${theme[2]};border-radius:18px;padding:18px;background:linear-gradient(135deg,${theme[1]},#101a30);text-align:center"><div style="font-size:48px">${PROFILE_ICONS[Number(p.icon)||0]}</div><h2>${escapeBoard(p.username)}</h2><p>🏆 ${p.trophies}　⚔️ ${winsText}勝 / ${matchesText}戦</p><p>現在の使用キャラ：${hero?escapeBoard(hero.name):'未同期'}</p><p>🏅 称号：${escapeBoard(titleById(p.title)?.name||'なし')}</p><p>🛡️ 所属クラブ：${escapeBoard(own?(clubInfo?.info?.name||p.clubName||'未所属'):(p.clubName||'未所属'))}</p>${cardExtras}<p class="small">背景：${theme[0]}</p></div>${own?`<h3>🎨 プロフィールを編集</h3><p>アイコン：${PROFILE_ICONS.map((ic,i)=>btn(ic+(profileChoice('profileIcon',PROFILE_ICONS.length)===i?' ✓':''),'profile:icon:'+i)).join(' ')}</p><p>背景：${PROFILE_THEMES.map((t,i)=>btn(t[0]+(profileChoice('profileTheme',PROFILE_THEMES.length)===i?' ✓':''),'profile:theme:'+i)).join(' ')}</p>${btn('☁️ プロフィールを公開・更新','profile:publish','green')}`:''}<p class="small">${escapeBoard(profileMessage)}</p>${btn('← ランキングに戻る','profile:close')}</section>`;
 }
 
 let leaderboardEntries=[],leaderboardState='読み込み前',leaderboardLoading=false,leaderboardRequest=0,leaderboardPublished=null;
@@ -1548,6 +1551,7 @@ else if(tab==='clubs'){v.innerHTML=clubHTML()}
 else if(tab==='news'){
 // 次回以降は先頭に最新更新を追加すると最新ニュースと過去5件が自動で切り替わる。
 const updates=[
+ {ver:'151',title:'🌋 日替わりマップギミック＆🏅 プロフィールカード強化',detail:'火山の周期的な噴火、雪原の氷エリア、星影の遺跡の魔力回復エリアを追加。プロフィールカードに勝率・ランク・獲得条件に応じたバッジを表示し、アイコンと背景の種類を拡充。既存のセーブとFirebase保存形式は維持。',date:'2026年11月23日（日本時間）'},
  {ver:'150.13',title:'⚡ 雷霆の支配者バランス調整・スキン表示改善',detail:'通常攻撃力を42から28へ調整。落雷範囲を35から40に拡大、リロード間隔を280msから295msに変更、落雷命中時の必殺ゲージ増加量を12から9へ減少。プレイアブルボスの戦闘時スキン縮尺を選択画面に近づけました。',date:'2026年11月23日（日本時間）'},
  {ver:'150.12',title:'🗺️ 日替わりマップ実装',detail:'日本時間の午前0時に4種類のマップがローテーション。翠緑の遺跡・灼熱の火山・氷晶の雪原・星影の古代遺跡を追加。地形配置、障害物、草むら、背景色が変化。セーブデータとイベント機能は維持。',date:'2026年11月22日（日本時間）'},
  {ver:'150.11',title:'📱 入力欄の安定化とニュース表示調整',detail:'アイテムコード入力中に自動同期でキーボードが閉じる問題を修正。管理者メッセージ入力欄の保護を維持し、過去ニュース表示を直近10件に変更。',date:'2026年11月22日（日本時間）'},
@@ -1717,7 +1721,49 @@ function dailyArenaDay(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/
 function dailyArenaIndex(){const d=dailyArenaDay().split('-').map(Number);const days=Math.floor(Date.UTC(d[0],d[1]-1,d[2])/86400000);return ((days%DAILY_ARENAS.length)+DAILY_ARENAS.length)%DAILY_ARENAS.length;}
 function dailyArena(){return DAILY_ARENAS[dailyArenaIndex()];}
 let matchArena=dailyArena();
-function dailyArenaHTML(){const a=dailyArena();return `<section class="panel" style="border:2px solid #718ee0"><h3>🗺️ 本日の日替わりマップ</h3><p style="font-size:1.25em"><b>${a.icon} ${a.name}</b></p><p class="muted">日本時間の午前0時に切り替わります。通常バトルの地形・壁・草むら・背景が日替わりになります。試合途中では切り替わりません。</p><p class="small">対象：バトルロイヤル／3vs3／デュエル／ボスバトル／ガチバトル。期間限定の雪イベントは専用マップを優先します。</p></section>`;}
+let mapHazards=[],mapHazardTick=0;
+function setupMapGimmicks(){
+ mapHazards=[];mapHazardTick=0;
+ if(xmasRun||!matchArena||matchArena.shape===0)return;
+ const centers=mode==='royale'?[[.28,.27],[.72,.30],[.28,.72],[.72,.72],[.52,.53]]:[[.25,.28],[.76,.70],[.76,.25]];
+ for(const [fx,fy] of centers){const x=worldW*fx,y=worldH*fy;
+  if(!blocked(x,y,58)&&Math.hypot(x-worldW/2,y-worldH/2)>155)mapHazards.push({x,y,r:mode==='royale'?74:52});
+ }
+}
+function mapGimmickUpdate(dt){
+ if(!playing||xmasRun||!mapHazards.length||!matchArena||matchArena.shape===0)return;
+ mapHazardTick+=dt;
+ const phase=matchArena.shape;
+ if(phase===1&&mapHazardTick>=.5){mapHazardTick=0;
+  const active=(elapsed%8)<2.5;
+  if(active)for(const e of entities){if(e.dead||e.invuln>elapsed)continue;
+   if(mapHazards.some(z=>Math.hypot(e.x-z.x,e.y-z.y)<z.r+e.r*.35)){
+    hit(e,Math.max(3,e.maxHp*.018),null);
+    effects.push({x:e.x,y:e.y,r:7,max:32,life:14,color:'#ff8a32'});
+   }
+  }
+ }
+ if(phase===2)for(const e of entities){if(e.dead)continue;
+  if(mapHazards.some(z=>Math.hypot(e.x-z.x,e.y-z.y)<z.r))e.snowSlowUntil=Math.max(e.snowSlowUntil||0,elapsed+.2);
+ }
+ if(phase===3&&mapHazardTick>=1){mapHazardTick=0;
+  for(const e of entities){if(e.dead)continue;
+   if(mapHazards.some(z=>Math.hypot(e.x-z.x,e.y-z.y)<z.r))e.super=Math.min(100,(e.super||0)+2);
+  }
+ }
+}
+function drawMapGimmicks(){
+ if(xmasRun||!matchArena||matchArena.shape===0)return;
+ const phase=matchArena.shape,active=elapsed%8<2.5;
+ for(const z of mapHazards){ctx.save();ctx.beginPath();ctx.arc(z.x,z.y,z.r,0,Math.PI*2);
+  ctx.fillStyle=phase===1?(active?'#ff532b72':'#c4492830'):phase===2?'#b8f2ff55':'#9e83ff4a';ctx.fill();
+  ctx.lineWidth=3;ctx.strokeStyle=phase===1?(active?'#ffcd58':'#e7774d'):phase===2?'#d5f9ff':'#c5a8ff';ctx.stroke();
+  ctx.font='bold 22px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#fff';
+  ctx.fillText(phase===1?'♨':phase===2?'❄':'✦',z.x,z.y);ctx.restore();
+ }
+}
+
+function dailyArenaHTML(){const a=dailyArena();return `<section class="panel" style="border:2px solid #718ee0"><h3>🗺️ 本日の日替わりマップ</h3><p style="font-size:1.25em"><b>${a.icon} ${a.name}</b></p><p class="muted">日本時間の午前0時に切り替わります。通常バトルの地形・壁・草むら・背景と特殊ギミックが日替わりになります。火山：周期的な噴火ダメージ／雪原：氷上で移動速度低下／星影の遺跡：魔力エリアで必殺ゲージ回復／翠緑の遺跡：ギミックなし。試合途中では切り替わりません。</p><p class="small">対象：バトルロイヤル／3vs3／デュエル／ボスバトル／ガチバトル。期間限定の雪イベントは専用マップを優先します。</p></section>`;}
 function mapBuild(){
 worldW=mode==='royale'?3000:mode==='boss'?1300:1080;
 worldH=mode==='royale'?2200:mode==='boss'?850:720;
@@ -1756,7 +1802,7 @@ let knockoutRound=1,roundBreak=0;
 let seriousBattle=false;
 const SERIOUS_MODES=['royale','boss','team','duel'];
 function startSeriousBattle(){if((Number(data.trophies)||0)<1000){alert('ガチバトルは1000トロフィー以上で解放されます');return;}seriousBattle=true;xmasRun='';mode=SERIOUS_MODES[Math.floor(Math.random()*SERIOUS_MODES.length)];if(mode==='boss'){bossType=Math.random()<.5?'abyss':'storm';bossDifficulty=Math.floor(Math.random()*5);}start();}
-function start(){if(!seriousBattle)seriousBattle=false;if(mode==='boss'&&bossType==='demon'&&(Number(data.trophies)||0)<1500){alert('👑 終焉の魔王アザゼルへの挑戦にはトロフィー1500以上が必要です');return;}if(mode==='boss'&&!seriousBattle){const difficultySelect=$('bossDifficultySelect');if(difficultySelect)bossDifficulty=Math.max(0,Math.min(4,Number(difficultySelect.value)||0));}liveEventBattle=liveEventCurrents().map(e=>({...e}));powerCubes=[];powerBoxes=[];snowGifts=[];snowGiftCollected=0;snowStormPhase=0;cancelAnimationFrame(raf);playing=true;matchOver=false;entities=[];shots=[];particles=[];effects=[];elapsed=0;spawnTimer=0;kills=0;score=0;teamScore=[0,0];gasInset=0;gasPhase=0;bossWarnings=[];bossCooldown=3.2;bossPattern=0;bossRageStage=0;bossRageMessageUntil=0;killFeed=[];royaleFinalTwoUntil=0;royaleFinalTwoShown=false;knockoutRound=1;roundBreak=0;last=performance.now();matchArena=dailyArena();mapBuild();player=create(data.selected,0,false,{x:worldW/2,y:worldH/2}); if(blocked(player.x,player.y,player.r+20)){let safe=pos(player.r);player.x=safe.x;player.y=safe.y;}applyStar(player);if(liveEventBattle.some(e=>e.type==='boost'))player.speed*=1.2;meteorWarnings=[];thunderWarnings=[];meteorNext=4;entities.push(player);let count=mode==='royale'?9:mode==='team'?5:mode==='duel'?1:0;for(let i=0;i<count;i++){let team=mode==='team'?(i<2?0:1):1;let id=Math.floor(rand(0,21)),r=h(id).bodySize,p=null;for(let attempt=0;attempt<450;attempt++){let candidate={x:rand(110,worldW-110),y:rand(110,worldH-110)};if(!blocked(candidate.x,candidate.y,r+15)&&entities.every(e=>dist(e,candidate)>=Math.max(mode==='royale'?500:290,e.r+r+80))){p=candidate;break}}p??=pos(r);let bot=create(id,team,true,p);
+function start(){if(!seriousBattle)seriousBattle=false;if(mode==='boss'&&bossType==='demon'&&(Number(data.trophies)||0)<1500){alert('👑 終焉の魔王アザゼルへの挑戦にはトロフィー1500以上が必要です');return;}if(mode==='boss'&&!seriousBattle){const difficultySelect=$('bossDifficultySelect');if(difficultySelect)bossDifficulty=Math.max(0,Math.min(4,Number(difficultySelect.value)||0));}liveEventBattle=liveEventCurrents().map(e=>({...e}));powerCubes=[];powerBoxes=[];snowGifts=[];snowGiftCollected=0;snowStormPhase=0;cancelAnimationFrame(raf);playing=true;matchOver=false;entities=[];shots=[];particles=[];effects=[];elapsed=0;spawnTimer=0;kills=0;score=0;teamScore=[0,0];gasInset=0;gasPhase=0;bossWarnings=[];bossCooldown=3.2;bossPattern=0;bossRageStage=0;bossRageMessageUntil=0;killFeed=[];royaleFinalTwoUntil=0;royaleFinalTwoShown=false;knockoutRound=1;roundBreak=0;last=performance.now();matchArena=dailyArena();mapBuild();setupMapGimmicks();player=create(data.selected,0,false,{x:worldW/2,y:worldH/2}); if(blocked(player.x,player.y,player.r+20)){let safe=pos(player.r);player.x=safe.x;player.y=safe.y;}applyStar(player);if(liveEventBattle.some(e=>e.type==='boost'))player.speed*=1.2;meteorWarnings=[];thunderWarnings=[];meteorNext=4;entities.push(player);let count=mode==='royale'?9:mode==='team'?5:mode==='duel'?1:0;for(let i=0;i<count;i++){let team=mode==='team'?(i<2?0:1):1;let id=Math.floor(rand(0,21)),r=h(id).bodySize,p=null;for(let attempt=0;attempt<450;attempt++){let candidate={x:rand(110,worldW-110),y:rand(110,worldH-110)};if(!blocked(candidate.x,candidate.y,r+15)&&entities.every(e=>dist(e,candidate)>=Math.max(mode==='royale'?500:290,e.r+r+80))){p=candidate;break}}p??=pos(r);let bot=create(id,team,true,p);
 // ノックアウトの味方AIも敵AIと同様、各試合で固有能力をランダム装備。
 if(mode==='team'&&team===0){
  bot.gadgetIndex=bot.lv>=7?Math.floor(Math.random()*2):-1;
@@ -2200,7 +2246,7 @@ function drawSnowEvent(){
  }
 }
 function update(dt){let step=dt*60;elapsed+=dt;if(mode==='boss'&&elapsed>=180){finish(false);return;}if((mode==='team'||mode==='duel')&&roundBreak>0){roundBreak-=dt;if(roundBreak<=0)beginKnockoutRound();return;}cameraUpdate();if(mode==='royale'){let g=gasState();gasInset=g.inset;gasPhase=g.phase}if(!player.dead){let dx=(keys.ArrowRight?1:0)-(keys.ArrowLeft?1:0)+move.x,dy=(keys.s||keys.ArrowDown?1:0)-(keys.w||keys.ArrowUp?1:0)+move.y;moveEntity(player,dx,dy,step*(player.slowUntil>elapsed?.7:1)*(player.boostUntil>elapsed?1.4:1));if(attackHeld)doAttack();if(keys.autoAttack)doAttack(false,null,true);if(superHeld){doAttack(true);superHeld=false}}
-updateSnowEvent(dt);liveMeteorUpdate(dt);liveWarningUpdate(dt);
+updateSnowEvent(dt);mapGimmickUpdate(dt);liveMeteorUpdate(dt);liveWarningUpdate(dt);
 for(const caster of entities){if(caster.dead||caster.id!==22||!(caster.abyssFieldUntil>elapsed))continue;
  for(const target of entities){if(target.dead||target===caster||target.team===caster.team||dist(caster,target)>165)continue;
   target.slowUntil=Math.max(target.slowUntil,elapsed+.24);
@@ -2402,7 +2448,7 @@ function bossPortrait(id){
  return c.toDataURL('image/png');
 }
 function draw(){cameraUpdate();ctx.clearRect(0,0,960,600);ctx.save();ctx.translate(-camX,-camY);let arena=matchArena;let bg=ctx.createLinearGradient(0,0,960,600);bg.addColorStop(0,xmasRun?'#86b6d3':arena.ground[0]);bg.addColorStop(1,xmasRun?'#3c6f9c':arena.ground[1]);ctx.fillStyle=bg;ctx.fillRect(0,0,worldW,worldH);ctx.strokeStyle=arena.grid;ctx.lineWidth=2;for(let x=0;x<worldW;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,worldH);ctx.stroke()}for(let y=0;y<worldH;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(worldW,y);ctx.stroke()}for(let b of bushes){ctx.fillStyle=xmasRun?'#9cdaed':arena.bush[0];ctx.fillRect(b.x,b.y,b.w,b.h);ctx.fillStyle=xmasRun?'#e5faff':arena.bush[1];for(let x=b.x+9;x<b.x+b.w;x+=20)for(let y=b.y+10;y<b.y+b.h;y+=22){ctx.beginPath();ctx.arc(x,y,8,0,7);ctx.fill()}}for(let w of walls){ctx.fillStyle=arena.wall[0];ctx.fillRect(w.x+5,w.y+7,w.w,w.h);ctx.fillStyle=xmasRun?'#d4eefa':arena.wall[1];ctx.fillRect(w.x,w.y,w.w,w.h);ctx.strokeStyle=xmasRun?'#f5ffff':arena.wall[2];ctx.lineWidth=4;ctx.strokeRect(w.x+2,w.y+2,w.w-4,w.h-4)}
-liveWarningDraw();
+drawMapGimmicks();liveWarningDraw();
 if(mode==='royale')for(let box of powerBoxes){
 ctx.save();ctx.translate(box.x,box.y);
 ctx.fillStyle='#6d4524';ctx.fillRect(-27,-27,54,54);
