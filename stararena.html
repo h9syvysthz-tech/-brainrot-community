@@ -1554,9 +1554,9 @@ function eventBossTotal(e){return Object.values(e?.contributions||{}).reduce((s,
 function eventBossRemaining(e){return Math.max(0,Number(e?.maxhp||0)-eventBossTotal(e))}
 function eventBossActive(){return !!(eventBossState&&eventBossState.active&&Date.now()<eventBossState.endsAt&&(eventBossState.type==='secret'||eventBossRemaining(eventBossState)>0));}
 function eventBossBanner(){const e=eventBossState;if(!e)return '';const active=eventBossActive(),world=e.type==='world',remaining=eventBossRemaining(e),pct=Math.max(0,Math.min(100,100*remaining/Number(e.maxhp||1)));return `<section class="panel" style="border:2px solid #dc94ff"><h2>${world?'🐉 WORLD BOSS RAID':'🌑 SECRET BOSS'} ${active?'🔴開催中':'終了'}</h2><p><b>${world?'終焉の龍帝・ゼノヴァル':active?'？？？':'虚無の王'}</b></p>${world?`<div style="background:#10182c;border-radius:10px;overflow:hidden;height:14px"><div style="background:#db477d;width:${pct}%;height:100%"></div></div><p>全体HP ${Math.ceil(remaining).toLocaleString()} / ${Number(e.maxhp).toLocaleString()}　残り${Math.max(0,Math.ceil((e.endsAt-Date.now())/60000))}分</p>`:`<p>🌑 各プレイヤーが個別に討伐する限定ボス（HP共有なし）／設定HP ${Number(e.maxhp).toLocaleString()}　残り${Math.max(0,Math.ceil((e.endsAt-Date.now())/60000))}分</p>`}<p class="small">攻撃力 ×${Number(e.damageMult||1).toFixed(1)} ／ 移動速度 ×${Number(e.speedMult||1).toFixed(1)} ／ 攻撃頻度 ×${Number(e.rateMult||1).toFixed(1)} ／ 大きさ ×${Number(e.sizeMult||1).toFixed(1)}</p>${active?btn('⚔️ 限定ボスに挑戦','eventBossPlay','orange'):''} ${btn('🔄 更新','eventBossRefresh')}<p class="small">${world?'参加者全員でHPを共有。各挑戦のダメージを集計します。':'イベント中だけ挑戦できる特別な個人ボス。倒しても他のプレイヤーのHPには影響しません。'}</p>${world?`<div class="small">${Object.entries(e.contributions||{}).sort((a,b)=>Number(b[1]?.damage??b[1])-Number(a[1]?.damage??a[1])).slice(0,5).map(([uid,n],i)=>`${i+1}位 ${uid===cloudUid?'あなた':uid.slice(0,6)+'…'}：${Math.floor(Number(n?.damage??n)).toLocaleString()}ダメージ`).join('<br>')}</div>`:''}</section>`;}
-function eventBossAdminPanel(){return `<section class="panel" style="border:2px solid #f4b7f7"><h2>🐉 管理者限定ボスイベント</h2><label>ボス<select id="ebType" class="feedback-input"><option value="world">🐉 ワールドボス</option><option value="secret">🌑 シークレットボス</option></select></label><label>開催時間（分）<input id="ebMinutes" type="number" min="5" max="1440" value="60" class="feedback-input"></label><label>難易度<select id="ebDifficulty" class="feedback-input"><option value="1">ノーマル</option><option value="2" selected>ハード</option><option value="3">ナイトメア</option></select></label><label>ボスHP（ワールド＝全員共有／シークレット＝個人戦）<input id="ebHp" type="number" min="10000" max="10000000" value="1000000" class="feedback-input"></label><p class="small">HP：最小10,000 ～ 最大10,000,000（ワールドは共有HP、シークレットは1戦のHP）</p><h3>🎚️ ボスのステータスを設定</h3><p class="small">1.0は通常値。各倍率はワールドボス・シークレットボスの両方に適用されます。</p><label>攻撃力倍率（0.1 ～ 10.0倍）<input id="ebDamage" type="number" min="0.1" max="10" step="0.1" value="1" class="feedback-input"></label><label>移動速度倍率（0.1 ～ 3.0倍）<input id="ebSpeed" type="number" min="0.1" max="3" step="0.1" value="1" class="feedback-input"></label><label>攻撃頻度倍率（0.2 ～ 5.0倍）<input id="ebRate" type="number" min="0.2" max="5" step="0.1" value="1" class="feedback-input"></label><label>大きさ倍率（0.5 ～ 2.0倍）<input id="ebSize" type="number" min="0.5" max="2" step="0.1" value="1" class="feedback-input"></label><p>${btn('🐉 イベントを開催','eventBossCreate','orange')} ${btn('🛑 イベント終了','eventBossStop','red')}</p><p class="small">イベントを上書きすると前回の進捗は終了します。報酬は管理者の既存配布機能で配布できます。</p></section>`;}
+function eventBossAdminPanel(){return `<section class="panel" style="border:2px solid #f4b7f7"><h2>🐉 管理者限定ボスイベント</h2><label>ボス<select id="ebType" class="feedback-input"><option value="world">🐉 ワールドボス</option><option value="secret">🌑 シークレットボス</option></select></label><label>開催時間（分）<input id="ebMinutes" type="number" min="5" max="1440" value="60" class="feedback-input"></label><label>難易度<select id="ebDifficulty" class="feedback-input"><option value="1">ノーマル</option><option value="2" selected>ハード</option><option value="3">ナイトメア</option></select></label><label>ボスHP（ワールド＝全員共有／シークレット＝個人戦）<input id="ebHp" type="number" min="10000" max="10000000" value="1000000" class="feedback-input"></label><p class="small">HP：最小10,000 ～ 最大10,000,000（ワールドは共有HP、シークレットは1戦のHP）</p><h3>🎚️ ボスのステータスを設定</h3><p class="small">1.0は通常値。各倍率はワールドボス・シークレットボスの両方に適用されます。</p><label>攻撃力倍率（0.1 ～ 10.0倍）<input id="ebDamage" type="number" min="0.1" max="10" step="0.1" value="1" class="feedback-input"></label><label>移動速度倍率（0.1 ～ 3.0倍）<input id="ebSpeed" type="number" min="0.1" max="3" step="0.1" value="1" class="feedback-input"></label><label>攻撃頻度倍率（0.2 ～ 5.0倍）<input id="ebRate" type="number" min="0.2" max="5" step="0.1" value="1" class="feedback-input"></label><label>大きさ倍率（0.5 ～ 2.0倍）<input id="ebSize" type="number" min="0.5" max="2" step="0.1" value="1" class="feedback-input"></label><h3>🎁 ボス討伐報酬</h3><p class="small">討伐勝利時に受け取る追加報酬。ワールドボスは各プレイヤーの戦闘勝利時、シークレットボスは個別討伐時に付与されます。</p><label>追加コイン（0～100,000）<input id="ebRewardCoins" type="number" min="0" max="100000" step="1" value="1000" class="feedback-input"></label><label>追加スタードロップ（0～100個）<input id="ebRewardDrops" type="number" min="0" max="100" step="1" value="2" class="feedback-input"></label><p>${btn('🐉 イベントを開催','eventBossCreate','orange')} ${btn('🛑 イベント終了','eventBossStop','red')}</p><p class="small">イベントを上書きすると前回の進捗は終了します。報酬は管理者の既存配布機能で配布できます。</p></section>`;}
 async function eventBossPoll(){if(!cloudReady)return;try{const e=await eventBossApi('GET',eventBossPath);if(e&&e.id!==eventBossSeen&&e.active&&Date.now()<e.endsAt){eventBossSeen=e.id;live152Notify('🐉 管理者限定ボスが出現！','event');}eventBossState=e||null;}catch(err){console.warn('Boss event read:',err)}}
-async function eventBossAdminStart(){if(!isAdmin()||eventBossBusy)return;const type=$('ebType')?.value,minutes=Number($('ebMinutes')?.value),difficulty=Number($('ebDifficulty')?.value),hp=Number($('ebHp')?.value),damageMult=Number($('ebDamage')?.value),speedMult=Number($('ebSpeed')?.value),rateMult=Number($('ebRate')?.value),sizeMult=Number($('ebSize')?.value);const invalid=[];
+async function eventBossAdminStart(){if(!isAdmin()||eventBossBusy)return;const type=$('ebType')?.value,minutes=Number($('ebMinutes')?.value),difficulty=Number($('ebDifficulty')?.value),hp=Number($('ebHp')?.value),damageMult=Number($('ebDamage')?.value),speedMult=Number($('ebSpeed')?.value),rateMult=Number($('ebRate')?.value),sizeMult=Number($('ebSize')?.value),rewardCoins=Number($('ebRewardCoins')?.value),rewardDrops=Number($('ebRewardDrops')?.value);const invalid=[];
 if(!['world','secret'].includes(type))invalid.push('ボスの種類');
 if(!Number.isInteger(minutes)||minutes<5||minutes>1440)invalid.push('開催時間（5～1440分）: '+($('ebMinutes')?.value??'未取得'));
 if(![1,2,3].includes(difficulty))invalid.push('難易度: '+($('ebDifficulty')?.value??'未取得'));
@@ -1565,10 +1565,12 @@ for(const [id,label,v,lo,hi] of [['ebDamage','攻撃力',damageMult,.1,10],['ebS
  const raw=$(id)?.value;
  if(raw==null||raw.trim()===''||!Number.isFinite(v)||v<lo||v>hi)invalid.push(label+'倍率（'+lo+'～'+hi+'）: '+(raw??'未取得'));
 }
+if(!Number.isInteger(rewardCoins)||rewardCoins<0||rewardCoins>100000)invalid.push('追加コイン（0～100000）');
+if(!Number.isInteger(rewardDrops)||rewardDrops<0||rewardDrops>100)invalid.push('追加スタードロップ（0～100）');
 if(invalid.length)return alert('次の設定を確認してください：\n・'+invalid.join('\n・'));
-if(!confirm('現在のイベントを終了して新しい限定ボスを開催しますか？'))return;eventBossBusy=true;try{const now=Date.now();await eventBossApi('PUT',eventBossPath,{id:'eb'+now,type,active:true,startedAt:now,endsAt:now+minutes*60000,maxhp:hp,hp,difficulty,damageMult,speedMult,rateMult,sizeMult,contributions:{}});await eventBossPoll();render();}catch(e){alert('開催失敗：'+e.message)}finally{eventBossBusy=false}}
+if(!confirm('現在のイベントを終了して新しい限定ボスを開催しますか？'))return;eventBossBusy=true;try{const now=Date.now();await eventBossApi('PUT',eventBossPath,{id:'eb'+now,type,active:true,startedAt:now,endsAt:now+minutes*60000,maxhp:hp,hp,difficulty,damageMult,speedMult,rateMult,sizeMult,rewardCoins,rewardDrops,contributions:{}});await eventBossPoll();render();}catch(e){alert('開催失敗：'+e.message)}finally{eventBossBusy=false}}
 async function eventBossAdminStop(){if(!isAdmin()||!eventBossState)return;if(!confirm('限定ボスイベントを終了しますか？'))return;try{await eventBossApi('PATCH',eventBossPath,{active:false});await eventBossPoll();render()}catch(e){alert(e.message)}}
-function eventBossStart(){if(!eventBossActive())return alert('現在イベントは開催されていません');eventBossRun={id:eventBossState.id,type:eventBossState.type,reportId:"r"+Date.now()+"_"+Math.random().toString(36).slice(2,12)};eventBossDamage=0;eventBossId=eventBossState.id;seriousBattle=false;xmasRun='';mode='boss';bossType=eventBossState.type==='world'?'world152':'secret152';bossDifficulty=eventBossState.difficulty===3?4:eventBossState.difficulty===2?3:1;start();}
+function eventBossStart(){if(!eventBossActive())return alert('現在イベントは開催されていません');eventBossRun={id:eventBossState.id,type:eventBossState.type,rewardCoins:Math.max(0,Math.min(100000,Number(eventBossState.rewardCoins)||0)),rewardDrops:Math.max(0,Math.min(100,Number(eventBossState.rewardDrops)||0)),reportId:"r"+Date.now()+"_"+Math.random().toString(36).slice(2,12)};eventBossDamage=0;eventBossId=eventBossState.id;seriousBattle=false;xmasRun='';mode='boss';bossType=eventBossState.type==='world'?'world152':'secret152';bossDifficulty=eventBossState.difficulty===3?4:eventBossState.difficulty===2?3:1;start();}
 // Ver.152.3: Firebase REST ETag conditional writes; no Cloud Functions needed.
 // Shared HP is derived from immutable maxhp minus the sum of player contributions.
 // Client-reported damage is NOT server-verified: this is a casual, trust-based event.
@@ -1604,7 +1606,7 @@ async function eventBossReport(run,damage,won){
 setInterval(()=>{if(cloudReady){eventBossPoll().then(()=>{if(!playing&&(tab==='home'||tab==='events'))render()})}},5000);
 
 const bossAdminDraft={};
-const bossAdminFields=['ebType','ebMinutes','ebDifficulty','ebHp','ebDamage','ebSpeed','ebRate','ebSize'];
+const bossAdminFields=['ebType','ebMinutes','ebDifficulty','ebHp','ebDamage','ebSpeed','ebRate','ebSize','ebRewardCoins','ebRewardDrops'];
 document.addEventListener('input',e=>{if(bossAdminFields.includes(e.target?.id))bossAdminDraft[e.target.id]=e.target.value;});
 document.addEventListener('change',e=>{if(bossAdminFields.includes(e.target?.id))bossAdminDraft[e.target.id]=e.target.value;});
 function restoreBossAdminDraft(){
@@ -2469,7 +2471,33 @@ let boss=entities.find(e=>e.isBoss);
 if(boss&&boss.dead)finish(true);
 else if(elapsed>=180)finish(false);
 }else if(mode==='team'||mode==='duel'){knockoutCheck()}else if(mode==='starball'){/* ゴール判定はupdateStarBall */}else if(mode==='royale'){if(entities.filter(e=>!e.dead).length<=1)finish(!player.dead)}}
+function drawEventBossUnique(e,c){
+ const r=e.r||50,t=elapsed;
+ c.save();c.translate(e.x,e.y);c.lineJoin='round';c.lineCap='round';
+ if(e.bossType==='world152'){
+  // Six-winged celestial dragon, long horns, segmented body and glowing gold core
+  c.shadowColor='#28e5c9';c.shadowBlur=22;
+  for(const side of [-1,1]){c.save();c.scale(side,1);
+   for(let k=0;k<3;k++){c.fillStyle=k===0?'#105f71':k===1?'#1b9e9c':'#36b5a2';c.strokeStyle='#8dfbe6';c.lineWidth=2.5;c.beginPath();c.moveTo(r*.26,-r*.1+k*r*.27);c.quadraticCurveTo(r*1.6,-r*(1.65-k*.45),r*(2.05-k*.18),-r*(1.15-k*.32));c.quadraticCurveTo(r*1.43,r*.28+k*r*.2,r*.43,r*.5);c.closePath();c.fill();c.stroke();}c.restore();}
+  c.fillStyle='#082c47';c.strokeStyle='#a6ffdf';c.lineWidth=4;c.beginPath();c.ellipse(0,r*.23,r*.53,r*.91,0,0,Math.PI*2);c.fill();c.stroke();
+  for(let j=0;j<5;j++){c.strokeStyle=j%2?'#46e8d5':'#e9d580';c.lineWidth=3;c.beginPath();c.moveTo(-r*.34,r*(-.35+j*.24));c.quadraticCurveTo(0,r*(-.22+j*.24),r*.34,r*(-.35+j*.24));c.stroke();}
+  c.fillStyle='#167e89';c.strokeStyle='#f7dd91';c.lineWidth=3;c.beginPath();c.moveTo(-r*.48,-r*.36);c.lineTo(-r*.32,-r*1.15);c.lineTo(-r*.1,-r*.83);c.lineTo(0,-r*1.35);c.lineTo(r*.1,-r*.83);c.lineTo(r*.32,-r*1.15);c.lineTo(r*.48,-r*.36);c.closePath();c.fill();c.stroke();
+  c.fillStyle='#fef5b6';for(const x of [-1,1]){c.beginPath();c.ellipse(x*r*.2,-r*.47,r*.105,r*.08,0,0,Math.PI*2);c.fill();}
+  c.shadowBlur=14;c.shadowColor='#ffe7a1';c.fillStyle='#f4f5bf';c.beginPath();c.arc(0,r*.15,r*.19+Math.sin(t*3)*r*.02,0,Math.PI*2);c.fill();
+ }else{
+  // Floating void singularity: broken orbital shards, empty central eye, no humanoid face/crown
+  c.shadowColor='#b75bff';c.shadowBlur=26;c.strokeStyle='#a36aff';c.lineWidth=4;
+  for(let j=0;j<8;j++){let a=j*Math.PI/4+t*.23*(j%2?1:-1),rr=r*(1.12+(j%3)*.12);c.save();c.rotate(a);c.fillStyle=j%2?'#37105e':'#160f43';c.beginPath();c.moveTo(rr,-r*.14);c.lineTo(rr+r*.38,0);c.lineTo(rr,r*.15);c.lineTo(rr-r*.11,0);c.closePath();c.fill();c.stroke();c.restore();}
+  c.fillStyle='#0b0924';c.strokeStyle='#e5aaff';c.lineWidth=5;c.beginPath();c.ellipse(0,0,r*.75,r*.9,t*.12,0,Math.PI*2);c.fill();c.stroke();
+  c.strokeStyle='#8e5dff';c.lineWidth=5;c.beginPath();c.ellipse(0,0,r*.61,r*.3,-t*.4,0,Math.PI*2);c.stroke();
+  c.fillStyle='#f6d9ff';c.shadowColor='#e8b5ff';c.shadowBlur=22;c.beginPath();c.ellipse(0,0,r*.35,r*.49,0,0,Math.PI*2);c.fill();
+  c.fillStyle='#10082a';c.beginPath();c.ellipse(0,0,r*.2,r*.34,0,0,Math.PI*2);c.fill();
+  c.fillStyle='#ad6aff';c.beginPath();c.arc(Math.sin(t*2)*r*.06,0,r*.075,0,Math.PI*2);c.fill();
+ }
+ c.restore();
+}
 function drawBossAppearance(e,bossCtx=ctx){
+ if(e.bossType==='world152'||e.bossType==='secret152'){drawEventBossUnique(e,bossCtx);return;}
  bossCtx.save();bossCtx.translate(e.x,e.y);
  const storm=e.bossType==='storm',winter=e.bossType==='xmas',demon=e.bossType==='demon',t=elapsed*2;
  if(demon){const r=e.r||59;bossCtx.shadowBlur=30;bossCtx.shadowColor='#ff2255';bossCtx.fillStyle='#100c24';bossCtx.strokeStyle='#ff5478';bossCtx.lineWidth=5;bossCtx.beginPath();bossCtx.moveTo(-r*.85,r*.6);bossCtx.lineTo(-r*1.35,-r*.5);bossCtx.lineTo(-r*.6,-r*.15);bossCtx.lineTo(-r*.85,-r*1.2);bossCtx.lineTo(-r*.2,-r*.75);bossCtx.lineTo(0,-r*1.4);bossCtx.lineTo(r*.2,-r*.75);bossCtx.lineTo(r*.85,-r*1.2);bossCtx.lineTo(r*.6,-r*.15);bossCtx.lineTo(r*1.35,-r*.5);bossCtx.lineTo(r*.85,r*.6);bossCtx.closePath();bossCtx.fill();bossCtx.stroke();bossCtx.shadowBlur=0;bossCtx.fillStyle='#30152d';bossCtx.beginPath();bossCtx.ellipse(0,0,r*.72,r*.84,0,0,Math.PI*2);bossCtx.fill();bossCtx.strokeStyle='#ffb44b';bossCtx.lineWidth=4;bossCtx.stroke();bossCtx.fillStyle='#ff3155';bossCtx.beginPath();bossCtx.moveTo(-r*.43,-r*.13);bossCtx.lineTo(-r*.12,-r*.04);bossCtx.lineTo(-r*.39,r*.07);bossCtx.moveTo(r*.43,-r*.13);bossCtx.lineTo(r*.12,-r*.04);bossCtx.lineTo(r*.39,r*.07);bossCtx.fill();bossCtx.strokeStyle='#ff3155';bossCtx.lineWidth=6;bossCtx.stroke();bossCtx.fillStyle='#ffce6c';bossCtx.beginPath();bossCtx.moveTo(-r*.55,-r*.65);bossCtx.lineTo(-r*.86,-r*1.25);bossCtx.lineTo(-r*.17,-r*.9);bossCtx.lineTo(0,-r*1.43);bossCtx.lineTo(r*.17,-r*.9);bossCtx.lineTo(r*.86,-r*1.25);bossCtx.lineTo(r*.55,-r*.65);bossCtx.closePath();bossCtx.fill();for(let k=0;k<5;k++){let a=t*.32+k*Math.PI*2/5;bossCtx.fillStyle=k%2?'#ff345c':'#9d43ff';bossCtx.beginPath();bossCtx.arc(Math.cos(a)*r*1.4,Math.sin(a)*r*1.4,5,0,7);bossCtx.fill()}bossCtx.restore();return;} 
@@ -2663,7 +2691,7 @@ if(mode==='royale'&&royaleFinalTwoUntil>elapsed){
 }
 $('status').textContent=mode==='royale'?'残り '+entities.filter(e=>!e.dead).length+'人':mode==='boss'?'ボス討伐':'撃破 '+kills}
 function loop(t){if(!playing)return;let dt=Math.min((t-last)/1000,.04);last=t;update(dt);draw();if(playing)raf=requestAnimationFrame(loop)}
-function finish(win){if(matchOver)return;if(eventBossRun){const run=eventBossRun;eventBossRun=null;if(run.type==='world')eventBossReport(run,Math.floor(eventBossDamage),win).catch(err=>{console.warn(err);live152Notify("⚠️ 共有ボスHPの同期に失敗しました。再挑戦前に接続を確認してください。","event");});}
+function finish(win){if(matchOver)return;const eventBossRewardRun=eventBossRun;if(eventBossRun){const run=eventBossRun;eventBossRun=null;if(run.type==='world')eventBossReport(run,Math.floor(eventBossDamage),win).catch(err=>{console.warn(err);live152Notify("⚠️ 共有ボスHPの同期に失敗しました。再挑戦前に接続を確認してください。","event");});}
 const placement=mode==='royale'?Math.max(1,Math.min(10,entities.filter(e=>!e.dead).length+(player.dead?1:0))):null;
 let trophyDelta=0,dropReward=0;
 const normalBossTrophies=[15,25,35,50,80];
@@ -2685,6 +2713,7 @@ if(xmasRun==='snow'&&win&&xmasActive())dropReward+=1;dropReward=liveEventApplyMa
 if(xmasRun==='snow'&&placement===1&&xmasActive())xmas2AddWin();
 if(xmasRun==='boss'&&win&&xmasActive())xmasAddBossKill();
 const coopSnowMatch=xmasRun==='snow';xmasRun='';
+if(win&&eventBossRewardRun&&eventBossRewardRun.id===eventBossId){dropReward+=eventBossRewardRun.rewardDrops||0;data.coins=(data.coins||0)+(eventBossRewardRun.rewardCoins||0);}
 data.drops=(data.drops||0)+dropReward;
 data.trophies=Math.max(0,data.trophies+trophyDelta);
 data.matches++;if(win)data.wins++;clubRecordMatch(win,kills,mode==='boss'&&win);warRecordMatch(win,placement,mode,mode==='boss'&&win,wasSeriousBattle);if(mode==='boss'&&win){if(!['world152','secret152'].includes(bossType))raidRecordBossWin(bossType);
