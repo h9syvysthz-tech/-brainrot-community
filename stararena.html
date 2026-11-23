@@ -1547,7 +1547,7 @@ function drawStarBall(){if(!starBall)return;ctx.save();ctx.strokeStyle='#e7f5ff'
 // Shoot when attacking while carrying the ball. Existing combat controls remain intact.
 const originalStarBallAttack=()=>{if(mode!=='starball'||!starBall||starBall.holder!==player)return false;const b=starBall;let dir=mouse.active?norm(mouse.x+camX-player.x,mouse.y+camY-player.y):{x:1,y:(worldH/2-player.y)/650};b.holder=null;b.vx=dir.x*680;b.vy=dir.y*680;b.x=player.x+dir.x*27;b.y=player.y+dir.y*27;return true;};
 // Administrator-only event bosses. Shared damage is recorded with REST conditional writes.
-let eventBossState=null,eventBossBusy=false,eventBossSeen='',eventBossLastPoll=0;
+let eventBossState=null,eventBossBusy=false,eventBossSeen='',eventBossLastPoll=0,eventBossSyncError='';const eventBossClearStatus={};
 const eventBossPath='adminBoss152/current';
 async function eventBossApi(method,path,payload,headers={}){const token=await getCloudToken();return firebaseRequest(firebaseConfig.databaseURL.replace(/\/$/,'')+'/'+path+'.json?auth='+encodeURIComponent(token),{method,headers:{'Content-Type':'application/json',...headers},...(payload===undefined?{}:{body:JSON.stringify(payload)})});}
 function eventBossTotal(e){return Object.values(e?.contributions||{}).reduce((s,v)=>s+Math.max(0,Number(v?.damage??v)||0),0)}
@@ -1569,9 +1569,17 @@ function eventBossFinishedAt(e){
  }
  return Number(e.endsAt)||0;
 }
-function eventBossBanner(){const e=eventBossState;if(!e)return '';if(!eventBossActive()&&Date.now()>=eventBossFinishedAt(e)+3600000)return '';const active=eventBossActive(),world=e.type==='world',remaining=eventBossRemaining(e),pct=Math.max(0,Math.min(100,100*remaining/Number(e.maxhp||1)));return `<section class="panel" style="border:2px solid #dc94ff"><h2>${world?'🐉 WORLD BOSS RAID':'🌑 SECRET BOSS'} ${active?'🔴開催中':'終了'}</h2><p><b>${world?raidPhaseName(raidPhaseFromHp(remaining,e.maxhp)):'虚無の王'}</b></p>${world?`<div style="background:#10182c;border-radius:10px;overflow:hidden;height:14px"><div style="background:#db477d;width:${pct}%;height:100%"></div></div><p>全体HP ${Math.ceil(remaining).toLocaleString()} / ${Number(e.maxhp).toLocaleString()}　残り${Math.max(0,Math.ceil((e.endsAt-Date.now())/60000))}分</p><p><b>${raidPhaseName(raidPhaseFromHp(remaining,e.maxhp))}</b>　共有HPに応じて形態・攻撃・マップが変化</p>`:`<p>🌑 各プレイヤーが個別に討伐する限定ボス（HP共有なし）／設定HP ${Number(e.maxhp).toLocaleString()}　残り${Math.max(0,Math.ceil((e.endsAt-Date.now())/60000))}分</p>`}<p class="small">攻撃力 ×${Number(e.damageMult||1).toFixed(1)} ／ 移動速度 ×${Number(e.speedMult||1).toFixed(1)} ／ 攻撃頻度 ×${Number(e.rateMult||1).toFixed(1)} ／ 大きさ ×${Number(e.sizeMult||1).toFixed(1)}</p>${active?btn('⚔️ 限定ボスに挑戦','eventBossPlay','orange'):''} ${btn('🔄 更新','eventBossRefresh')}<p class="small">${world?'参加者全員でHPを共有。各挑戦のダメージを集計します。':'イベント中だけ挑戦できる個人ボス。第一形態のHPを0にすると第二形態「虚無の真核」に覚醒します。'}</p>${world?`<div class="small">${Object.entries(e.contributions||{}).sort((a,b)=>Number(b[1]?.damage??b[1])-Number(a[1]?.damage??a[1])).slice(0,5).map(([uid,n],i)=>`${i+1}位 ${uid===cloudUid?'あなた':uid.slice(0,6)+'…'}：${Math.floor(Number(n?.damage??n)).toLocaleString()}ダメージ`).join('<br>')}</div>`:''}</section>`;}
-function eventBossAdminPanel(){return `<section class="panel" style="border:2px solid #f4b7f7"><h2>🐉 管理者限定ボスイベント</h2><label>ボス<select id="ebType" class="feedback-input"><option value="world">🐉 ワールドボス</option><option value="secret">🌑 シークレットボス</option></select></label><label>開催時間（分）<input id="ebMinutes" type="number" min="5" max="1440" value="60" class="feedback-input"></label><label>難易度<select id="ebDifficulty" class="feedback-input"><option value="1">ノーマル</option><option value="2" selected>ハード</option><option value="3">ナイトメア</option></select></label><label>ボスHP（ワールド＝全員共有／シークレット＝個人戦）<input id="ebHp" type="number" min="10000" max="10000000" value="1000000" class="feedback-input"></label><p class="small">HP：最小10,000 ～ 最大10,000,000（ワールドは共有HP、シークレットは1戦のHP）</p><h3>🎚️ ボスのステータスを設定</h3><p class="small">1.0は通常値。各倍率はワールドボス・シークレットボスの両方に適用されます。</p><label>攻撃力倍率（0.1 ～ 10.0倍）<input id="ebDamage" type="number" min="0.1" max="10" step="0.1" value="1" class="feedback-input"></label><label>移動速度倍率（0.1 ～ 3.0倍）<input id="ebSpeed" type="number" min="0.1" max="3" step="0.1" value="1" class="feedback-input"></label><label>攻撃頻度倍率（0.2 ～ 5.0倍）<input id="ebRate" type="number" min="0.2" max="5" step="0.1" value="1" class="feedback-input"></label><label>大きさ倍率（0.5 ～ 2.0倍）<input id="ebSize" type="number" min="0.5" max="2" step="0.1" value="1" class="feedback-input"></label><label>攻撃範囲倍率（0.5 ～ 3.0倍）<input id="ebAttackSize" type="number" min="0.5" max="3" step="0.1" value="1" class="feedback-input"></label><p class="small">1.0＝通常範囲。2.0＝範囲が約2倍。攻撃の当たり判定と予告範囲の両方に適用します。</p><h3>🎁 ボス討伐報酬</h3><p class="small">討伐勝利時に受け取る追加報酬。ワールドボスは各プレイヤーの戦闘勝利時、シークレットボスは個別討伐時に付与されます。</p><label>追加コイン（0～100,000）<input id="ebRewardCoins" type="number" min="0" max="100000" step="1" value="1000" class="feedback-input"></label><label>追加スタードロップ（0～100個）<input id="ebRewardDrops" type="number" min="0" max="100" step="1" value="2" class="feedback-input"></label><p>${btn('🐉 イベントを開催','eventBossCreate','orange')} ${btn('🛑 イベント終了','eventBossStop','red')}</p><p class="small">イベントを上書きすると前回の進捗は終了します。報酬は管理者の既存配布機能で配布できます。</p></section>`;}
-async function eventBossPoll(){if(!cloudReady)return;try{const e=await eventBossApi('GET',eventBossPath);if(e&&e.id!==eventBossSeen&&e.active&&Date.now()<e.endsAt){eventBossSeen=e.id;live152Notify('🐉 管理者限定ボスが出現！','event');}eventBossState=e||null;}catch(err){console.warn('Boss event read:',err)}}
+function eventBossBanner(){const e=eventBossState;if(!e)return '';if(!eventBossActive()&&Date.now()>=eventBossFinishedAt(e)+3600000)return '';const active=eventBossActive(),world=e.type==='world',remaining=eventBossRemaining(e),pct=Math.max(0,Math.min(100,100*remaining/Number(e.maxhp||1)));return `<section class="panel" style="border:2px solid #dc94ff"><h2>${world?'🐉 WORLD BOSS RAID':'🌑 SECRET BOSS'} ${active?'🔴開催中':'終了'}</h2><p><b>${world?raidPhaseName(raidPhaseFromHp(remaining,e.maxhp)):'虚無の王'}</b></p>${world?`<div style="background:#10182c;border-radius:10px;overflow:hidden;height:14px"><div style="background:#db477d;width:${pct}%;height:100%"></div></div><p>全体HP ${Math.ceil(remaining).toLocaleString()} / ${Number(e.maxhp).toLocaleString()}　残り${Math.max(0,Math.ceil((e.endsAt-Date.now())/60000))}分</p><p><b>${raidPhaseName(raidPhaseFromHp(remaining,e.maxhp))}</b>　共有HPに応じて形態・攻撃・マップが変化</p>`:`<p>🌑 各プレイヤーが個別に討伐する限定ボス（HP共有なし）／設定HP ${Number(e.maxhp).toLocaleString()}　残り${Math.max(0,Math.ceil((e.endsAt-Date.now())/60000))}分</p>`}<p class="small">攻撃力 ×${Number(e.damageMult||1).toFixed(1)} ／ 移動速度 ×${Number(e.speedMult||1).toFixed(1)} ／ 攻撃頻度 ×${Number(e.rateMult||1).toFixed(1)} ／ 大きさ ×${Number(e.sizeMult||1).toFixed(1)}</p>${active&&!eventBossClearStatus[e.id]?btn('⚔️ 限定ボスに挑戦','eventBossPlay','orange'):active&&eventBossClearStatus[e.id]?'<p>🏆 討伐済み：次回の開催まで再挑戦できません</p>':''} ${btn('🔄 更新','eventBossRefresh')}<p class="small">${world?'参加者全員でHPを共有。各挑戦のダメージを集計します。':'イベント中だけ挑戦できる個人ボス。第一形態のHPを0にすると第二形態「虚無の真核」に覚醒します。'}</p>${world?`<div class="small">${Object.entries(e.contributions||{}).sort((a,b)=>Number(b[1]?.damage??b[1])-Number(a[1]?.damage??a[1])).slice(0,5).map(([uid,n],i)=>`${i+1}位 ${uid===cloudUid?'あなた':uid.slice(0,6)+'…'}：${Math.floor(Number(n?.damage??n)).toLocaleString()}ダメージ`).join('<br>')}</div>`:''}</section>`;}
+function eventBossAdminPanel(){return `<section class="panel" style="border:2px solid #f4b7f7"><h2>🐉 管理者限定ボスイベント</h2><label>ボス<select id="ebType" class="feedback-input"><option value="world">🐉 ワールドボス</option><option value="secret">🌑 シークレットボス</option></select></label><label>開催時間（分）<input id="ebMinutes" type="number" min="5" max="1440" value="60" class="feedback-input"></label><label>難易度<select id="ebDifficulty" class="feedback-input"><option value="1">ノーマル</option><option value="2" selected>ハード</option><option value="3">ナイトメア</option></select></label><label>ボスHP（ワールド＝全員共有／シークレット＝個人戦）<input id="ebHp" type="number" min="10000" max="10000000" value="1000000" class="feedback-input"></label><p class="small">HP：最小10,000 ～ 最大10,000,000（ワールドは共有HP、シークレットは1戦のHP）</p><h3>🎚️ ボスのステータスを設定</h3><p class="small">1.0は通常値。各倍率はワールドボス・シークレットボスの両方に適用されます。</p><label>攻撃力倍率（0.1 ～ 10.0倍）<input id="ebDamage" type="number" min="0.1" max="10" step="0.1" value="1" class="feedback-input"></label><label>移動速度倍率（0.1 ～ 3.0倍）<input id="ebSpeed" type="number" min="0.1" max="3" step="0.1" value="1" class="feedback-input"></label><label>攻撃頻度倍率（0.2 ～ 5.0倍）<input id="ebRate" type="number" min="0.2" max="5" step="0.1" value="1" class="feedback-input"></label><label>大きさ倍率（0.5 ～ 2.0倍）<input id="ebSize" type="number" min="0.5" max="2" step="0.1" value="1" class="feedback-input"></label><label>攻撃範囲倍率（0.5 ～ 3.0倍）<input id="ebAttackSize" type="number" min="0.5" max="3" step="0.1" value="1" class="feedback-input"></label><p class="small">1.0＝通常範囲。2.0＝範囲が約2倍。攻撃の当たり判定と予告範囲の両方に適用します。</p><h3>🎁 ボス討伐報酬</h3><p class="small">討伐勝利時の報酬はここで設定したコイン・スタードロップのみです。通常の勝利報酬には加算しません。</p><label>討伐報酬コイン（0～100,000）<input id="ebRewardCoins" type="number" min="0" max="100000" step="1" value="1000" class="feedback-input"></label><label>討伐報酬スタードロップ（0～100個）<input id="ebRewardDrops" type="number" min="0" max="100" step="1" value="2" class="feedback-input"></label><p>${btn('🐉 イベントを開催','eventBossCreate','orange')} ${btn('🛑 イベント終了','eventBossStop','red')}</p><p class="small">イベントを上書きすると前回の進捗は終了します。報酬は管理者の既存配布機能で配布できます。</p></section>`;}
+async function eventBossPoll(){if(!cloudReady)return;try{const e=await eventBossApi('GET',eventBossPath);if(e&&e.id!==eventBossSeen&&e.active&&Date.now()<e.endsAt){eventBossSeen=e.id;live152Notify('🐉 管理者限定ボスが出現！','event');}if(e?.type==='world'){
+ try{e.contributions=await eventBossApi('GET','bossRaid154/contributions/'+e.id)||{};}
+ catch(err){console.warn('Raid contributions read:',err);throw err;}
+}
+eventBossState=e||null;
+if(e&&cloudUid){
+ try{eventBossClearStatus[e.id]=!!(await eventBossApi('GET','bossRaid154/completions/'+e.id+'/'+cloudUid));}catch(err){console.warn('Boss completion check:',err);}
+}
+}catch(err){console.warn('Boss event read:',err);eventBossSyncError=String(err.message||err);}}
 async function eventBossAdminStart(){if(!isAdmin()||eventBossBusy)return;const type=$('ebType')?.value,minutes=Number($('ebMinutes')?.value),difficulty=Number($('ebDifficulty')?.value),hp=Number($('ebHp')?.value),damageMult=Number($('ebDamage')?.value),speedMult=Number($('ebSpeed')?.value),rateMult=Number($('ebRate')?.value),sizeMult=Number($('ebSize')?.value),attackSizeMult=Number($('ebAttackSize')?.value),rewardCoins=Number($('ebRewardCoins')?.value),rewardDrops=Number($('ebRewardDrops')?.value);const invalid=[];
 if(!['world','secret'].includes(type))invalid.push('ボスの種類');
 if(!Number.isInteger(minutes)||minutes<5||minutes>1440)invalid.push('開催時間（5～1440分）: '+($('ebMinutes')?.value??'未取得'));
@@ -1586,7 +1594,7 @@ if(!Number.isInteger(rewardDrops)||rewardDrops<0||rewardDrops>100)invalid.push('
 if(invalid.length)return alert('次の設定を確認してください：\n・'+invalid.join('\n・'));
 if(!confirm('現在のイベントを終了して新しい限定ボスを開催しますか？'))return;eventBossBusy=true;try{const now=Date.now();await eventBossApi('PUT',eventBossPath,{id:'eb'+now,type,active:true,startedAt:now,endsAt:now+minutes*60000,maxhp:hp,hp,difficulty,damageMult,speedMult,rateMult,sizeMult,attackSizeMult,rewardCoins,rewardDrops,contributions:{}});await eventBossPoll();render();}catch(e){alert('開催失敗：'+e.message)}finally{eventBossBusy=false}}
 async function eventBossAdminStop(){if(!isAdmin()||!eventBossState)return;if(!confirm('限定ボスイベントを終了しますか？'))return;try{await eventBossApi('PATCH',eventBossPath,{active:false,stoppedAt:Date.now()});await eventBossPoll();render()}catch(e){alert(e.message)}}
-function eventBossStart(){if(!eventBossActive())return alert('現在イベントは開催されていません');eventBossRun={id:eventBossState.id,type:eventBossState.type,rewardCoins:Math.max(0,Math.min(100000,Number(eventBossState.rewardCoins)||0)),rewardDrops:Math.max(0,Math.min(100,Number(eventBossState.rewardDrops)||0)),reportId:"r"+Date.now()+"_"+Math.random().toString(36).slice(2,12)};eventBossDamage=0;eventBossReported=0;eventBossReportBusy=false;eventBossId=eventBossState.id;seriousBattle=false;xmasRun='';mode='boss';bossType=eventBossState.type==='world'?'world152':'secret152';bossDifficulty=eventBossState.difficulty===3?4:eventBossState.difficulty===2?3:1;start();}
+async function eventBossStart(){if(!eventBossActive())return alert('現在イベントは開催されていません');try{if(await eventBossApi('GET','bossRaid154/completions/'+eventBossState.id+'/'+cloudUid)){eventBossClearStatus[eventBossState.id]=true;render();return alert('このボスは討伐済みです。次の管理者イベントをお待ちください。');}}catch(e){return alert('討伐履歴の確認に失敗しました：'+e.message)}eventBossRun={id:eventBossState.id,type:eventBossState.type,rewardCoins:Math.max(0,Math.min(100000,Number(eventBossState.rewardCoins)||0)),rewardDrops:Math.max(0,Math.min(100,Number(eventBossState.rewardDrops)||0)),reportId:"r"+Date.now()+"_"+Math.random().toString(36).slice(2,12)};eventBossDamage=0;eventBossReported=0;eventBossReportBusy=false;eventBossId=eventBossState.id;seriousBattle=false;xmasRun='';mode='boss';bossType=eventBossState.type==='world'?'world152':'secret152';bossDifficulty=eventBossState.difficulty===3?4:eventBossState.difficulty===2?3:1;start();}
 // Ver.152.3: Firebase REST ETag conditional writes; no Cloud Functions needed.
 // Shared HP is derived from immutable maxhp minus the sum of player contributions.
 // Client-reported damage is NOT server-verified: this is a casual, trust-based event.
@@ -1594,12 +1602,12 @@ async function eventBossReport(run,damage,won){
  if(!cloudReady||!cloudUid||run?.type!=='world'||!run?.reportId||!Number.isFinite(damage)||damage<1)return;
  const uid=cloudUid, token=await getCloudToken(),base=firebaseConfig.databaseURL.replace(/\/$/,'');
  const safeId=encodeURIComponent(run.reportId);
- const url=base+'/adminBoss152/current/contributions/'+encodeURIComponent(uid)+'.json?auth='+encodeURIComponent(token);
+ const url=base+'/bossRaid154/contributions/'+encodeURIComponent(run.id)+'/'+encodeURIComponent(uid)+'.json?auth='+encodeURIComponent(token);
  const requested=Math.min(100000,Math.floor(damage));
  for(let attempt=0;attempt<7;attempt++){
   const state=await eventBossApi('GET',eventBossPath);
   if(!state||state.id!==run.id||state.type!=='world'||!state.active||Date.now()>=state.endsAt)return;
-  const remaining=eventBossRemaining(state);
+  const contributions=await eventBossApi('GET','bossRaid154/contributions/'+run.id)||{};state.contributions=contributions;const remaining=eventBossRemaining(state);
   if(remaining<=0)return;
   const response=await fetch(url,{headers:{'X-Firebase-ETag':'true'},cache:'no-store'});
   if(!response.ok)throw Error('貢献度の取得に失敗 ('+response.status+')');
@@ -1612,7 +1620,7 @@ async function eventBossReport(run,damage,won){
   const payload={damage:previous+increment,lastReport:run.reportId,updatedAt:Date.now()};
   const put=await fetch(url,{method:'PUT',headers:{'Content-Type':'application/json','if-match':etag},body:JSON.stringify(payload)});
   if(put.status===412)continue;
-  if(!put.ok)throw Error('貢献度の保存に失敗 ('+put.status+')');
+  if(!put.ok){let body='';try{body=JSON.stringify(await put.json())}catch{}throw Error('貢献度の保存に失敗 (HTTP '+put.status+') '+body.slice(0,180));}
   await eventBossPoll();if(!playing&&(tab==='home'||tab==='events'))render();
   return {event:eventBossState,credited:increment};
  }
@@ -1620,29 +1628,35 @@ async function eventBossReport(run,damage,won){
 }
 
 let eventBossReported=0,eventBossReportBusy=false;
+function bossPendingKey(id){return 'starArenaRaidPending_'+(cloudUid||'guest')+'_'+id;}
+function bossPendingRead(id){try{return Math.max(0,Number(localStorage.getItem(bossPendingKey(id)))||0)}catch{return 0}}
+function bossPendingAdd(id,n){if(!id||n<=0)return;try{localStorage.setItem(bossPendingKey(id),String(bossPendingRead(id)+n))}catch{}}
+function bossPendingTake(id,n){try{const left=Math.max(0,bossPendingRead(id)-n);if(left)localStorage.setItem(bossPendingKey(id),String(left));else localStorage.removeItem(bossPendingKey(id))}catch{}}
+
 async function eventBossFlush(run=eventBossRun){
  if(!run||run.type!=='world'||eventBossReportBusy||!cloudReady||!cloudUid)return;
- const pending=Math.max(0,Math.floor(eventBossDamage-eventBossReported));
+ const pending=Math.floor(bossPendingRead(run.id));
  if(!pending)return;
  eventBossReportBusy=true;
  try{
   const receipt=await eventBossReport({...run,reportId:'r'+Date.now()+'_'+Math.random().toString(36).slice(2,12)},Math.min(100000,pending),false);
-  if(receipt?.credited)eventBossReported+=receipt.credited;
+  if(receipt?.credited){eventBossReported+=receipt.credited;bossPendingTake(run.id,receipt.credited);}
  }catch(err){console.warn('ワールドボス共有HP書込:',err);live152Notify('⚠️ 共有HPの保存に失敗しました。通信を確認してください。','event');}
  finally{eventBossReportBusy=false;}
 }
 setInterval(()=>{if(cloudReady){eventBossPoll().then(()=>{
+ if(eventBossState?.type==='world'&&bossPendingRead(eventBossState.id)>0&&!eventBossRun)eventBossFlush({id:eventBossState.id,type:'world'});
  if(playing&&eventBossRun?.type==='world'){
   eventBossFlush();
   const boss=entities.find(e=>e.isBoss&&e.bossType==='world152');
   if(boss&&eventBossState?.id===eventBossRun.id){
    const remaining=eventBossRemaining(eventBossState);
-   const unreported=Math.max(0,eventBossDamage-eventBossReported);
+   const unreported=Math.max(0,bossPendingRead(eventBossRun.id));
    const effective=Math.max(0,remaining-unreported);
    boss.maxhp=Number(eventBossState.maxhp)||boss.maxhp;
    boss.raidBaseHp=boss.maxhp;
    // Shared HP is authoritative; only keep local unsent player damage as an overlay.
-   boss.hp=Math.min(boss.hp,Math.max(1,effective));
+   boss.hp=Math.max(1,effective);
    boss.raidPhase=raidPhaseFromHp(effective,boss.maxhp);
    boss.bossName=raidPhaseName(boss.raidPhase);
    if(remaining<=0)finish(true);
@@ -2163,7 +2177,7 @@ function aiWaypoint(e,focus){
  chain.reverse();e.navPath=chain;
  return chain[0]||null;
 }
-function hit(e,damage,owner,isSuperHit=false){if(e.dead||e.invuln>elapsed)return;if(e.star==='armor')damage*=.88;if(e.gadgetShieldUntil>elapsed)damage*=.5;if(eventBossRun?.type==='world'&&e.isBoss&&owner===player)eventBossDamage+=Math.max(0,Math.min(damage,e.hp));e.hp-=damage;
+function hit(e,damage,owner,isSuperHit=false){if(e.dead||e.invuln>elapsed)return;if(e.star==='armor')damage*=.88;if(e.gadgetShieldUntil>elapsed)damage*=.5;if(eventBossRun?.type==='world'&&e.isBoss&&owner===player){const dealt=Math.max(0,Math.min(damage,e.hp));eventBossDamage+=dealt;bossPendingAdd(eventBossRun.id,dealt);}e.hp-=damage;
 if(owner&&owner.id===22&&owner!==e&&!owner.dead){const heal=Math.min(Math.max(0,damage),Math.max(0,e.hp+damage))*.15;owner.hp=Math.min(owner.maxhp,owner.hp+heal);}
 e.lastHit=elapsed;e.revealedUntil=Math.max(e.revealedUntil,elapsed+1);if(owner===player){const baseGain=player.star==='supergain'?19:12;const gain=(isSuperHit&&[0,12,16].includes(player.id)?baseGain*.55:baseGain)*(player.id===22?.55:1);player.super=clamp(player.super+gain*(liveEventBattle.some(x=>x.type==='fever'&&Date.now()<x.endsAt)?2:1),0,100);}for(let i=0;i<6;i++)particles.push({x:e.x,y:e.y,vx:rand(-3,3),vy:rand(-3,3),life:25,color:h(e.id).color});if(e.hp<=0&&e.isBoss&&e.bossType==='secret152'&&e.secretPhase===1){
  e.secretPhase=2;e.bossName='虚無の真核';e.hp=e.secretPhase2Hp;e.maxhp=e.secretPhase2Hp;
@@ -2599,33 +2613,29 @@ function drawEventBossUnique(e,c){
  const r=e.r||50,t=elapsed;
  c.save();c.translate(e.x,e.y);c.lineJoin='round';c.lineCap='round';
  if(e.bossType==='world152'){
-  // Top-down dragon silhouette: long tail, four clawed legs, two huge membrane wings, long muzzle and horns.
-  const flap=Math.sin(t*2.2)*.075;
-  c.shadowColor='#22d3ee';c.shadowBlur=10;
-  // Curved segmented tail behind torso
-  c.strokeStyle='#073f58';c.lineWidth=r*.38;c.beginPath();c.moveTo(0,r*.48);c.bezierCurveTo(-r*.45,r*1.05,r*.58,r*1.52,r*.05,r*2.05);c.stroke();
-  c.strokeStyle='#49c6b5';c.lineWidth=r*.11;c.beginPath();c.moveTo(0,r*.62);c.bezierCurveTo(-r*.45,r*1.1,r*.5,r*1.52,r*.05,r*2.05);c.stroke();
-  // Two broad bat-like wings with pointed tips
+  // Reptilian dragon silhouette, not a winged insect: one thick torso, two broad wings, horned long-snouted head and curled tail.
+  const phase=e.raidPhase||1,flap=Math.sin(t*2.1)*.06;
+  c.shadowColor=phase>=4?'#ff9854':'#4dd7ee';c.shadowBlur=12;
+  // Long muscular tail, tapered to a spade
+  c.fillStyle='#0d6577';c.strokeStyle='#b8e7db';c.lineWidth=2;
+  c.beginPath();c.moveTo(-r*.27,r*.58);c.bezierCurveTo(-r*.35,r*1.2,r*.60,r*1.35,r*.38,r*1.95);c.lineTo(r*.20,r*2.35);c.lineTo(-r*.13,r*2.13);c.bezierCurveTo(-r*.65,r*1.3,r*.05,r*1.08,r*.25,r*.65);c.closePath();c.fill();c.stroke();
+  // Two large, broad dragon wings behind the body, no extra wing pairs
   for(const side of [-1,1]){c.save();c.scale(side,1);c.rotate(flap*side);
-   c.fillStyle='#087e91';c.strokeStyle='#a8fff0';c.lineWidth=3;
-   c.beginPath();c.moveTo(r*.28,-r*.55);c.lineTo(r*1.35,-r*1.25);c.lineTo(r*2.65,-r*1.45);c.lineTo(r*2.18,-r*.55);c.lineTo(r*2.55,r*.20);c.lineTo(r*1.78,r*.05);c.lineTo(r*1.9,r*.85);c.lineTo(r*.75,r*.47);c.closePath();c.fill();c.stroke();
-   c.strokeStyle='#49d8d5';c.lineWidth=2;c.beginPath();c.moveTo(r*.34,-r*.37);c.lineTo(r*2.65,-r*1.45);c.moveTo(r*.4,-r*.28);c.lineTo(r*2.55,r*.20);c.moveTo(r*.55,-r*.12);c.lineTo(r*1.9,r*.85);c.stroke();
-   // Fore and hind legs, with claws
-   c.strokeStyle='#0a5264';c.lineWidth=r*.24;c.beginPath();c.moveTo(r*.38,-r*.35);c.lineTo(r*.82,r*.05);c.lineTo(r*1.08,r*.18);c.moveTo(r*.35,r*.55);c.lineTo(r*.77,r*.85);c.lineTo(r*.95,r*1.04);c.stroke();
-   c.strokeStyle='#e5dc9b';c.lineWidth=3;for(const y of [r*.18,r*1.04])for(let k=0;k<3;k++){c.beginPath();c.moveTo(r*(1.02+k*.08),y);c.lineTo(r*(1.18+k*.09),y+r*.14);c.stroke();}
-   c.restore();}
-  // Broad armored torso, chest and scales
-  c.fillStyle='#09506b';c.strokeStyle='#d8e8b5';c.lineWidth=3;
-  c.beginPath();c.ellipse(0,r*.18,r*.65,r*.94,0,0,Math.PI*2);c.fill();c.stroke();
-  c.fillStyle='#12a8a2';for(let j=0;j<5;j++){c.beginPath();c.moveTo(-r*.37,-r*.22+j*r*.25);c.lineTo(0,-r*.02+j*r*.25);c.lineTo(r*.37,-r*.22+j*r*.25);c.lineTo(0,r*.06+j*r*.25);c.closePath();c.fill();}
-  // Long angular neck and unmistakable dragon head with jaws
-  c.fillStyle='#07526b';c.strokeStyle='#e8d68b';c.lineWidth=3;
-  c.beginPath();c.moveTo(-r*.29,-r*.5);c.lineTo(-r*.25,-r*1.08);c.lineTo(-r*.52,-r*1.22);c.lineTo(-r*.37,-r*1.65);c.lineTo(0,-r*1.93);c.lineTo(r*.37,-r*1.65);c.lineTo(r*.52,-r*1.22);c.lineTo(r*.25,-r*1.08);c.lineTo(r*.29,-r*.5);c.closePath();c.fill();c.stroke();
+   c.fillStyle='#137e91';c.strokeStyle='#8de6e7';c.lineWidth=3;
+   c.beginPath();c.moveTo(r*.40,-r*.30);c.lineTo(r*1.38,-r*1.45);c.lineTo(r*2.45,-r*1.65);c.lineTo(r*2.15,-r*.80);c.lineTo(r*2.55,r*.05);c.lineTo(r*1.80,-r*.12);c.lineTo(r*1.85,r*.67);c.lineTo(r*.62,r*.38);c.closePath();c.fill();c.stroke();
+   c.strokeStyle='#6ed4d5';c.lineWidth=2;c.beginPath();c.moveTo(r*.44,-r*.24);c.lineTo(r*2.45,-r*1.65);c.moveTo(r*.44,-r*.24);c.lineTo(r*2.55,r*.05);c.moveTo(r*.44,-r*.24);c.lineTo(r*1.85,r*.67);c.stroke();c.restore();}
+  // Four stout legs and talons
+  for(const side of [-1,1])for(const y of [-.35,.65]){c.save();c.scale(side,1);c.strokeStyle='#0b546b';c.lineWidth=r*.28;c.beginPath();c.moveTo(r*.40,r*y);c.lineTo(r*.80,r*(y+.25));c.lineTo(r*1.03,r*(y+.18));c.stroke();c.strokeStyle='#e7d7a5';c.lineWidth=3;for(let k=-1;k<=1;k++){c.beginPath();c.moveTo(r*1.03,r*(y+.18+k*.09));c.lineTo(r*1.21,r*(y+.24+k*.09));c.stroke();}c.restore();}
+  // Large solid dragon body with dorsal plates
+  c.fillStyle='#0b6479';c.strokeStyle='#d5e4bd';c.lineWidth=3;c.beginPath();c.ellipse(0,r*.10,r*.70,r*1.02,0,0,Math.PI*2);c.fill();c.stroke();
+  c.fillStyle='#30b6aa';for(let j=0;j<5;j++){c.beginPath();c.moveTo(-r*.30,-r*.50+j*r*.27);c.lineTo(0,-r*.30+j*r*.27);c.lineTo(r*.30,-r*.50+j*r*.27);c.lineTo(0,-r*.17+j*r*.27);c.closePath();c.fill();}
+  // Neck, distinct long jaw, angular dragon skull
+  c.fillStyle='#07516c';c.strokeStyle='#ebdba6';c.lineWidth=3;c.beginPath();c.moveTo(-r*.30,-r*.45);c.lineTo(-r*.33,-r*1.12);c.lineTo(-r*.52,-r*1.35);c.lineTo(-r*.30,-r*1.80);c.lineTo(-r*.20,-r*2.18);c.lineTo(r*.20,-r*2.18);c.lineTo(r*.30,-r*1.80);c.lineTo(r*.52,-r*1.35);c.lineTo(r*.33,-r*1.12);c.lineTo(r*.30,-r*.45);c.closePath();c.fill();c.stroke();
   for(const side of [-1,1]){c.save();c.scale(side,1);
-   c.fillStyle='#e5d48a';c.beginPath();c.moveTo(r*.31,-r*1.23);c.lineTo(r*.82,-r*2.0);c.lineTo(r*.55,-r*1.14);c.closePath();c.fill();
-   c.fillStyle='#ffde74';c.beginPath();c.ellipse(r*.25,-r*1.46,r*.11,r*.075,0,0,Math.PI*2);c.fill();
-   c.fillStyle='#041b29';c.beginPath();c.arc(r*.08,-r*1.79,r*.042,0,Math.PI*2);c.fill();c.restore();}
-  c.strokeStyle='#e9e1b2';c.lineWidth=2;c.beginPath();c.moveTo(-r*.22,-r*1.66);c.quadraticCurveTo(0,-r*1.57,r*.22,-r*1.66);c.stroke();
+   c.fillStyle='#eee0a0';c.beginPath();c.moveTo(r*.32,-r*1.38);c.lineTo(r*.75,-r*2.17);c.lineTo(r*.55,-r*1.31);c.closePath();c.fill();
+   c.fillStyle='#ffdf70';c.beginPath();c.ellipse(r*.28,-r*1.66,r*.12,r*.08,0,0,Math.PI*2);c.fill();
+   c.fillStyle='#041d2b';c.beginPath();c.arc(r*.12,-r*2.04,r*.047,0,Math.PI*2);c.fill();c.restore();}
+  c.strokeStyle='#d5e6db';c.lineWidth=2;c.beginPath();c.moveTo(-r*.22,-r*1.88);c.quadraticCurveTo(0,-r*1.82,r*.22,-r*1.88);c.stroke();
  }else{
   if(e.secretPhase===2){
    c.shadowColor='#ff4bc8';c.shadowBlur=35;
@@ -2863,7 +2873,15 @@ if(xmasRun==='snow'&&win&&xmasActive())dropReward+=1;dropReward=liveEventApplyMa
 if(xmasRun==='snow'&&placement===1&&xmasActive())xmas2AddWin();
 if(xmasRun==='boss'&&win&&xmasActive())xmasAddBossKill();
 const coopSnowMatch=xmasRun==='snow';xmasRun='';
-if(win&&eventBossRewardRun&&eventBossRewardRun.id===eventBossId){dropReward+=eventBossRewardRun.rewardDrops||0;data.coins=(data.coins||0)+(eventBossRewardRun.rewardCoins||0);}
+if(eventBossRewardRun){
+ dropReward=win?(eventBossRewardRun.rewardDrops||0):0;
+ trophyDelta=0;
+ if(win&&eventBossRewardRun.id===eventBossId){
+  data.coins=(data.coins||0)+(eventBossRewardRun.rewardCoins||0);
+  eventBossClearStatus[eventBossRewardRun.id]=true;
+  eventBossApi('PUT','bossRaid154/completions/'+eventBossRewardRun.id+'/'+cloudUid,{clearedAt:Date.now(),boss:eventBossRewardRun.type}).catch(err=>{console.warn('Boss completion save failed',err);live152Notify('⚠️ 討伐履歴の同期に失敗しました：'+err.message,'event')});
+ }
+}
 data.drops=(data.drops||0)+dropReward;
 data.trophies=Math.max(0,data.trophies+trophyDelta);
 data.matches++;if(win)data.wins++;clubRecordMatch(win,kills,mode==='boss'&&win);warRecordMatch(win,placement,mode,mode==='boss'&&win,wasSeriousBattle);if(mode==='boss'&&win){if(!['world152','secret152'].includes(bossType))raidRecordBossWin(bossType);
@@ -2879,7 +2897,7 @@ $('overlay').style.display='flex';
 $('result').innerHTML=`<div style="font-size:55px">${win?'🏆':'🏁'}</div><h1>${resultTitle}</h1>${mode==='royale'?`<p>順位：${placement}位 / 10人</p>`:''}<p>撃破数：${kills} ／ スコア：${score}</p>${wasSeriousBattle?'<p style="color:#ffb957;font-weight:bold">🔥 ガチバトル・トロフィー増減2倍</p>':''}<h2>🏆 トロフィー ${trophyLabel}　🌟 スタードロップ +${dropReward}</h2><p>${dropReward?'ホーム画面からスタードロップを開封できます。':'今回のスタードロップ報酬はありません。'}${trophyDelta<0?'（トロフィーは0未満になりません）':''}</p>${btn('ホームに戻る','back','orange')}`;
 $('result').querySelector('button').onclick=back;document.body.classList.remove('playing')}
 
-function back(){eventBossRun=null;xmasRun='';playing=false;cancelAnimationFrame(raf);$('overlay').style.display='none';$('gameArea').style.display='none';$('menu').style.display='block';document.body.classList.remove('playing');attackHeld=false;superHeld=false;keys.autoAttack=false;mouse.active=false;render()}
+function back(){if(eventBossRun?.type==='world')eventBossFlush(eventBossRun);eventBossRun=null;xmasRun='';playing=false;cancelAnimationFrame(raf);$('overlay').style.display='none';$('gameArea').style.display='none';$('menu').style.display='block';document.body.classList.remove('playing');attackHeld=false;superHeld=false;keys.autoAttack=false;mouse.active=false;render()}
 $('leave').onclick=()=>{if(confirm('バトルを退出しますか？ 報酬は獲得できません。'))back()};$('battleExit').onclick=()=>{$('leave').click()};
 window.addEventListener('keydown',e=>{
  if(!playing)return;
