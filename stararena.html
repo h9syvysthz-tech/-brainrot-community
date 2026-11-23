@@ -1593,7 +1593,18 @@ async function eventBossReport(run,damage,won){
 
 setInterval(()=>{if(cloudReady){eventBossPoll().then(()=>{if(!playing&&(tab==='home'||tab==='events'))render()})}},5000);
 
+const bossAdminDraft={};
+const bossAdminFields=['ebType','ebMinutes','ebDifficulty','ebHp','ebDamage','ebSpeed','ebRate','ebSize'];
+document.addEventListener('input',e=>{if(bossAdminFields.includes(e.target?.id))bossAdminDraft[e.target.id]=e.target.value;});
+document.addEventListener('change',e=>{if(bossAdminFields.includes(e.target?.id))bossAdminDraft[e.target.id]=e.target.value;});
+function restoreBossAdminDraft(){
+ for(const id of bossAdminFields){const el=document.getElementById(id);if(el&&Object.prototype.hasOwnProperty.call(bossAdminDraft,id))el.value=bossAdminDraft[id];}
+}
 function render(){
+ // Capture any edits before a background refresh replaces the form.
+ for(const id of bossAdminFields){const el=document.getElementById(id);if(el)bossAdminDraft[id]=el.value;}
+ queueMicrotask(restoreBossAdminDraft);
+
  const active=document.activeElement;
  // Background Firebase polling must never replace a focused form element.
  if(tab==='home'&&active&&active.closest?.('#view')&&active.matches?.('input,textarea,select'))return;
