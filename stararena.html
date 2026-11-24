@@ -1704,6 +1704,7 @@ else if(tab==='clubs'){v.innerHTML=clubHTML()}
 else if(tab==='news'){
 // 次回以降は先頭に最新更新を追加すると最新ニュースと過去5件が自動で切り替わる。
 const updates=[
+ {ver:'155.4',title:'⚽ スターボールのステージ拡大',detail:'スターボール専用ステージの縦横を10%拡大。他のモードは変更なし。',date:'2026年11月24日（日本時間）'},
  {ver:'155.3',title:'💀 サバイバル難易度調整',detail:'サバイバル限定でプレイヤーのHP・攻撃力・移動速度・リロードを強化。序盤の敵をさらに弱体化し、ウェーブ間の回復量を40%に増加。',date:'2026年11月24日（日本時間）'},
  {ver:'155.1',title:'🛠️ 火山マップのHP異常を修正',detail:'噴火ダメージでHPがNaNになる不具合を修正。異常なダメージ値を拒否し、無限ウェーブのモード名表示も修正。',date:'2026年11月24日（日本時間）'},
  {ver:'155.0',title:'💀 サバイバル',detail:'サバイバルとワールドボス貢献度のユーザー名表示を追加。',date:'2026年11月23日（日本時間）'},
@@ -1926,8 +1927,8 @@ function drawMapGimmicks(){
 
 function dailyArenaHTML(){const a=dailyArena();return `<section class="panel" style="border:2px solid #718ee0"><h3>🗺️ 本日の日替わりマップ</h3><p style="font-size:1.25em"><b>${a.icon} ${a.name}</b></p><p class="muted">日本時間の午前0時に切り替わります。通常バトルの地形・壁・草むら・背景と特殊ギミックが日替わりになります。火山：周期的な噴火ダメージ／雪原：氷上で移動速度低下／星影の遺跡：魔力エリアで必殺ゲージ回復／翠緑の遺跡：ギミックなし。試合途中では切り替わりません。</p><p class="small">対象：バトルロイヤル／3vs3／デュエル／ボスバトル／ガチバトル。期間限定の雪イベントは専用マップを優先します。</p></section>`;}
 function mapBuild(){
-worldW=mode==='royale'?3000:mode==='boss'||mode==='waves'?1300:1080;
-worldH=mode==='royale'?2200:mode==='boss'||mode==='waves'?850:720;
+worldW=mode==='starball'?1188:mode==='royale'?3000:mode==='boss'||mode==='waves'?1300:1080;
+worldH=mode==='starball'?792:mode==='royale'?2200:mode==='boss'||mode==='waves'?850:720;
 walls=[];bushes=[];
 const arena=matchArena;
 const spawnX=worldW/2,spawnY=worldH/2;
