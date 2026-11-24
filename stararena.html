@@ -1704,7 +1704,7 @@ else if(tab==='clubs'){v.innerHTML=clubHTML()}
 else if(tab==='news'){
 // 次回以降は先頭に最新更新を追加すると最新ニュースと過去5件が自動で切り替わる。
 const updates=[
- {ver:'155.2',title:'💀 サバイバル難易度調整',detail:'モード名をサバイバルに変更。敵レベルをウェーブに連動させ、序盤の敵数・HP・攻撃力・移動速度を緩和。',date:'2026年11月24日（日本時間）'},
+ {ver:'155.3',title:'💀 サバイバル難易度調整',detail:'サバイバル限定でプレイヤーのHP・攻撃力・移動速度・リロードを強化。序盤の敵をさらに弱体化し、ウェーブ間の回復量を40%に増加。',date:'2026年11月24日（日本時間）'},
  {ver:'155.1',title:'🛠️ 火山マップのHP異常を修正',detail:'噴火ダメージでHPがNaNになる不具合を修正。異常なダメージ値を拒否し、無限ウェーブのモード名表示も修正。',date:'2026年11月24日（日本時間）'},
  {ver:'155.0',title:'💀 サバイバル',detail:'サバイバルとワールドボス貢献度のユーザー名表示を追加。',date:'2026年11月23日（日本時間）'},
  {ver:'152.6',title:'🛠️ 管理者イベント設定の入力保持と送信欄リセット',detail:'イベント種類などの選択を画面更新後も保持。アイテムコード受取成功・管理者メッセージ送信成功後は入力欄を空にする。',date:'2026年11月23日（日本時間）'},
@@ -1965,7 +1965,7 @@ let seriousBattle=false;
 const SERIOUS_MODES=['royale','boss','team','duel'];
 function startSeriousBattle(){if((Number(data.trophies)||0)<1000){alert('ガチバトルは1000トロフィー以上で解放されます');return;}seriousBattle=true;xmasRun='';mode=SERIOUS_MODES[Math.floor(Math.random()*SERIOUS_MODES.length)];if(mode==='boss'){bossType=Math.random()<.5?'abyss':'storm';bossDifficulty=Math.floor(Math.random()*5);}start();}
 let waveNumber=0,waveWait=0,waveBest=0,waveEliteCount=0;
-function survivalBalance(w){return {count:Math.min(26,2+Math.floor((w-1)*.8)),lv:Math.min(40,1+Math.floor((w-1)/2)),hp:Math.min(6,.55+(w-1)*.085),damage:Math.min(3.8,.40+(w-1)*.055),speed:Math.min(1.15,.75+(w-1)*.025),cooldown:Math.max(1,1.65-(w-1)*.045)};}
+function survivalBalance(w){return {count:Math.min(26,1+Math.floor((w-1)*.55)),lv:Math.min(40,1+Math.floor((w-1)/3)),hp:Math.min(6,.30+(w-1)*.065),damage:Math.min(3.8,.18+(w-1)*.04),speed:Math.min(1.15,.60+(w-1)*.02),cooldown:Math.max(1,2.4-(w-1)*.05)};}
 function waveSpawn(){
  waveNumber++;waveWait=0;const balance=survivalBalance(waveNumber),count=balance.count;
  const elite=waveNumber%10===0;
@@ -1980,7 +1980,7 @@ function waveSpawn(){
   if(elite&&i===0){e.isWaveElite=true;e.baseMaxhp=e.maxhp=Math.round(e.maxhp*6);e.hp=e.maxhp;e.baseDamage=e.damage=Math.round(e.damage*1.65);e.r*=1.55;waveEliteCount++;}
   entities.push(e);
  }
- if(waveNumber>1){player.hp=Math.min(player.maxhp,player.hp+Math.round(player.maxhp*.18));player.ammo=maxAmmo(player);}
+ if(waveNumber>1){player.hp=Math.min(player.maxhp,player.hp+Math.round(player.maxhp*.40));player.ammo=maxAmmo(player);}
  live152Notify(elite?'👑 WAVE '+waveNumber+'：エリート出現！':'💀 WAVE '+waveNumber+' 開始！','event');
 }
 function waveUpdate(dt){
@@ -1989,7 +1989,7 @@ function waveUpdate(dt){
  const enemies=entities.filter(e=>e.team===1&&!e.dead);
  if(enemies.length===0){waveWait+=dt;if(waveWait>=2.5)waveSpawn();}else waveWait=0;
 }
-function start(){if(mode!=='boss')eventBossRun=null;if(mode==='waves'){waveNumber=0;waveWait=2.5;waveEliteCount=0;}if(mode==='starball')starBall={x:worldW/2,y:worldH/2,vx:0,vy:0,holder:null,score:[0,0],reset:0};else starBall=null;if(!seriousBattle)seriousBattle=false;if(mode==='boss'&&bossType==='demon'&&(Number(data.trophies)||0)<1500){alert('👑 終焉の魔王アザゼルへの挑戦にはトロフィー1500以上が必要です');return;}if(mode==='boss'&&!seriousBattle){const difficultySelect=$('bossDifficultySelect');if(difficultySelect)bossDifficulty=Math.max(0,Math.min(4,Number(difficultySelect.value)||0));}liveEventBattle=liveEventCurrents().map(e=>({...e}));powerCubes=[];powerBoxes=[];snowGifts=[];snowGiftCollected=0;snowStormPhase=0;cancelAnimationFrame(raf);playing=true;matchOver=false;entities=[];shots=[];particles=[];effects=[];elapsed=0;spawnTimer=0;kills=0;score=0;teamScore=[0,0];gasInset=0;gasPhase=0;bossWarnings=[];bossCooldown=3.2;bossPattern=0;bossRageStage=0;bossRageMessageUntil=0;killFeed=[];royaleFinalTwoUntil=0;royaleFinalTwoShown=false;knockoutRound=1;roundBreak=0;last=performance.now();matchArena=dailyArena();mapBuild();setupMapGimmicks();player=create(data.selected,0,false,{x:worldW/2,y:worldH/2}); if(blocked(player.x,player.y,player.r+20)){let safe=pos(player.r);player.x=safe.x;player.y=safe.y;}applyStar(player);if(liveEventBattle.some(e=>e.type==='boost'))player.speed*=1.2;meteorWarnings=[];thunderWarnings=[];meteorNext=4;entities.push(player);let count=mode==='royale'?9:(mode==='team'||mode==='starball')?5:mode==='duel'?1:0;for(let i=0;i<count;i++){let team=(mode==='team'||mode==='starball')?(i<2?0:1):1;let id=Math.floor(rand(0,21)),r=h(id).bodySize,p=null;for(let attempt=0;attempt<450;attempt++){let candidate={x:rand(110,worldW-110),y:rand(110,worldH-110)};if(!blocked(candidate.x,candidate.y,r+15)&&entities.every(e=>dist(e,candidate)>=Math.max(mode==='royale'?500:290,e.r+r+80))){p=candidate;break}}p??=pos(r);let bot=create(id,team,true,p);
+function start(){if(mode!=='boss')eventBossRun=null;if(mode==='waves'){waveNumber=0;waveWait=2.5;waveEliteCount=0;}if(mode==='starball')starBall={x:worldW/2,y:worldH/2,vx:0,vy:0,holder:null,score:[0,0],reset:0};else starBall=null;if(!seriousBattle)seriousBattle=false;if(mode==='boss'&&bossType==='demon'&&(Number(data.trophies)||0)<1500){alert('👑 終焉の魔王アザゼルへの挑戦にはトロフィー1500以上が必要です');return;}if(mode==='boss'&&!seriousBattle){const difficultySelect=$('bossDifficultySelect');if(difficultySelect)bossDifficulty=Math.max(0,Math.min(4,Number(difficultySelect.value)||0));}liveEventBattle=liveEventCurrents().map(e=>({...e}));powerCubes=[];powerBoxes=[];snowGifts=[];snowGiftCollected=0;snowStormPhase=0;cancelAnimationFrame(raf);playing=true;matchOver=false;entities=[];shots=[];particles=[];effects=[];elapsed=0;spawnTimer=0;kills=0;score=0;teamScore=[0,0];gasInset=0;gasPhase=0;bossWarnings=[];bossCooldown=3.2;bossPattern=0;bossRageStage=0;bossRageMessageUntil=0;killFeed=[];royaleFinalTwoUntil=0;royaleFinalTwoShown=false;knockoutRound=1;roundBreak=0;last=performance.now();matchArena=dailyArena();mapBuild();setupMapGimmicks();player=create(data.selected,0,false,{x:worldW/2,y:worldH/2}); if(blocked(player.x,player.y,player.r+20)){let safe=pos(player.r);player.x=safe.x;player.y=safe.y;}applyStar(player);if(mode==='waves'){player.baseMaxhp=player.maxhp=Math.round(player.maxhp*1.8);player.hp=player.maxhp;player.baseDamage=player.damage=Math.round(player.damage*1.5);player.speed*=1.15;player.cooldown*=.8;}if(liveEventBattle.some(e=>e.type==='boost'))player.speed*=1.2;meteorWarnings=[];thunderWarnings=[];meteorNext=4;entities.push(player);let count=mode==='royale'?9:(mode==='team'||mode==='starball')?5:mode==='duel'?1:0;for(let i=0;i<count;i++){let team=(mode==='team'||mode==='starball')?(i<2?0:1):1;let id=Math.floor(rand(0,21)),r=h(id).bodySize,p=null;for(let attempt=0;attempt<450;attempt++){let candidate={x:rand(110,worldW-110),y:rand(110,worldH-110)};if(!blocked(candidate.x,candidate.y,r+15)&&entities.every(e=>dist(e,candidate)>=Math.max(mode==='royale'?500:290,e.r+r+80))){p=candidate;break}}p??=pos(r);let bot=create(id,team,true,p);
 // ノックアウトの味方AIも敵AIと同様、各試合で固有能力をランダム装備。
 if((mode==='team'||mode==='starball')&&team===0){
  bot.gadgetIndex=bot.lv>=7?Math.floor(Math.random()*2):-1;
@@ -2556,7 +2556,7 @@ if(mode==='royale'&&gasInset>0)for(let box of [...powerBoxes]){
 }
 for(let e of entities){
 if(!e.dead){e.prevX=e.prevX===undefined?e.x:e.prevX*.6+e.x*.4;e.prevY=e.prevY===undefined?e.y:e.prevY*.6+e.y*.4}
-if(!e.dead&&e.ammo<maxAmmo(e)){e.reloadProgress+=dt*(e.boostUntil>elapsed?1.25:1)*(e.star==='reload'?1.25:1)*(e.gadgetReloadUntil>elapsed?1.6:1);while(e.reloadProgress>=RELOAD_SEC[e.id]&&e.ammo<maxAmmo(e)){e.ammo++;e.reloadProgress-=RELOAD_SEC[e.id]}}
+if(!e.dead&&e.ammo<maxAmmo(e)){e.reloadProgress+=dt*(mode==='waves'?(e===player?1.5:Math.min(1,.45+waveNumber*.025)):1)*(e.boostUntil>elapsed?1.25:1)*(e.star==='reload'?1.25:1)*(e.gadgetReloadUntil>elapsed?1.6:1);while(e.reloadProgress>=RELOAD_SEC[e.id]&&e.ammo<maxAmmo(e)){e.ammo++;e.reloadProgress-=RELOAD_SEC[e.id]}}
 else if(e.ammo>=maxAmmo(e))e.reloadProgress=0;
 if(e.dead){if(mode==='starball'&&elapsed>=e.respawn){e.dead=false;e.hp=e.maxhp;e.x=e.team===0?150:worldW-150;e.y=worldH/2;e.invuln=elapsed+1.5;}if((mode==='boss'&&e.team===0&&entities.some(o=>o!==e&&o.team===0&&!o.dead))&&elapsed>=e.respawn){let p=pos(e.r);e.x=p.x;e.y=p.y;e.hp=e.maxhp;e.dead=false;e.invuln=elapsed+1.5}continue}if(e.poisonUntil>elapsed){e.hp=Math.max(1,e.hp-4*dt)}
 if(mode==='royale'&&inGas(e)){e.gasTick+=dt;let gasDamage=e.maxhp*.20*dt;if(e.invuln<=elapsed){e.lastHit=elapsed;hit(e,gasDamage,null);if(e.dead){if(!playing)return}}}else e.gasTick=0;if(!e.isBoss && elapsed-e.lastHit>=(e.star==='regen'?3.5:5) && e.poisonUntil<=elapsed && !(mode==='royale'&&inGas(e)))e.hp=Math.min(e.maxhp,e.hp+e.maxhp*(e.star==='regen'?.21:.16)*dt);if(!e.ai)continue;if(!e.isBoss&&e.gadgetCharges>0&&e.gadgetIndex>=0){
