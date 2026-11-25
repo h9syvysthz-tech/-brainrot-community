@@ -87,7 +87,7 @@ body.playing #battleExit{touch-action:manipulation!important;}
 .et-title{display:inline-block;color:var(--et-c);font-weight:900;padding:4px 8px;border-radius:8px}.et-glow,.et-aura{text-shadow:0 0 8px var(--et-c),0 0 18px var(--et-d)}.et-aura{box-shadow:0 0 12px var(--et-c)}.et-gradient,.et-flow,.et-rainbow{background:linear-gradient(90deg,var(--et-c),var(--et-d),var(--et-c));background-size:200% 100%;background-clip:text;-webkit-background-clip:text;color:transparent}.et-rainbow{background-image:linear-gradient(90deg,#ff7777,#ffdd55,#66ff99,#77bbff,#ee88ff,#ff7777)}.et-flow,.et-rainbow{animation:etFlow 3s linear infinite}.et-blink{animation:etBlink 2s ease-in-out infinite}@keyframes etFlow{to{background-position:200% 0}}@keyframes etBlink{50%{opacity:.5}}.et-reveal{position:fixed;inset:0;z-index:900;background:radial-gradient(#354b86,#080d23);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;text-align:center;padding:20px}@media(prefers-reduced-motion:reduce){.et-title{animation:none!important}}
 [data-et-reward] [hidden]{display:none!important;}
 </style></head><body><div id="app"><header><div class="logo">⭐ STAR ARENA</div><div class="row"><span class="pill" id="coins">🪙 0</span><span class="pill" id="trophies">🏆 0</span></div></header><div id="menu"><div id="cloudTools" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0;padding:9px;border:1px solid #4d85b1;border-radius:12px;background:#152b44"><span id="cloudStatus" style="flex:1;min-width:160px">☁️ Firebase接続待機中</span><button id="cloudSync" type="button" class="btn">☁️ 今すぐ保存</button><button id="cloudLogout" type="button" class="btn">ログアウト</button></div><nav class="tabs"><button data-tab="home" class="active">ホーム</button><button data-tab="battle">バトル</button><button data-tab="heroes">キャラ</button><button data-tab="shop">ショップ</button><button data-tab="missions">ミッション</button><button data-tab="clubs">クラブ</button><button data-tab="events">イベント</button><button data-tab="ranking">ランク</button><button data-tab="news">ニュース</button><button data-tab="feedback">フィードバック</button></nav><div id="view"></div></div><div id="gameArea"><div class="row"><button class="btn red" id="leave">退出</button><span id="modeName" class="pill"></span><span id="status"></span></div><div id="battleStage"><button id="battleExit" type="button" aria-label="バトルから退出">退出</button><canvas id="gameCanvas" width="960" height="600"></canvas><div id="touchUI"><div id="moveJoy" class="joy"><div class="knob"></div></div><div class="actions"><button id="gadgetBtn" class="action gadget" aria-label="ガジェット">🟢3</button><button id="superBtn" class="action super">⚡</button><button id="attackBtn" class="action" aria-label="通常攻撃">🎯</button></div></div></div><p class="small">PC：矢印キーで移動／Dで自動照準攻撃（長押し連射）／Aで自動照準必殺技／マウスで照準・クリックで攻撃／スペースで必殺技／Fでガジェット。スマホ：画面左下のスティックで移動。攻撃ボタンをタップすると自動照準、ドラッグして離すと指定方向へ攻撃。</p></div></div><div id="overlay"><div id="result"></div></div><div id="starDropScreen" role="dialog" aria-modal="true" aria-label="スタードロップ開封"><div class="drop-wrap" id="starDropContent"></div></div><div id="rewardHistoryScreen" role="dialog" aria-modal="true" aria-label="報酬履歴" style="display:none;position:fixed;inset:0;z-index:101;background:#071127ed;align-items:center;justify-content:center;padding:12px"><div id="rewardHistoryContent" class="panel" style="width:min(600px,100%);max-height:90dvh;overflow:auto"></div></div><div id="heroDetail" role="dialog" aria-modal="true" aria-label="キャラクター詳細"><div class="detail-panel" id="detailPanel"></div></div>
-<div id="cloudGate"><div id="cloudPanel"><div style="font-size:12px;color:#a6e8ff;text-align:right">Ver.163.6 / DAILY MISSIONS</div><h2>☁️ STAR ARENA オンラインセーブ</h2><p style="font-size:14px">ユーザー名とパスワードで登録・ログインできます。ユーザー名は半角英数字・_・- の3〜20文字。クラウドからの読み込みが完了するまでゲームは開始できません。</p><label>ユーザー名<input id="cloudUsername" type="text" autocomplete="username" maxlength="20" placeholder="例：player123"></label><label>パスワード（6文字以上）<input id="cloudPassword" type="password" autocomplete="current-password" placeholder="6文字以上"></label><div class="cloudActions"><button id="cloudLogin" class="btn green" type="button">ログイン</button><button id="cloudRegister" class="btn orange" type="button">新規登録</button></div><div id="cloudMessage" role="status">Firebaseに接続しています…</div></div></div>
+<div id="cloudGate"><div id="cloudPanel"><div style="font-size:12px;color:#a6e8ff;text-align:right">Ver.163.8 / DAILY MISSIONS</div><h2>☁️ STAR ARENA オンラインセーブ</h2><p style="font-size:14px">ユーザー名とパスワードで登録・ログインできます。ユーザー名は半角英数字・_・- の3〜20文字。クラウドからの読み込みが完了するまでゲームは開始できません。</p><label>ユーザー名<input id="cloudUsername" type="text" autocomplete="username" maxlength="20" placeholder="例：player123"></label><label>パスワード（6文字以上）<input id="cloudPassword" type="password" autocomplete="current-password" placeholder="6文字以上"></label><div class="cloudActions"><button id="cloudLogin" class="btn green" type="button">ログイン</button><button id="cloudRegister" class="btn orange" type="button">新規登録</button></div><div id="cloudMessage" role="status">Firebaseに接続しています…</div></div></div>
 <script>
 (()=>{'use strict';
 const NAMES=['ブレイズ','フロスト','ボルト','リーフ','シャドウ','ルナ','タイタン','スパーク','ウェーブ','ロック','ファング','コメット','ネオン','ミスト','フェニックス','ギア','ヴァイパー','スター','ゴーレム','ノヴァ','パンプキン','スノーベル','深淵の覇王','雷霆の支配者'];
@@ -121,7 +121,7 @@ function weightedHeroDraw(ids){
 const ownsHero=i=>i===22?(data.owned.includes(22)||((data.bossHeroKills?.abyss||0)>=20)):i===23?(data.owned.includes(23)||((data.bossHeroKills?.storm||0)>=30)):i===20?(data.pumpkinPurchased===true||data.owned.includes(20)):i===21?(data.xmas2026Claimed===true||data.owned.includes(21)):data.owned.includes(i);
 const ensurePumpkinOwnership=()=>{if(data.pumpkinPurchased===true&&!data.owned.includes(20))data.owned.push(20);if(data.owned.includes(20))data.pumpkinPurchased=true;};
 const rarityTag=i=>`<span class="hero-rarity" style="--rarity-color:${heroRarity(i).color}">${heroRarity(i).icon} ${heroRarity(i).name}</span>`;
-const HEROES=NAMES.map((name,i)=>({name,icon:ICONS[i],color:COLORS[i],hp:[290, 125, 215, 180, 285, 125, 390, 170, 325, 375, 235, 155, 300, 185, 245, 175, 280, 120, 475, 160, 350,255,450,195][i],speed:[2.12, 1.62, 2.05, 1.88, 2.72, 1.52, 1.94, 1.91, 2.47, 1.58, 2.25, 1.78, 2.35, 1.64, 2.0, 1.83, 2.44, 1.49, 1.20, 1.7, 1.58,2.08,1.55,2.65][i],bodySize:i===22?22:i===23?21:i===21?15:i===18?23:11+(i*5%8),damage:[33, 61, 25, 30, 51, 76, 34, 32, 49, 72, 36, 52, 43, 64, 33, 34, 45, 83, 55, 105, 204,42,120,28][i],range:[76, 540, 225, 310, 105, 610, 195, 345, 90, 500, 165, 410, 65, 565, 205, 365, 112, 650, 205, 450,280,330,95,320][i],cooldown:[330, 990, 490, 550, 345, 1120, 520, 610, 310, 1040, 430, 840, 335, 980, 520, 580, 340, 1200, 700, 1060, 950,590,630,295][i],superType:i===21?2:i%5}));
+const HEROES=NAMES.map((name,i)=>({name,icon:ICONS[i],color:COLORS[i],hp:[290, 125, 215, 180, 285, 125, 390, 170, 325, 375, 235, 155, 300, 185, 245, 175, 280, 120, 475, 160, 350,255,450,195][i],speed:[2.12, 1.62, 2.05, 1.88, 2.72, 1.52, 1.94, 1.91, 2.47, 1.58, 2.25, 1.78, 2.35, 1.64, 2.0, 1.83, 2.44, 1.49, 1.20, 1.7, 1.58,2.08,1.55,2.65][i],bodySize:i===22?22:i===23?21:i===21?15:i===18?23:11+(i*5%8),damage:[33, 61, 25, 30, 51, 76, 34, 32, 49, 72, 36, 52, 43, 64, 33, 34, 45, 83, 55, 105, 204,42,120,22][i],range:[76, 540, 225, 310, 105, 610, 195, 345, 90, 500, 165, 410, 65, 565, 205, 365, 112, 650, 205, 450,280,330,95,320][i],cooldown:[330, 990, 490, 550, 345, 1120, 520, 610, 310, 1040, 430, 840, 335, 980, 520, 580, 340, 1200, 700, 1060, 950,590,630,320][i],superType:i===21?2:i%5}));
 // スノーベルはNAMESからID 21として1体だけ生成。
 const ROLE_NAMES=['近距離ファイター','長距離スナイパー','中距離バランス','中〜長距離アタッカー'];const ROLE_DESCS=['近距離で5発の散弾を放つ。近づくほど強力。','細くて高速な狙撃弾を遠距離まで飛ばす。接近戦は苦手。','射程と火力のバランスが良い。','中距離を保ちつつ牽制するタイプ。'];const ATTACKS=['灼熱散弾','氷結狙撃','電撃連鎖弾','葉の3連射','影の近距離連撃','月光貫通狙撃','重装破砕弾','流星2連射','水流散弾','岩石狙撃','牙の3連射','彗星加速弾','虹の8連散弾','霧の4連射','不死鳥の炎弾','機械2連射','猛毒散弾','星屑高速狙撃','巨岩範囲弾','宇宙貫通2連射','呪いの15連集中散弾','氷晶ベルの3連射','深淵の魔爪','雷霆の裁き'];
 const SUPERS=['火炎の7連散弾','氷結吹雪','電撃加速','自然の癒やし','影の貫通突撃','月光貫通砲','重装ノックバック','流星加速','水流の回復波','岩石の貫通砲','牙の9連散弾','彗星吹き飛ばし','虹の超加速','霧の全体回復','不死鳥の巨大炎弾','機械の連続砲撃','猛毒衝撃波','星屑の超加速','巨岩の回復波','宇宙貫通大砲','かぼちゃの生命回復','聖夜のスノードーム','深淵領域','雷神の暴走'];
@@ -149,7 +149,7 @@ const KEY='starArenaSave_v1';const freshData=()=>({bossHeroKills:{abyss:0,storm:
 for(const [type,id,need] of [['abyss',22,20],['storm',23,30]])if((data.bossHeroKills?.[type]||0)>=need&&!data.owned.includes(id))data.owned.push(id);if(!Number.isInteger(data.drops)||data.drops<0)data.drops=0;const $=id=>document.getElementById(id);let pumpkinPurchaseArmed=false,snowbellPurchaseArmed=false;let tab='home',mode='royale',playing=false,raf=0,entities=[],shots=[],walls=[],bushes=[],particles=[],player=null,elapsed=0,spawnTimer=0,kills=0,score=0,last=0,mouse={x:480,y:300,active:false},keys={},move={x:0,y:0},attackHeld=false,superHeld=false,touchAim={active:false,dx:1,dy:0},gameTime=90,matchOver=false,teamScore=[0,0],effects=[],worldW=960,worldH=600,camX=0,camY=0,gasInset=0,gasPhase=0,bossWarnings=[],bossCooldown=0,bossPattern=0,bossRageStage=0,bossRageMessageUntil=0,killFeed=[],royaleFinalTwoUntil=0,royaleFinalTwoShown=false;
 // キャラ別の弾数と1発のリロード時間（秒）
 const AMMO_CAP=[3,3,4,3,2,3,4,3,3,4,3,2,3,4,3,3,4,3,4,2,1,3,2,3];
-const RELOAD_SEC=[1.35, 2.65, 1.35, 1.5, 0.72, 2.95, 1.45, 1.65, 0.78, 2.75, 1.12, 2.25, 0.65, 2.6, 1.5, 1.6, 0.82, 3.1, 1.48, 2.9,3.3,1.8,2.2,.85];
+const RELOAD_SEC=[1.35, 2.65, 1.35, 1.5, 0.72, 2.95, 1.45, 1.65, 0.78, 2.75, 1.12, 2.25, 0.65, 2.6, 1.5, 1.6, 0.82, 3.1, 1.48, 2.9,3.3,1.8,2.2,1.0];
 
 // キャラクターごとの装備。効果は同じ系統でも倍率や対象がキャラによって異なる。
 const GADGET_EFFECTS=['heal','dash','shield','blast','reload','haste','stealth','drain','supercharge','cleanse'];
@@ -1835,6 +1835,8 @@ else if(tab==='clubs'){v.innerHTML=clubHTML()}
 else if(tab==='news'){
 // 次回以降は先頭に最新更新を追加すると最新ニュースと過去5件が自動で切り替わる。
 const updates=[
+ {ver:"163.8",title:"マップギミック強化",detail:"雪原・星影の遺跡のゾーンも8秒ごとに再配置。移動速度45%低下、必殺ゲージ毎秒5%、火山ダメージ最大HPの5%に強化。",date:"2026年11月25日（日本時間）"},
+ {ver:"163.7",title:"雷霆の支配者＆マップギミック調整",detail:"プレイアブル雷霆の攻撃力・リロード・加速効果を弱体化。雪原と星影の遺跡のゾーンを火山と同じサイズ・個数でランダム配置。",date:"2026年11月25日（日本時間）"},
  {ver:"163.6",title:"AIキャラクター・スキン抽選修正",detail:"全プレイアブルキャラと追加スキンをAI抽選対象に変更。",date:"2026年11月25日（日本時間）"},
  {ver:"163.5",title:"限定称号の討伐対象設定",detail:"ボス別の討伐条件とダブルボス討伐条件を追加。",date:"2026年11月25日（日本時間）"},
  {ver:"163.4",title:"スタードロップ一括開封",detail:"10連・100連・最大1000個の一括開封とトロフィー同期上限10000に対応。",date:"2026年11月25日（日本時間）"},
@@ -2048,32 +2050,28 @@ function spawnVolcanoZones(){
 function setupMapGimmicks(){
  mapHazards=[];mapHazardTick=0;
  if(xmasRun||!matchArena||matchArena.shape===0)return;
- if(matchArena.shape===1){spawnVolcanoZones();return;}
- const centers=mode==='royale'?[[.28,.27],[.72,.30],[.28,.72],[.72,.72],[.52,.53]]:[[.25,.28],[.76,.70],[.76,.25]];
- for(const [fx,fy] of centers){const x=worldW*fx,y=worldH*fy;
-  if(!blocked(x,y,58)&&Math.hypot(x-worldW/2,y-worldH/2)>155)mapHazards.push({x,y,r:mode==='royale'?74:52});
- }
+ spawnVolcanoZones();
 }
 function mapGimmickUpdate(dt){
  if(!playing||xmasRun||!matchArena||matchArena.shape===0)return;
  mapHazardTick+=dt;
  const phase=matchArena.shape;
- if(phase===1&&Math.floor(elapsed/8)!==Math.floor(Math.max(0,elapsed-dt)/8)){spawnVolcanoZones();mapHazardTick=0;}
+ if(Math.floor(elapsed/8)!==Math.floor(Math.max(0,elapsed-dt)/8)){spawnVolcanoZones();if(phase===1)mapHazardTick=0;}
  if(phase===1&&mapHazardTick>=.5){mapHazardTick=0;
   const active=(elapsed%8)>=1.5&&(elapsed%8)<4;
   if(active)for(const e of entities){if(e.dead||e.invuln>elapsed)continue;
    if(mapHazards.some(z=>Math.hypot(e.x-z.x,e.y-z.y)<z.r+e.r*.35)){
-    hit(e,Math.max(3,e.maxhp*.030),null);
+    hit(e,Math.max(3,e.maxhp*.05),null);
     effects.push({x:e.x,y:e.y,r:7,max:32,life:14,color:'#ff8a32'});
    }
   }
  }
  if(phase===2)for(const e of entities){if(e.dead)continue;
-  if(mapHazards.some(z=>Math.hypot(e.x-z.x,e.y-z.y)<z.r))e.snowSlowUntil=Math.max(e.snowSlowUntil||0,elapsed+.2);
+  if(mapHazards.some(z=>Math.hypot(e.x-z.x,e.y-z.y)<z.r))e.mapIceSlowUntil=Math.max(e.mapIceSlowUntil||0,elapsed+.2);
  }
  if(phase===3&&mapHazardTick>=1){mapHazardTick=0;
   for(const e of entities){if(e.dead)continue;
-   if(mapHazards.some(z=>Math.hypot(e.x-z.x,e.y-z.y)<z.r))e.super=Math.min(100,(e.super||0)+2);
+   if(mapHazards.some(z=>Math.hypot(e.x-z.x,e.y-z.y)<z.r))e.super=Math.min(100,(e.super||0)+5);
   }
  }
 }
@@ -2089,7 +2087,7 @@ function drawMapGimmicks(){
  }
 }
 
-function dailyArenaHTML(){const a=dailyArena();return `<section class="panel" style="border:2px solid #718ee0"><h3>🗺️ 本日の日替わりマップ</h3><p style="font-size:1.25em"><b>${a.icon} ${a.name}</b></p><p class="muted">日本時間の午前0時に切り替わります。通常バトルの地形・壁・草むら・背景と特殊ギミックが日替わりになります。火山：ランダムな噴火エリア（予告後にダメージ）／雪原：氷上で移動速度低下／星影の遺跡：魔力エリアで必殺ゲージ回復／翠緑の遺跡：ギミックなし。試合途中では切り替わりません。</p><p class="small">対象：バトルロイヤル／3vs3／デュエル／ボスバトル／ガチバトル。期間限定の雪イベントは専用マップを優先します。</p></section>`;}
+function dailyArenaHTML(){const a=dailyArena();return `<section class="panel" style="border:2px solid #718ee0"><h3>🗺️ 本日の日替わりマップ</h3><p style="font-size:1.25em"><b>${a.icon} ${a.name}</b></p><p class="muted">日本時間の午前0時に切り替わります。通常バトルの地形・壁・草むら・背景と特殊ギミックが日替わりになります。火山：噴火中0.5秒ごとに最大HPの5%ダメージ（最低3）／雪原：氷エリアで移動速度45%低下／星影の遺跡：魔力エリアで必殺ゲージ毎秒5%回復。各エリアは8秒ごとにランダム再配置／翠緑の遺跡：ギミックなし。試合途中では切り替わりません。</p><p class="small">対象：バトルロイヤル／3vs3／デュエル／ボスバトル／ガチバトル。期間限定の雪イベントは専用マップを優先します。</p></section>`;}
 function mapBuild(){
 worldW=mode==='starball'?1188:mode==='royale'?3000:mode==='boss'||mode==='waves'?1300:1080;
 worldH=mode==='starball'?792:mode==='royale'?2200:mode==='boss'||mode==='waves'?850:720;
@@ -2265,7 +2263,7 @@ function attackMuzzleFlash(e,dx,dy,superShot){
 }
 function shoot(e,dx,dy,superShot=false){
 let now=elapsed*1000,boost=e.boostUntil>elapsed;
-if(!superShot){if(e.ammo<1||now-e.lastShot<e.cooldown*(boost?.55:1))return;
+if(!superShot){if(e.ammo<1||now-e.lastShot<e.cooldown*(boost?(e.id===23?.70:.55):1))return;
 e.ammo--;e.lastShot=now;
 }
 e.lastHit=elapsed; // 通常攻撃・必殺技の使用で自然回復を中断し、5秒カウントを再開
@@ -2355,7 +2353,7 @@ function doAttack(superShot=false,manualDirection=null,forceAuto=false){if(!supe
  let v=manualDirection||(!forceAuto&&mouse.active?{x:mouse.x+camX-player.x,y:mouse.y+camY-player.y}:target?{x:target.x-player.x,y:target.y-player.y}:{x:Math.cos(player.dir),y:Math.sin(player.dir)});
  shoot(player,v.x,v.y,superShot);
 }
-function moveEntity(e,dx,dy,step){if(e.winterFrozenUntil>elapsed)return;let v=norm(dx,dy),s=e.speed*step*(e.snowSlowUntil>elapsed?.78:1)*(e.winterSlowUntil>elapsed?.65:1);const inertia=event160Factor('lowgravity','gravityInertia');if(inertia>1){const moving=Math.hypot(dx,dy)>=.01,alpha=1-Math.exp(-Math.max(0,step)/(3*inertia));e.eventVx=(e.eventVx||0)*(1-alpha)+(moving?v.x:0)*alpha;e.eventVy=(e.eventVy||0)*(1-alpha)+(moving?v.y:0)*alpha;v={x:e.eventVx,y:e.eventVy};}else if(Math.hypot(dx,dy)<.01)return;let nx=e.x+v.x*s,ny=e.y+v.y*s;if(!blocked(nx,e.y,e.r))e.x=nx;if(!blocked(e.x,ny,e.r))e.y=ny}
+function moveEntity(e,dx,dy,step){if(e.winterFrozenUntil>elapsed)return;let v=norm(dx,dy),s=e.speed*step*(e.snowSlowUntil>elapsed?.78:1)*(e.mapIceSlowUntil>elapsed?.55:1)*(e.winterSlowUntil>elapsed?.65:1);const inertia=event160Factor('lowgravity','gravityInertia');if(inertia>1){const moving=Math.hypot(dx,dy)>=.01,alpha=1-Math.exp(-Math.max(0,step)/(3*inertia));e.eventVx=(e.eventVx||0)*(1-alpha)+(moving?v.x:0)*alpha;e.eventVy=(e.eventVy||0)*(1-alpha)+(moving?v.y:0)*alpha;v={x:e.eventVx,y:e.eventVy};}else if(Math.hypot(dx,dy)<.01)return;let nx=e.x+v.x*s,ny=e.y+v.y*s;if(!blocked(nx,e.y,e.r))e.x=nx;if(!blocked(e.x,ny,e.r))e.y=ny}
 // Ver.81: camera-independent AI navigation. Grid A* routes around walls.
 function aiClearPath(x1,y1,x2,y2,r){
  const d=Math.hypot(x2-x1,y2-y1),steps=Math.max(1,Math.ceil(d/20));
@@ -2717,7 +2715,7 @@ function drawSnowEvent(){
   }
  }
 }
-function update(dt){if(!Number.isFinite(dt)||dt<0)return;let step=dt*60;elapsed+=dt;if(mode==='starball'&&elapsed>=150){finish(starBall.score[0]>starBall.score[1]);return;}if(mode==='boss'&&elapsed>=(db161Run?.limit||180)){finish(false);return;}if((mode==='team'||mode==='duel')&&roundBreak>0){roundBreak-=dt;if(roundBreak<=0)beginKnockoutRound();return;}cameraUpdate();if(mode==='royale'){let g=gasState();gasInset=g.inset;gasPhase=g.phase}if(!player.dead){let dx=(keys.ArrowRight?1:0)-(keys.ArrowLeft?1:0)+move.x,dy=(keys.s||keys.ArrowDown?1:0)-(keys.w||keys.ArrowUp?1:0)+move.y;moveEntity(player,dx,dy,step*(player.slowUntil>elapsed?.7:1)*(player.boostUntil>elapsed?1.4:1));if(attackHeld)doAttack();if(keys.autoAttack)doAttack(false,null,true);if(superHeld){doAttack(true);superHeld=false}}
+function update(dt){if(!Number.isFinite(dt)||dt<0)return;let step=dt*60;elapsed+=dt;if(mode==='starball'&&elapsed>=150){finish(starBall.score[0]>starBall.score[1]);return;}if(mode==='boss'&&elapsed>=(db161Run?.limit||180)){finish(false);return;}if((mode==='team'||mode==='duel')&&roundBreak>0){roundBreak-=dt;if(roundBreak<=0)beginKnockoutRound();return;}cameraUpdate();if(mode==='royale'){let g=gasState();gasInset=g.inset;gasPhase=g.phase}if(!player.dead){let dx=(keys.ArrowRight?1:0)-(keys.ArrowLeft?1:0)+move.x,dy=(keys.s||keys.ArrowDown?1:0)-(keys.w||keys.ArrowUp?1:0)+move.y;moveEntity(player,dx,dy,step*(player.slowUntil>elapsed?.7:1)*(player.boostUntil>elapsed?(player.id===23?1.25:1.4):1));if(attackHeld)doAttack();if(keys.autoAttack)doAttack(false,null,true);if(superHeld){doAttack(true);superHeld=false}}
 if(mode==='waves'){waveUpdate(dt);if(!playing)return;updateBossAttacks(dt);if(!playing)return;}if(mode==='starball')updateStarBall(dt);updateSnowEvent(dt);mapGimmickUpdate(dt);liveMeteorUpdate(dt);liveWarningUpdate(dt);
 for(const caster of entities){if(caster.dead||caster.id!==22||!(caster.abyssFieldUntil>elapsed))continue;
  for(const target of entities){if(target.dead||target===caster||target.team===caster.team||dist(caster,target)>165)continue;
@@ -2745,7 +2743,7 @@ if(mode==='royale'&&gasInset>0)for(let box of [...powerBoxes]){
 }
 for(let e of entities){
 if(!e.dead){e.prevX=e.prevX===undefined?e.x:e.prevX*.6+e.x*.4;e.prevY=e.prevY===undefined?e.y:e.prevY*.6+e.y*.4}
-if(!e.dead&&e.ammo<maxAmmo(e)){e.reloadProgress+=dt*(mode==='waves'?(e===player?1.5:Math.min(1,.45+waveNumber*.025)):1)*(e.boostUntil>elapsed?1.25:1)*(e.star==='reload'?1.25:1)*(e.gadgetReloadUntil>elapsed?1.6:1);while(e.reloadProgress>=RELOAD_SEC[e.id]&&e.ammo<maxAmmo(e)){e.ammo++;e.reloadProgress-=RELOAD_SEC[e.id]}}
+if(!e.dead&&e.ammo<maxAmmo(e)){e.reloadProgress+=dt*(mode==='waves'?(e===player?1.5:Math.min(1,.45+waveNumber*.025)):1)*(e.boostUntil>elapsed?(e.id===23?1.15:1.25):1)*(e.star==='reload'?1.25:1)*(e.gadgetReloadUntil>elapsed?(e.id===23?1.35:1.6):1);while(e.reloadProgress>=RELOAD_SEC[e.id]&&e.ammo<maxAmmo(e)){e.ammo++;e.reloadProgress-=RELOAD_SEC[e.id]}}
 else if(e.ammo>=maxAmmo(e))e.reloadProgress=0;
 if(e.dead){e.eventVx=e.eventVy=0;if(mode==='starball'&&elapsed>=e.respawn){e.dead=false;e.hp=e.maxhp;e.x=e.team===0?150:worldW-150;e.y=worldH/2;e.invuln=elapsed+1.5;}if((mode==='boss'&&e.team===0&&entities.some(o=>o!==e&&o.team===0&&!o.dead))&&elapsed>=e.respawn){let p=pos(e.r);e.x=p.x;e.y=p.y;e.hp=e.maxhp;e.dead=false;e.invuln=elapsed+1.5}continue}if(e.poisonUntil>elapsed){e.hp=Math.max(1,e.hp-4*dt)}
 if(mode==='royale'&&inGas(e)){e.gasTick+=dt;let gasDamage=e.maxhp*.20*dt;if(e.invuln<=elapsed){e.lastHit=elapsed;hit(e,gasDamage,null);if(e.dead){if(!playing)return}}}else e.gasTick=0;if(!e.isBoss && elapsed-e.lastHit>=(e.star==='regen'?3.5:5) && e.poisonUntil<=elapsed && !(mode==='royale'&&inGas(e)))e.hp=Math.min(e.maxhp,e.hp+e.maxhp*(e.star==='regen'?.21:.16)*dt);if(!e.ai)continue;if(!e.isBoss&&e.gadgetCharges>0&&e.gadgetIndex>=0){
@@ -2801,7 +2799,7 @@ if(mode==='royale'&&gasInset>0){
   }
  }
 }
-moveEntity(e,mx,my,step*.87*(e.slowUntil>elapsed?.7:1)*(e.boostUntil>elapsed?1.4:1));if(!e.isBoss&&aiClearPath(e.x,e.y,focus.x,focus.y,5)&&dist(e,focus)<e.range*.98&&Math.random()<dt*(retreat?1.1:4.2)&&(target||objective.box))shoot(e,n.x,n.y);if(!e.isBoss&&e.super>=100){
+moveEntity(e,mx,my,step*.87*(e.slowUntil>elapsed?.7:1)*(e.boostUntil>elapsed?(e.id===23?1.25:1.4):1));if(!e.isBoss&&aiClearPath(e.x,e.y,focus.x,focus.y,5)&&dist(e,focus)<e.range*.98&&Math.random()<dt*(retreat?1.1:4.2)&&(target||objective.box))shoot(e,n.x,n.y);if(!e.isBoss&&e.super>=100){
  const superTarget=target&&dist(e,target)<Math.min(e.range*.92,480)?target:(objective&&objective.box&&dist(e,objective)<e.range*.85?objective:null);
  // AIは必殺技が満タンなら積極的に使用。回復・防御系はHPに応じて判断。
  const defensive=[6,18,20].includes(e.id);
