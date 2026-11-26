@@ -87,7 +87,7 @@ body.playing #battleExit{touch-action:manipulation!important;}
 .et-title{display:inline-block;color:var(--et-c);font-weight:900;padding:4px 8px;border-radius:8px}.et-glow,.et-aura{text-shadow:0 0 8px var(--et-c),0 0 18px var(--et-d)}.et-aura{box-shadow:0 0 12px var(--et-c)}.et-gradient,.et-flow,.et-rainbow{background:linear-gradient(90deg,var(--et-c),var(--et-d),var(--et-c));background-size:200% 100%;background-clip:text;-webkit-background-clip:text;color:transparent}.et-rainbow{background-image:linear-gradient(90deg,#ff7777,#ffdd55,#66ff99,#77bbff,#ee88ff,#ff7777)}.et-flow,.et-rainbow{animation:etFlow 3s linear infinite}.et-blink{animation:etBlink 2s ease-in-out infinite}@keyframes etFlow{to{background-position:200% 0}}@keyframes etBlink{50%{opacity:.5}}.et-reveal{position:fixed;inset:0;z-index:900;background:radial-gradient(#354b86,#080d23);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;text-align:center;padding:20px}@media(prefers-reduced-motion:reduce){.et-title{animation:none!important}}
 [data-et-reward] [hidden]{display:none!important;}
 </style></head><body><div id="app"><header><div class="logo">⭐ STAR ARENA</div><div class="row"><span class="pill" id="coins">🪙 0</span><span class="pill" id="trophies">🏆 0</span></div></header><div id="menu"><div id="cloudTools" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0;padding:9px;border:1px solid #4d85b1;border-radius:12px;background:#152b44"><span id="cloudStatus" style="flex:1;min-width:160px">☁️ Firebase接続待機中</span><button id="cloudSync" type="button" class="btn">☁️ 今すぐ保存</button><button id="cloudLogout" type="button" class="btn">ログアウト</button></div><nav class="tabs"><button data-tab="home" class="active">ホーム</button><button data-tab="battle">バトル</button><button data-tab="heroes">キャラ</button><button data-tab="shop">ショップ</button><button data-tab="missions">ミッション</button><button data-tab="clubs">クラブ</button><button data-tab="events">イベント</button><button data-tab="ranking">ランク</button><button data-tab="news">ニュース</button><button data-tab="feedback">フィードバック</button></nav><div id="view"></div></div><div id="gameArea"><div class="row"><button class="btn red" id="leave">退出</button><span id="modeName" class="pill"></span><span id="status"></span></div><div id="battleStage"><button id="battleExit" type="button" aria-label="バトルから退出">退出</button><canvas id="gameCanvas" width="960" height="600"></canvas><div id="touchUI"><div id="moveJoy" class="joy"><div class="knob"></div></div><div class="actions"><button id="gadgetBtn" class="action gadget" aria-label="ガジェット">🟢3</button><button id="superBtn" class="action super">⚡</button><button id="attackBtn" class="action" aria-label="通常攻撃">🎯</button></div></div></div><p class="small">PC：矢印キーで移動／Dで自動照準攻撃（長押し連射）／Aで自動照準必殺技／マウスで照準・クリックで攻撃／スペースで必殺技／Fでガジェット。スマホ：画面左下のスティックで移動。攻撃ボタンをタップすると自動照準、ドラッグして離すと指定方向へ攻撃。</p></div></div><div id="overlay"><div id="result"></div></div><div id="starDropScreen" role="dialog" aria-modal="true" aria-label="スタードロップ開封"><div class="drop-wrap" id="starDropContent"></div></div><div id="rewardHistoryScreen" role="dialog" aria-modal="true" aria-label="報酬履歴" style="display:none;position:fixed;inset:0;z-index:101;background:#071127ed;align-items:center;justify-content:center;padding:12px"><div id="rewardHistoryContent" class="panel" style="width:min(600px,100%);max-height:90dvh;overflow:auto"></div></div><div id="heroDetail" role="dialog" aria-modal="true" aria-label="キャラクター詳細"><div class="detail-panel" id="detailPanel"></div></div>
-<div id="cloudGate"><div id="cloudPanel"><div style="font-size:12px;color:#a6e8ff;text-align:right">Ver.164.2 / AZAZEL</div><h2>☁️ STAR ARENA オンラインセーブ</h2><p style="font-size:14px">ユーザー名とパスワードで登録・ログインできます。ユーザー名は半角英数字・_・- の3〜20文字。クラウドからの読み込みが完了するまでゲームは開始できません。</p><label>ユーザー名<input id="cloudUsername" type="text" autocomplete="username" maxlength="20" placeholder="例：player123"></label><label>パスワード（6文字以上）<input id="cloudPassword" type="password" autocomplete="current-password" placeholder="6文字以上"></label><div class="cloudActions"><button id="cloudLogin" class="btn green" type="button">ログイン</button><button id="cloudRegister" class="btn orange" type="button">新規登録</button></div><div id="cloudMessage" role="status">Firebaseに接続しています…</div></div></div>
+<div id="cloudGate"><div id="cloudPanel"><div style="font-size:12px;color:#a6e8ff;text-align:right">Ver.166.1 / MAP EVENT</div><h2>☁️ STAR ARENA オンラインセーブ</h2><p style="font-size:14px">ユーザー名とパスワードで登録・ログインできます。ユーザー名は半角英数字・_・- の3〜20文字。クラウドからの読み込みが完了するまでゲームは開始できません。</p><label>ユーザー名<input id="cloudUsername" type="text" autocomplete="username" maxlength="20" placeholder="例：player123"></label><label>パスワード（6文字以上）<input id="cloudPassword" type="password" autocomplete="current-password" placeholder="6文字以上"></label><div class="cloudActions"><button id="cloudLogin" class="btn green" type="button">ログイン</button><button id="cloudRegister" class="btn orange" type="button">新規登録</button></div><div id="cloudMessage" role="status">Firebaseに接続しています…</div></div></div>
 <script>
 (()=>{'use strict';
 const NAMES=['ブレイズ','フロスト','ボルト','リーフ','シャドウ','ルナ','タイタン','スパーク','ウェーブ','ロック','ファング','コメット','ネオン','ミスト','フェニックス','ギア','ヴァイパー','スター','ゴーレム','ノヴァ','パンプキン','スノーベル','深淵の覇王','雷霆の支配者','終焉の魔王アザゼル'];
@@ -121,11 +121,11 @@ function weightedHeroDraw(ids){
 const ownsHero=i=>i===24?(data.owned.includes(24)||((data.bossHeroKills?.demon||0)>=40)):i===22?(data.owned.includes(22)||((data.bossHeroKills?.abyss||0)>=20)):i===23?(data.owned.includes(23)||((data.bossHeroKills?.storm||0)>=30)):i===20?(data.pumpkinPurchased===true||data.owned.includes(20)):i===21?(data.xmas2026Claimed===true||data.owned.includes(21)):data.owned.includes(i);
 const ensurePumpkinOwnership=()=>{if(data.pumpkinPurchased===true&&!data.owned.includes(20))data.owned.push(20);if(data.owned.includes(20))data.pumpkinPurchased=true;};
 const rarityTag=i=>`<span class="hero-rarity" style="--rarity-color:${heroRarity(i).color}">${heroRarity(i).icon} ${heroRarity(i).name}</span>`;
-const HEROES=NAMES.map((name,i)=>({name,icon:ICONS[i],color:COLORS[i],hp:[290, 125, 215, 180, 285, 125, 390, 170, 325, 375, 235, 155, 300, 185, 245, 175, 280, 120, 475, 160, 350,255,450,195,380][i],speed:[2.12, 1.62, 2.05, 1.88, 2.72, 1.52, 1.94, 1.91, 2.47, 1.58, 2.25, 1.78, 2.35, 1.64, 2.0, 1.83, 2.44, 1.49, 1.20, 1.7, 1.58,2.08,1.55,2.65,1.85][i],bodySize:i===24?23:i===22?22:i===23?21:i===21?15:i===18?23:11+(i*5%8),damage:[33, 61, 25, 30, 51, 76, 34, 32, 49, 72, 36, 52, 43, 64, 33, 34, 45, 83, 55, 105, 204,42,120,22,95][i],range:[76, 540, 225, 310, 105, 610, 195, 345, 90, 500, 165, 410, 65, 565, 205, 365, 112, 650, 205, 450,280,330,95,320,340][i],cooldown:[330, 990, 490, 550, 345, 1120, 520, 610, 310, 1040, 430, 840, 335, 980, 520, 580, 340, 1200, 700, 1060, 950,590,630,320,750][i],superType:i===21?2:i%5}));
+const HEROES=NAMES.map((name,i)=>({name,icon:ICONS[i],color:COLORS[i],hp:[290, 125, 215, 180, 285, 125, 390, 170, 325, 375, 235, 155, 300, 185, 245, 175, 280, 120, 475, 160, 350,255,450,195,380][i],speed:[2.12, 1.62, 2.05, 1.88, 2.72, 1.52, 1.94, 1.91, 2.47, 1.58, 2.25, 1.78, 2.35, 1.64, 2.0, 1.83, 2.44, 1.49, 1.20, 1.7, 1.58,2.08,1.60,2.65,1.85][i],bodySize:i===24?23:i===22?22:i===23?21:i===21?15:i===18?23:11+(i*5%8),damage:[33, 61, 25, 30, 51, 76, 34, 32, 49, 72, 36, 52, 43, 64, 33, 34, 45, 83, 55, 105, 204,42,115,20,95][i],range:[76, 540, 225, 310, 105, 610, 195, 345, 90, 500, 165, 410, 65, 565, 205, 365, 112, 650, 205, 450,280,330,95,320,340][i],cooldown:[330, 990, 490, 550, 345, 1120, 520, 610, 310, 1040, 430, 840, 335, 980, 520, 580, 340, 1200, 700, 1060, 950,590,630,320,750][i],superType:i===21?2:i%5}));
 // スノーベルはNAMESからID 21として1体だけ生成。
 const ROLE_NAMES=['近距離ファイター','長距離スナイパー','中距離バランス','中〜長距離アタッカー'];const ROLE_DESCS=['近距離で5発の散弾を放つ。近づくほど強力。','細くて高速な狙撃弾を遠距離まで飛ばす。接近戦は苦手。','射程と火力のバランスが良い。','中距離を保ちつつ牽制するタイプ。'];const ATTACKS=['灼熱散弾','氷結狙撃','電撃連鎖弾','葉の3連射','影の近距離連撃','月光貫通狙撃','重装破砕弾','流星2連射','水流散弾','岩石狙撃','牙の3連射','彗星加速弾','虹の8連散弾','霧の4連射','不死鳥の炎弾','機械2連射','猛毒散弾','星屑高速狙撃','巨岩範囲弾','宇宙貫通2連射','呪いの15連集中散弾','氷晶ベルの3連射','深淵の魔爪','雷霆の裁き','終焉の三連式'];
 const SUPERS=['火炎の7連散弾','氷結吹雪','電撃加速','自然の癒やし','影の貫通突撃','月光貫通砲','重装ノックバック','流星加速','水流の回復波','岩石の貫通砲','牙の9連散弾','彗星吹き飛ばし','虹の超加速','霧の全体回復','不死鳥の巨大炎弾','機械の連続砲撃','猛毒衝撃波','星屑の超加速','巨岩の回復波','宇宙貫通大砲','かぼちゃの生命回復','聖夜のスノードーム','深淵領域','雷神の暴走','終焉の玉座'];
-const SPECIAL=['炎上','減速','連鎖','3連射','近距離連撃','貫通','高威力','2連射','散弾','減速','3連射','高速','散弾','4連射','炎上','2連射','毒','高速','範囲','貫通','集中散弾','命中時に敵を減速・氷の印を付与。3回命中で追加氷結ダメージ','吸血の魔爪','射程内全員に落雷','双円→五連落雷→五連波を弾ごとに切替。必殺技は4連続の広域衝撃波'];
+const SPECIAL=['炎上','減速','連鎖','3連射','近距離連撃','貫通','高威力','2連射','散弾','減速','3連射','高速','散弾','4連射','炎上','2連射','毒','高速','範囲','貫通','集中散弾','命中時に敵を減速・氷の印を付与。3回命中で追加氷結ダメージ','吸血の魔爪','射程内全員に落雷','隙間のある双円→中央が安全な五連落雷→五連波を弾ごとに切替。必殺技は4連続の広域衝撃波'];
 const ATTACK_CONFIG=[
 [6,.19,.31,6.6,5,0],[1,0,1.16,16,2.5,0],[1,0,.92,8.4,5,0],[3,.11,.62,10,4,0],
 [4,.23,.39,9,5,0],[1,0,1.05,15,3,2],[1,0,1.45,6.2,10,0],[2,.10,.82,11,5,0],
@@ -149,7 +149,7 @@ const KEY='starArenaSave_v1';const freshData=()=>({bossHeroKills:{abyss:0,storm:
 for(const [type,id,need] of [['abyss',22,20],['storm',23,30],['demon',24,40]])if((data.bossHeroKills?.[type]||0)>=need&&!data.owned.includes(id))data.owned.push(id);if(!Number.isInteger(data.drops)||data.drops<0)data.drops=0;const $=id=>document.getElementById(id);let pumpkinPurchaseArmed=false,snowbellPurchaseArmed=false;let tab='home',mode='royale',playing=false,raf=0,entities=[],shots=[],walls=[],bushes=[],particles=[],player=null,elapsed=0,spawnTimer=0,kills=0,score=0,last=0,mouse={x:480,y:300,active:false},keys={},move={x:0,y:0},attackHeld=false,superHeld=false,touchAim={active:false,dx:1,dy:0},gameTime=90,matchOver=false,teamScore=[0,0],effects=[],worldW=960,worldH=600,camX=0,camY=0,gasInset=0,gasPhase=0,bossWarnings=[],bossCooldown=0,bossPattern=0,bossRageStage=0,bossRageMessageUntil=0,killFeed=[],royaleFinalTwoUntil=0,royaleFinalTwoShown=false;
 // キャラ別の弾数と1発のリロード時間（秒）
 const AMMO_CAP=[3,3,4,3,2,3,4,3,3,4,3,2,3,4,3,3,4,3,4,2,1,3,2,3,3];
-const RELOAD_SEC=[1.35, 2.65, 1.35, 1.5, 0.72, 2.95, 1.45, 1.65, 0.78, 2.75, 1.12, 2.25, 0.65, 2.6, 1.5, 1.6, 0.82, 3.1, 1.48, 2.9,3.3,1.8,2.2,1.0,2.0];
+const RELOAD_SEC=[1.35, 2.65, 1.35, 1.5, 0.72, 2.95, 1.45, 1.65, 0.78, 2.75, 1.12, 2.25, 0.65, 2.6, 1.5, 1.6, 0.82, 3.1, 1.48, 2.9,3.3,1.8,2.2,1.08,2.0];
 
 // キャラクターごとの装備。効果は同じ系統でも倍率や対象がキャラによって異なる。
 const GADGET_EFFECTS=['heal','dash','shield','blast','reload','haste','stealth','drain','supercharge','cleanse'];
@@ -948,6 +948,9 @@ HERO_SKINS[24].skin1.name='冥界皇帝アザゼル';HERO_SKINS[24].skin2.name='
 HERO_SKINS[21].xmasCrystal={id:'xmasCrystal',name:'氷晶のスノーベル',rarity:'ディバイン',price:0,colors:['#5edaff','#f0ffff','#c7b6ff','#163b88'],effect:'ice',ornament:2};
 // Ver.148.4.5: パンプキン専用ディバインスキン。通常のスキン購入処理を使いセーブ互換を維持。
 HERO_SKINS[20].abyssKing={id:'abyssKing',name:'冥炎皇帝パンプキン',rarity:'ディバイン',price:50000,colors:['#a238ee','#ffad40','#ffe8a2','#241036'],effect:'inferno',ornament:2};
+HERO_SKINS[22].divineAbyss={id:'divineAbyss',name:'超次元皇帝・アビス',rarity:'ディバイン',price:100000,colors:['#5420a5','#e99aff','#fff0ff','#160925'],effect:'void',ornament:3};
+HERO_SKINS[23].divineStorm={id:'divineStorm',name:'天界雷神・ゼウス',rarity:'ディバイン',price:100000,colors:['#257fff','#ffe070','#eaffff','#10264b'],effect:'lightning',ornament:3};
+HERO_SKINS[24].divineAzazel={id:'divineAzazel',name:'終極神帝・アザゼル',rarity:'ディバイン',price:100000,colors:['#ad174c','#ffc85a','#fff0b4','#30091d'],effect:'inferno',ornament:3};
 function normalizeOwnedSkins(raw){
  const result={};if(!raw||typeof raw!=='object')return result;
  for(let i=0;i<HEROES.length;i++){
@@ -980,7 +983,7 @@ function skinCollectionHTML(i){
  if(!ownsHero(i))return '<p class="small">キャラクターを解放するとスキンを購入・装備できます。</p>';
  return `<div class="detail-move"><h3>🎨 スキン（${Object.keys(HERO_SKINS[i]).length}種類）</h3><p id="skinActionStatus" role="status" style="display:none;padding:10px;border:1px solid #d7b75b;border-radius:8px;color:#ffe8a3;background:#29354e"></p><p class="small">スキンごとの動く光輪・回転粒子・きらめきと、攻撃色・必殺技の光・残像が変化します。ディバインは最高レア度です。ボスキャラのスキンも本体の装飾・光輪・宝石が変化します。能力値は変わりません。</p><div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr))">${Object.keys(HERO_SKINS[i]).map(id=>skinCardHTML(i,id)).join('')}</div></div>`;
 }
-function skinShopHTML(){return `<section class="panel"><h2>🎨 スキンショップ</h2><p class="muted">全24キャラのスキンに加え、ディバイン限定スキンが登場。キャラクターをタップすると購入・装備できます。購入はボタンを2回押して確定します。確認画面はゲーム内に表示されます。</p><p>所持コイン：🪙 ${data.coins}</p><div class="grid">${HEROES.map((c,i)=>`<button class="hero-tile ${ownsHero(i)?'':'locked'}" data-act="skinDetail:${i}"><span class="avatar">${heroArtSVG(i,62)}</span><b>${c.name}</b><span class="small">${ownsHero(i)?'スキンを見る':'🔒 キャラ未解放'}</span></button>`).join('')}</div></section>`}
+function skinShopHTML(){return `<section class="panel"><h2>🎨 スキンショップ</h2><p class="muted">全25キャラのスキンに加え、ディバイン限定スキンが登場。キャラクターをタップすると購入・装備できます。購入はボタンを2回押して確定します。確認画面はゲーム内に表示されます。</p><p>所持コイン：🪙 ${data.coins}</p><div class="grid">${HEROES.map((c,i)=>`<button class="hero-tile ${ownsHero(i)?'':'locked'}" data-act="skinDetail:${i}"><span class="avatar">${heroArtSVG(i,62)}</span><b>${c.name}</b><span class="small">${ownsHero(i)?'スキンを見る':'🔒 キャラ未解放'}</span></button>`).join('')}</div></section>`}
 function clearSkinCanvasCache(){heroArtCanvasCache.clear()}
 let skinPurchaseBusy=false;
 let pendingSkinPurchase=null;
@@ -1189,19 +1192,47 @@ function heroArtCanvasImage(i,skinId=null){
  try{img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(heroArtSVG(i,128));}finally{skinPreviewOverride=old}
  return entry;
 }
+function divinePalette(e){if(!e||e.isBoss)return null;const s=getHeroSkin(e.id,e.skinId);return s.rarity==='ディバイン'?s.colors:null;}
+function divineGem(c,x,y,r,a,b){c.save();c.translate(x,y);c.rotate(elapsed*1.8+x*.02);c.shadowColor=a;c.shadowBlur=9;c.fillStyle=a;c.strokeStyle=b;c.lineWidth=1.2;c.beginPath();c.moveTo(0,-r);c.lineTo(r*.62,0);c.lineTo(0,r);c.lineTo(-r*.62,0);c.closePath();c.fill();c.stroke();c.beginPath();c.moveTo(0,-r);c.lineTo(0,r);c.stroke();c.restore();}
+function divineExtra(c,e){const p=divinePalette(e);if(!p)return;const royal=e.id>=22&&e.id<=24,r=e.r,t=elapsed,a=p[1],b=p[2];c.save();c.translate(e.x,e.y);c.scale(r/32,r/32);c.lineCap='round';
+for(let k=0;k<(royal?18:12);k++){const f=(t*.85+k/(royal?18:12))%1,q=k*2.399+t*.35,rr=34+f*(royal?76:52);c.globalAlpha=Math.min(1,(1-f)*3);divineGem(c,Math.cos(q)*rr,Math.sin(q)*rr,4.5+2*Math.sin(f*Math.PI),k%2?a:b,'#ffffff');}c.globalAlpha=1;
+if(royal){if(e.abyssFieldUntil>t||e.thunderFuryUntil>t){c.strokeStyle=a;c.shadowColor=b;c.shadowBlur=12;c.lineWidth=3;c.beginPath();c.arc(0,0,75+8*Math.sin(t*8),0,Math.PI*2);c.stroke();}for(let j=0;j<3;j++){c.save();c.rotate(t*(j%2?-.6:.4)+j);c.strokeStyle=j%2?b:a;c.shadowColor=a;c.shadowBlur=8;c.lineWidth=1.8;c.setLineDash([12,5,2,5]);c.beginPath();c.ellipse(0,0,57+j*10,45+j*8,0,0,Math.PI*2);c.stroke();c.restore();}for(const side of [-1,1]){c.save();c.scale(side,1);c.rotate(Math.sin(t*4)*.09);for(let j=0;j<3;j++){const y=-22+j*19;const g=c.createLinearGradient(25,y,103,y-25);g.addColorStop(0,p[3]||p[0]);g.addColorStop(.65,a);g.addColorStop(1,b);c.fillStyle=g;c.strokeStyle=b;c.lineWidth=1.5;c.beginPath();c.moveTo(26,y+12);c.lineTo(104-j*8,y-28);c.lineTo(75-j*5,y+3);c.lineTo(91-j*8,y+9);c.lineTo(36,y+22);c.closePath();c.fill();c.stroke();}c.restore();}divineGem(c,0,-77+Math.sin(t*3)*3,10,a,b);}
+c.restore();}
+function divineAttackArea(c,w,flash){const p=divinePalette(w.owner);if(!p)return;c.save();c.translate(w.x,w.y);c.strokeStyle=p[2];c.shadowColor=p[1];c.shadowBlur=flash?13:5;c.lineWidth=flash?3:1.5;c.globalAlpha=flash?.9:.65;if(w.angle==null){for(const r of [w.r,w.inner||0]){if(!r)continue;c.beginPath();c.arc(0,0,r,0,Math.PI*2);c.stroke();}for(let k=0;k<8;k++){const a=k*Math.PI/4+elapsed,rr=w.r-3;divineGem(c,Math.cos(a)*rr,Math.sin(a)*rr,flash?5:3,p[1],p[2]);}}else{c.rotate(w.angle);for(const y of [-w.r,w.r]){c.beginPath();c.moveTo(0,y);c.lineTo(w.len,y);c.stroke();}for(let k=1;k<=5;k++)divineGem(c,w.len*k/6,0,flash?6:3,p[1],p[2]);}c.restore();}
+
+function drawDivineBattle(c,e,skin,t,front=false){
+ const ice=skin.id==='xmasCrystal', a=ice?'#a5efff':'#ffca64', b=ice?'#d6c8ff':'#b34dff', r=e.r;
+ c.save();c.translate(e.x,e.y);c.scale(r/32,r/32);c.lineJoin='round';c.lineCap='round';
+ if(!front){
+  const glow=c.createRadialGradient(0,0,25,0,0,76);glow.addColorStop(0,ice?'#8deaff44':'#ffb84044');glow.addColorStop(1,'#00000000');c.fillStyle=glow;c.fillRect(-76,-76,152,152);
+  c.strokeStyle=a;c.lineWidth=2;c.globalAlpha=.65+.2*Math.sin(t*4);c.beginPath();c.arc(0,0,43+3*Math.sin(t*3),0,Math.PI*2);c.stroke();c.globalAlpha=1;
+  for(const side of [-1,1]){c.save();c.scale(side,1);c.translate(20,0);c.rotate(.13*Math.sin(t*5));c.fillStyle=b;c.strokeStyle=a;c.lineWidth=2.4;c.shadowColor=b;c.shadowBlur=9;
+   c.beginPath();c.moveTo(0,9);c.lineTo(40,-35);c.lineTo(31,-10);c.lineTo(53,-18);c.lineTo(35,9);c.lineTo(43,22);c.lineTo(17,30);c.closePath();c.fill();c.stroke();
+   c.strokeStyle=ice?'#efffff':'#ff9e46';c.lineWidth=2;c.beginPath();c.moveTo(5,14);c.lineTo(34,-22);c.moveTo(12,19);c.lineTo(40,-7);c.stroke();c.restore();}
+ }else{
+  c.translate(0,Math.sin(t*3)*2);c.shadowColor=a;c.shadowBlur=8;c.fillStyle=ice?'#bcefff':'#522064';c.strokeStyle=a;c.lineWidth=2.5;
+  c.beginPath();c.moveTo(-22,-29);c.lineTo(-25,-48);c.lineTo(-12,-39);c.lineTo(0,-55);c.lineTo(12,-39);c.lineTo(25,-48);c.lineTo(22,-29);c.closePath();c.fill();c.stroke();
+  c.fillStyle=ice?'#ffffff':'#ffd478';c.beginPath();c.moveTo(0,-49);c.lineTo(5,-42);c.lineTo(0,-35);c.lineTo(-5,-42);c.closePath();c.fill();
+  c.shadowBlur=3;for(let k=0;k<10;k++){const q=t*1.5+k*Math.PI/5,x=Math.cos(q)* (49+4*Math.sin(t*2+k)),y=Math.sin(q)*39;c.fillStyle=k%2?a:b;c.beginPath();c.moveTo(x,y-4);c.lineTo(x+2.5,y);c.lineTo(x,y+4);c.lineTo(x-2.5,y);c.closePath();c.fill();}
+ }
+ c.restore();
+}
 function drawHeroArt(ctx,e){
  if(e.id===22||e.id===23||e.id===24){
   // ボスと同じ本体デザイン。以前の黄色い円形の縁取りは描かない。
   const skin=getHeroSkin(e.id,e.skinId);
   ctx.save();ctx.translate(e.x,e.y);
   ctx.scale(e.r/39,e.r/39);
+  if(skin.rarity==='ディバイン')drawBossDivine(ctx,e.id,skin,elapsed,false);
   drawBossAppearance({x:0,y:0,r:39,bossType:e.id===24?'demon':e.id===22?'abyss':'storm'},ctx);
   drawPlayableBossSkin(ctx,e.id,skin,elapsed);
   ctx.restore();return;
  }
 
  const r=e.r,entry=heroArtCanvasImage(e.id,e.skinId);
+ const divineSkin=getHeroSkin(e.id,e.skinId), divine=divineSkin.rarity==='ディバイン';
  ctx.save();
+ if(divine)drawDivineBattle(ctx,e,divineSkin,elapsed);
  ctx.fillStyle=e===player?'#ffdf4a':e.team===0?'#56a8ff':'#f76679';
  ctx.beginPath();ctx.arc(e.x,e.y,r+5,0,Math.PI*2);ctx.fill();
  const skin=getHeroSkin(e.id,e.skinId);
@@ -1226,6 +1257,7 @@ function drawHeroArt(ctx,e){
   ctx.fillStyle='#15263e';ctx.strokeStyle=h(e.id).color;ctx.lineWidth=3;
   ctx.beginPath();ctx.arc(e.x,e.y,r,0,Math.PI*2);ctx.fill();ctx.stroke();
  }
+ if(divine)drawDivineBattle(ctx,e,divineSkin,elapsed,true);
  ctx.restore();
 }
 const speedLabel=i=>h(i).speed>=2.32?'速い':h(i).speed>=1.96?'普通':'遅い';const sizeLabel=i=>h(i).bodySize>=24?'大型':h(i).bodySize>=19?'中型':'小型';const bossHeroProgress=i=>{if(i!==22&&i!==23&&i!==24)return '';const type=i===24?'demon':i===22?'abyss':'storm',need=i===24?40:i===22?20:30;const count=Math.max(0,Math.floor(Number(data.bossHeroKills?.[type])||0));const remain=Math.max(0,need-count);const pct=Math.min(100,100*count/need);return `<div class="boss-unlock-progress" style="width:100%;margin-top:7px;text-align:left"><div style="font-weight:800;font-size:12px;color:${remain?'#ffe7a3':'#8bf0b0'}">${remain?`🔒 あと${remain}回討伐で解放`:'✅ 解放条件達成！'}</div><div style="font-size:11px;color:#c8d8f3;margin:3px 0">${Math.min(count,need)} / ${need}回達成（${type==='demon'?'終焉の魔王アザゼル':type==='abyss'?'深淵の覇王':'雷霆の支配者'}）</div><div role="progressbar" aria-valuenow="${Math.min(count,need)}" aria-valuemin="0" aria-valuemax="${need}" style="height:9px;background:#0b1530;border:1px solid #677baf;border-radius:99px;overflow:hidden"><div style="height:100%;width:${pct}%;background:linear-gradient(90deg,#8d63ff,#ff8de5);border-radius:99px"></div></div></div>`;};
@@ -1353,7 +1385,7 @@ function liveAdminPanelHTML(){if(!isAdmin())return '';const es=liveEventCurrents
 async function liveEventApi(method,payload,path='current'){if(method==='PUT'&&payload?.id)await etAssign(payload.type==='coop'?'coop':'live',payload);const token=await getCloudToken();return firebaseRequest(firebaseConfig.databaseURL.replace(/\/$/,'')+'/liveAdminEvent/'+path+'.json?auth='+encodeURIComponent(token),{method,headers:{'Content-Type':'application/json'},...(payload===undefined?{}:{body:JSON.stringify(payload)})})}
 async function pollLiveEvent(){if(!cloudReady||!cloudUid)return;try{const [oldR,slotsR]=await Promise.all([liveEventApi('GET'),liveEventApi('GET',undefined,'slots')]);const before=liveEventCurrents().map(e=>e.id).join('|');liveEvent=oldR&&typeof oldR==='object'?oldR:null;liveEvents=slotsR&&typeof slotsR==='object'?slotsR:{};liveEventStatus='☁️ 同期済み';const es=liveEventCurrents();const after=es.map(e=>e.id).join('|');const coop=es.find(e=>e.type==='coop');if(coop){try{const claims=await liveCoopApi('GET',coop.id+'/wins');liveCoopCount=liveCoopProgress(claims,coop);}catch(err){console.warn('coop progress',err)}}else liveCoopCount=0;for(const e of es){if(!liveEventSeen.has(e.id)){liveEventSeen.add(e.id);live152Notify('🎉 管理者イベント開始！\n'+LIVE_EVENT_TYPES[e.type].icon+' '+LIVE_EVENT_TYPES[e.type].name+'\n'+LIVE_EVENT_TYPES[e.type].desc,'event')}}if(coop&&liveCoopCount>=liveCoopGoal(coop))liveCoopClaim(coop);if((before!==after||coop)&&!playing&&tab==='home')render();else if(tab==='home'&&!playing){document.querySelectorAll('[data-live-clock]').forEach(c=>{const e=es.find(e=>e.type===c.dataset.liveClock);if(e)c.textContent=liveEventTimeLeft(e)})}}catch(e){liveEventStatus='⚠️ イベント同期失敗：'+String(e?.message||e).slice(0,110);console.warn('live event',e)}}
 const liveEventSeen=new Set();let liveCoopCount=0,meteorWarnings=[],thunderWarnings=[],azWarnings=[],meteorNext=6;
-function beginLiveEventPolling(){clearInterval(liveEventTimer);pollLiveEvent();liveEventTimer=setInterval(()=>{if(cloudReady)pollLiveEvent();else clearInterval(liveEventTimer)},5000)}
+function beginLiveEventPolling(){map166Poll();clearInterval(liveEventTimer);pollLiveEvent();liveEventTimer=setInterval(()=>{if(cloudReady){pollLiveEvent();map166Poll();}else clearInterval(liveEventTimer)},5000)}
 async function liveEventAdminAction(action,forceCoop=false){if(!isAdmin()||liveEventBusy)return;const type=forceCoop?'coop':document.getElementById('liveEventType')?.value,mins=Number(document.getElementById('liveEventMinutes')?.value),status=document.getElementById(forceCoop?'liveCoopAdminStatus':'liveAdminStatus');if(!LIVE_EVENT_TYPES[type]||(action==='start'&&type!=='coop'&&![5,10,15,30,60].includes(mins)))return;const coopKind=document.getElementById('liveCoopKind')?.value,coopTarget=coopKind==='boss'?document.getElementById('liveCoopBoss')?.value:document.getElementById('liveCoopMode')?.value;const coopDuration=Number(document.getElementById('liveCoopDuration')?.value),coopUnit=document.getElementById('liveCoopDurationUnit')?.value,coopDurationMs=coopDuration*({minutes:60000,hours:3600000,days:86400000}[coopUnit]||0);const coopGoal=Number(document.getElementById('liveCoopGoal')?.value),coopCoins=Number(document.getElementById('liveCoopCoins')?.value),coopDrops=Number(document.getElementById('liveCoopDrops')?.value);if(action==='start'&&type==='coop'&&(!Number.isInteger(coopDuration)||coopDurationMs<60000||coopDurationMs>2592000000||!Number.isInteger(coopGoal)||coopGoal<1||coopGoal>100000||!['boss','win'].includes(coopKind)||(coopKind==='boss'?!LIVE_COOP_BOSSES[coopTarget]:!LIVE_COOP_MODES[coopTarget])||!Number.isInteger(coopCoins)||coopCoins<0||coopCoins>10000||!Number.isInteger(coopDrops)||coopDrops<0||coopDrops>100||coopCoins+coopDrops===0)){alert('協力ミッションの種類・対象・目標回数・報酬を正しく設定してください');return}const keys160=type==='lowgravity'?['gravityKnock','gravityInertia']:type==='giant'?['giantSize','giantHp','giantDamage']:[];const settings160=Object.fromEntries(keys160.map(k=>[k,EVENT160_DEFAULTS[k]]));if(action==='start'&&keys160.some(k=>!Number.isFinite(settings160[k])||settings160[k]<1||settings160[k]>(k==='giantSize'?3:5))){alert('倍率の設定範囲を確認してください');return;}const rewardPrefix=forceCoop?'coop':'live';const rewardKey=['title','kind','goal'].map(k=>$('et_'+rewardPrefix+'_'+k)?.value).join('|');const key=action+'|'+type+'|'+mins+'|'+rewardKey+'|'+JSON.stringify(settings160)+(type==='coop'?'|'+coopKind+'|'+coopTarget+'|'+coopGoal+'|'+coopCoins+'|'+coopDrops+'|'+coopDurationMs:'');if(liveEventPending!==key||Date.now()>liveEventPendingUntil){liveEventPending=key;liveEventPendingUntil=Date.now()+15000;if(status)status.textContent='⚠️ '+LIVE_EVENT_TYPES[type].name+'を'+(action==='start'?(type==='coop'?coopDuration+({minutes:'分',hours:'時間',days:'日'}[coopUnit]||'') : mins+'分間')+'開始':'終了')+'します。15秒以内にもう一度押して確定してください。';return}liveEventPending='';liveEventBusy=true;try{if(action==='stop')await liveEventApi('DELETE',undefined,'slots/'+type);else{const now=Date.now();await liveEventApi('PUT',{id:'e'+now+'_'+Math.random().toString(36).slice(2,8),type,startsAt:now,endsAt:now+(type==='coop'?coopDurationMs:mins*60000),createdBy:cloudUid,...settings160,...(type==='coop'?{coopKind,coopTarget,coopGoal,coopCoins,coopDrops}:{})},'slots/'+type)}await pollLiveEvent();render()}catch(e){alert('⚠️ 配信に失敗：'+e.message+'\nVer.150.9のFirebaseルールを確認してください。')}finally{liveEventBusy=false}}
 async function liveCoopApi(method,path,payload){const token=await getCloudToken();return firebaseRequest(firebaseConfig.databaseURL.replace(/\/$/,'')+'/liveCoop/'+path+'.json?auth='+encodeURIComponent(token),{method,headers:{'Content-Type':'application/json'},...(payload===undefined?{}:{body:JSON.stringify(payload)})})}
 async function liveCoopWin(coopSnowMatch=false){
@@ -1377,8 +1409,8 @@ function liveCoopMatchQualifies(e,coopSnowMatch=false){
 }
 async function liveCoopClaim(e){if(!e||liveCoopCount<liveCoopGoal(e)||!cloudReady||!cloudUid)return;const key='coop:'+e.id;if(data.redeemedCodes?.[key])return;try{const path=encodeURIComponent(e.id)+'/rewards/'+encodeURIComponent(cloudUid);const old=await liveCoopApi('GET',path);if(old){data.redeemedCodes={...(data.redeemedCodes||{}),[key]:true};save();return}await liveCoopApi('PUT',path,{at:Date.now()});data.coins+=liveCoopCoins(e);data.drops+=liveCoopDrops(e);data.redeemedCodes={...(data.redeemedCodes||{}),[key]:true};save();live152Notify('🤝 全員協力ミッション達成！\n'+liveCoopCoins(e)+'コイン＋'+liveCoopDrops(e)+'スタードロップ獲得','gift')}catch(err){console.warn('coop reward',err)}}
 function liveMeteorUpdate(dt){if(!liveEventBattle.some(e=>e.type==='meteor'&&Date.now()<e.endsAt))return;meteorNext-=dt;if(meteorNext<=0){meteorNext=3.8+Math.random()*2;const alive=entities.filter(e=>!e.dead);const target=alive[Math.floor(Math.random()*alive.length)];if(target){const x=clamp(target.x+rand(-100,100),80,worldW-80),y=clamp(target.y+rand(-100,100),80,worldH-80);meteorWarnings.push({x,y,r:88,time:1.25,full:1.25})}}for(let i=meteorWarnings.length-1;i>=0;i--){const w=meteorWarnings[i];w.time-=dt;if(w.time<=0){for(const e of entities)if(!e.dead&&Math.hypot(e.x-w.x,e.y-w.y)<w.r+e.r)hit(e,Math.max(16,Math.round(e.maxhp*.15)),null);effects.push({x:w.x,y:w.y,r:15,max:95,life:28,color:'#ff9940'});for(let j=0;j<22;j++)particles.push({x:w.x,y:w.y,vx:rand(-7,7),vy:rand(-7,7),life:22,color:j%2?'#ffdd7c':'#ff723c'});meteorWarnings.splice(i,1)}}}
-function liveWarningUpdate(dt){azUpdate(dt);for(let i=thunderWarnings.length-1;i>=0;i--){const w=thunderWarnings[i];w.time-=dt;if(w.time<=0){if(!w.target.dead&&Math.hypot(w.target.x-w.x,w.target.y-w.y)<w.r+w.target.r){hit(w.target,w.damage,w.owner);if(w.owner===player)w.owner.super=Math.min(100,(w.owner.super||0)+9*(liveEventBattle.some(x=>x.type==='fever'&&Date.now()<x.endsAt)?2:1))}effects.push({x:w.x,y:w.y,r:5,max:36,life:22,color:'#7deaff'});for(let j=0;j<12;j++)particles.push({x:w.x+rand(-9,9),y:w.y-35+rand(-25,25),vx:rand(-2,2),vy:rand(1,5),life:20,color:'#aef7ff'});thunderWarnings.splice(i,1)}}}
-function liveWarningDraw(){azDraw();for(const w of meteorWarnings){ctx.save();ctx.fillStyle='rgba(255,80,28,.24)';ctx.strokeStyle='#ffb45b';ctx.lineWidth=5;ctx.setLineDash([10,6]);ctx.beginPath();ctx.arc(w.x,w.y,w.r,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.restore()}for(const w of thunderWarnings){ctx.save();ctx.fillStyle='rgba(65,197,255,.24)';ctx.strokeStyle='#a2f6ff';ctx.lineWidth=3;ctx.beginPath();ctx.arc(w.x,w.y,w.r,0,Math.PI*2);ctx.fill();ctx.stroke();const p=1-w.time/.38;ctx.strokeStyle='#b7ffff';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(w.x-10,w.y-75*p);ctx.lineTo(w.x+8,w.y-45*p);ctx.lineTo(w.x-6,w.y-24*p);ctx.lineTo(w.x,w.y);ctx.stroke();ctx.restore()}}
+function liveWarningUpdate(dt){azUpdate(dt);for(let i=thunderWarnings.length-1;i>=0;i--){const w=thunderWarnings[i];w.time-=dt;if(w.time<=0){if(!w.target.dead&&Math.hypot(w.target.x-w.x,w.target.y-w.y)<w.r+w.target.r){hit(w.target,w.damage,w.owner);if(w.owner===player)w.owner.super=Math.min(100,(w.owner.super||0)+5*(liveEventBattle.some(x=>x.type==='fever'&&Date.now()<x.endsAt)?2:1))}effects.push({x:w.x,y:w.y,r:5,max:36,life:22,color:'#7deaff'});for(let j=0;j<12;j++)particles.push({x:w.x+rand(-9,9),y:w.y-35+rand(-25,25),vx:rand(-2,2),vy:rand(1,5),life:20,color:'#aef7ff'});thunderWarnings.splice(i,1)}}}
+function liveWarningDraw(){azDraw();for(const w of thunderWarnings)divineAttackArea(ctx,w,false);for(const w of meteorWarnings){ctx.save();ctx.fillStyle='rgba(255,80,28,.24)';ctx.strokeStyle='#ffb45b';ctx.lineWidth=5;ctx.setLineDash([10,6]);ctx.beginPath();ctx.arc(w.x,w.y,w.r,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.restore()}for(const w of thunderWarnings){ctx.save();ctx.fillStyle='rgba(65,197,255,.24)';ctx.strokeStyle='#a2f6ff';ctx.lineWidth=3;ctx.beginPath();ctx.arc(w.x,w.y,w.r,0,Math.PI*2);ctx.fill();ctx.stroke();const p=1-w.time/.38;ctx.strokeStyle='#b7ffff';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(w.x-10,w.y-75*p);ctx.lineTo(w.x+8,w.y-45*p);ctx.lineTo(w.x-6,w.y-24*p);ctx.lineTo(w.x,w.y);ctx.stroke();ctx.restore()}}
 function liveEventApplyMatchReward(dropReward,win){if(!win)return dropReward;for(const e of liveEventBattle||[]){if(Date.now()>e.endsAt)continue;if(e.type==='drops')dropReward*=2;if(e.type==='boss'&&mode==='boss')dropReward+=2}return dropReward}
 async function liveEventSurpriseReward(){const e=(liveEventBattle||[]).find(e=>e.type==='surprise'&&Date.now()<=e.endsAt);if(!e||!cloudReady||!cloudUid)return;try{const path='liveEventClaims/'+encodeURIComponent(cloudUid)+'/'+encodeURIComponent(e.id);const token=await getCloudToken(),url=firebaseConfig.databaseURL.replace(/\/$/,'')+'/'+path+'.json?auth='+encodeURIComponent(token);const r=await firebaseRequest(url,{method:'GET'});if(r!==null)return;await firebaseRequest(url,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({claimedAt:Date.now(),eventId:e.id})});data.coins+=500;data.drops+=3;save();alert('🎁 サプライズミッション達成！500コインとスタードロップ3個を獲得！')}catch(err){console.warn('event reward',err)}}
 
@@ -1421,7 +1453,7 @@ async function live151Action(op){if(!isAdmin()||live151Busy)return;const text=St
 async function live151Claim(){if(!cloudReady||!cloudUid||live151ClaimBusy)return;live151ClaimBusy=true;const uid=cloudUid,gen=cloudGeneration;try{const gifts=await live151Api('GET','liveGiveaways/'+encodeURIComponent(uid));if(!gifts||typeof gifts!=='object')return;for(const [id,g] of Object.entries(gifts)){if(uid!==cloudUid||gen!==cloudGeneration)return;if(!/^v[a-z0-9_]+$/.test(id)||!g||!['coins','drops'].includes(g.type)||!Number.isSafeInteger(g.amount)||g.amount<1||g.amount>10000)continue;await flushCloud();const token=await getCloudToken(),url=firebaseConfig.databaseURL.replace(/\/$/,'')+'/users/'+encodeURIComponent(uid)+'/save.json?auth='+encodeURIComponent(token);let credited=false;for(let attempt=0;attempt<4;attempt++){const res=await fetch(url,{headers:{'X-Firebase-ETag':'true'},cache:'no-store'});if(!res.ok)throw Error('セーブ取得失敗 '+res.status);const etag=res.headers.get('ETag');if(!etag)throw Error('ETag取得失敗');const remote=await res.json();if(!remote||typeof remote!=='object'||!validateSave(remote))throw Error('セーブの検証に失敗しました');if(remote.liveGiveawayClaims?.[id])break;const next={...remote,liveGiveawayClaims:{...(remote.liveGiveawayClaims||{}),[id]:true}};next[g.type]=Math.max(0,Number(remote[g.type]||0))+g.amount;const put=await fetch(url,{method:'PUT',headers:{'Content-Type':'application/json','If-Match':etag},body:JSON.stringify(next),cache:'no-store'});if(put.status===412)continue;if(!put.ok)throw Error('配布の保存に失敗 '+put.status);credited=true;if(uid===cloudUid&&gen===cloudGeneration){data=normalizeSave(next);saveLocal();render();cloudStatus('🎁 管理者配布を受け取りました');live152Notify('🎁 管理者からの配布を受け取りました！\n'+(g.type==='coins'?'🪙 '+g.amount.toLocaleString('ja-JP')+'コイン':'🌟 スタードロップ '+g.amount.toLocaleString('ja-JP')+'個'),'gift')}break}if(credited)console.info('Giveaway credited',id)} }catch(e){console.warn('giveaway claim',e)}finally{live151ClaimBusy=false}}
 
 let pendingAdminAction='',pendingAdminUntil=0;
-function adminPanelHTML(){return `<section class="panel"><h2>👑 管理者パネル</h2><p class="muted">対象ユーザーのアイテムを付与・削減できます。Ver.89のFirebaseルールが必要です。削減後の所持数は0未満になりません。</p><label>ユーザー名<input id="giftTarget" placeholder="例：player123" maxlength="20" style="width:100%;padding:10px;margin:5px 0;background:#101c36;color:white"></label><label>操作<select id="giftOperation" style="width:100%;padding:10px;margin:5px 0;background:#101c36;color:white"><option value="add">➕ 付与する</option><option value="subtract">➖ 削減する</option></select></label><label>アイテム<select id="giftType" style="width:100%;padding:10px;margin:5px 0;background:#101c36;color:white"><option value="coins">🪙 コイン</option><option value="drops">🌟 スタードロップ</option><option value="trophies">🏆 トロフィー</option></select></label><label>数量<input id="giftAmount" type="number" min="1" max="100000" value="500" style="width:100%;padding:10px;margin:5px 0;background:#101c36;color:white"></label>${btn('🎁 付与・削減を確認','sendGift','green')} ${btn('▲ 管理者パネルを閉じる','closeAdmin')}<p id="adminStatus" class="small">1回目で内容を確認、2回目で送信します。対象が次回ログインしたときに反映されます。</p></section>`}
+function adminPanelHTML(){return mapAdmin166HTML()+`<section class="panel"><h2>👑 管理者パネル</h2><p class="muted">対象ユーザーのアイテムを付与・削減できます。Ver.89のFirebaseルールが必要です。削減後の所持数は0未満になりません。</p><label>ユーザー名<input id="giftTarget" placeholder="例：player123" maxlength="20" style="width:100%;padding:10px;margin:5px 0;background:#101c36;color:white"></label><label>操作<select id="giftOperation" style="width:100%;padding:10px;margin:5px 0;background:#101c36;color:white"><option value="add">➕ 付与する</option><option value="subtract">➖ 削減する</option></select></label><label>アイテム<select id="giftType" style="width:100%;padding:10px;margin:5px 0;background:#101c36;color:white"><option value="coins">🪙 コイン</option><option value="drops">🌟 スタードロップ</option><option value="trophies">🏆 トロフィー</option></select></label><label>数量<input id="giftAmount" type="number" min="1" max="100000" value="500" style="width:100%;padding:10px;margin:5px 0;background:#101c36;color:white"></label>${btn('🎁 付与・削減を確認','sendGift','green')} ${btn('▲ 管理者パネルを閉じる','closeAdmin')}<p id="adminStatus" class="small">1回目で内容を確認、2回目で送信します。対象が次回ログインしたときに反映されます。</p></section>`}
 async function sendAdminGift(){if(!isAdmin()||!adminPanelOpen||adminBusy)return;const status=$('adminStatus'),name=$('giftTarget')?.value.trim().toLowerCase(),type=$('giftType')?.value,operation=$('giftOperation')?.value,amount=Number($('giftAmount')?.value);if(!/^[a-z0-9_-]{3,20}$/.test(name)||!['coins','drops','trophies'].includes(type)||!['add','subtract'].includes(operation)||!Number.isSafeInteger(amount)||amount<1||amount>100000){status.textContent='入力内容を確認してください。';return;}const action=[name,type,operation,amount].join('|');if(pendingAdminAction!==action||Date.now()>pendingAdminUntil){pendingAdminAction=action;pendingAdminUntil=Date.now()+15000;status.textContent='⚠️ '+name+' の'+({coins:'コイン',drops:'スタードロップ',trophies:'トロフィー'}[type])+'を'+amount+(operation==='subtract'?'削減':'付与')+'します。15秒以内にもう一度ボタンを押して確定してください。';return;}pendingAdminAction='';pendingAdminUntil=0;adminBusy=true;status.textContent='送信しています…';try{const raw=await leaderboardAPI('GET');const target=Object.entries(raw||{}).find(([id,v])=>v?.username===name);if(!target)throw Error('対象ユーザーがランキングに登録されていません。');const id='g'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,10);await giftCall('PUT','adminGifts/'+encodeURIComponent(target[0])+'/'+id,{type,amount:operation==='subtract'?-amount:amount,createdAt:Date.now()});status.textContent='✅ '+name+' に'+(operation==='subtract'?'削減':'付与')+'指示を送信しました。次回ログイン時に反映されます。';}catch(e){status.textContent='⚠️ '+e.message}finally{adminBusy=false}}
 let giftClaimBusy=false;
 async function claimAdminGifts(){if(!cloudReady||!cloudUid||giftClaimBusy)return;giftClaimBusy=true;const uid=cloudUid,gen=cloudGeneration;try{const gifts=await giftCall('GET','adminGifts/'+encodeURIComponent(uid));if(!gifts||typeof gifts!=='object')return;for(const [id,g] of Object.entries(gifts)){if(gen!==cloudGeneration||uid!==cloudUid)return;if(!/^g[a-z0-9_]+$/.test(id)||!g||!['coins','drops','trophies'].includes(g.type)||!Number.isSafeInteger(g.amount)||g.amount===0||Math.abs(g.amount)>100000)continue; // 先にギフトを消費し、二重受け取りを防ぐ
@@ -1807,7 +1839,7 @@ function render(){
  if(isAdmin()&&adminPanelOpen&&tab==='home'&&Date.now()<adminPointer162)return;
  // Ver.162.1: keep administrator drafts and confirmation messages across polling renders.
  const keepAdmin=isAdmin()&&adminPanelOpen&&tab==='home'&&!!$('giftTarget');
- const adminDraft162=keepAdmin?Array.from(document.querySelectorAll('#view input[id],#view select[id],#view textarea[id]')).filter(el=>/^(gift|live|gravity|giant|eb|db161|et_|dm_)/.test(el.id)).map(el=>[el.id,el.value,el.checked]):[];
+ const adminDraft162=keepAdmin?Array.from(document.querySelectorAll('#view input[id],#view select[id],#view textarea[id]')).filter(el=>/^(map166|gift|live|gravity|giant|eb|db161|et_|dm_)/.test(el.id)).map(el=>[el.id,el.value,el.checked]):[];
  const adminStatus162=keepAdmin?['adminStatus',...(liveEventBusy|| (liveEventPending&&Date.now()<=liveEventPendingUntil)?['liveAdminStatus','liveCoopAdminStatus']:[])].map(id=>$(id)).filter(Boolean):[];
  for(const el of document.querySelectorAll("#view input[id^=et_],#view select[id^=et_],#view textarea[id^=et_]"))etDraft[el.id]=el.value;
  // Capture any edits before a background refresh replaces the form.
@@ -1836,6 +1868,12 @@ else if(tab==='clubs'){v.innerHTML=clubHTML()}
 else if(tab==='news'){
 // 次回以降は先頭に最新更新を追加すると最新ニュースと過去5件が自動で切り替わる。
 const updates=[
+ {ver:"166.1",title:"マップギミック大幅強化",detail:"通常・限定マップのダメージ、減速、必殺チャージを強化。",date:"2026年11月26日（日本時間）"},
+ {ver:"166.0",title:"管理者マップイベント",detail:"全体マップ変更・時間指定・限定マップ3種を追加。",date:"2026年11月26日（日本時間）"},
+ {ver:"165.1",title:"神域の覚醒",detail:"ディバインスキンの宝石放出・三皇の装飾・専用攻撃演出を強化。",date:"2026年11月26日（日本時間）"},
+ {ver:"165.0",title:"神域の三皇",detail:"深淵の覇王・雷霆の支配者・アザゼルに専用ディバインスキンを追加。各100000コイン。",date:"2026年11月26日（日本時間）"},
+ {ver:"164.4",title:"ディバインスキン演出改善",detail:"バトル中の翼・冠を枠外に描画し、オーラと浮遊装飾をアニメーション化。",date:"2026年11月26日（日本時間）"},
+ {ver:"164.3",title:"ウルトラレジェンドレア調整",detail:"アザゼルの双円・五連落雷に安全地帯を追加。雷霆と深淵の性能を調整。",date:"2026年11月26日（日本時間）"},
  {ver:"164.2",title:"アザゼル解放条件の表示修正",detail:"討伐進捗の対象名を終焉の魔王アザゼルに修正。",date:"2026年11月26日（日本時間）"},
  {ver:"164.1",title:"アザゼル固有攻撃リニューアル",detail:"通常攻撃は双円・五連落雷・五連波を順番に発動。必殺技は4連続の広域衝撃波と4秒間の結界。",date:"2026年11月26日（日本時間）"},
  {ver:"164.0",title:"終焉の魔王アザゼル参戦",detail:"通常ボス討伐40回で解放。黒曜の魔弾と終焉の玉座、専用装備を追加。",date:"2026年11月26日（日本時間）"},
@@ -2039,7 +2077,19 @@ const DAILY_ARENAS=[
 ];
 function dailyArenaDay(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());}
 function dailyArenaIndex(){const d=dailyArenaDay().split('-').map(Number);const days=Math.floor(Date.UTC(d[0],d[1]-1,d[2])/86400000);return ((days%DAILY_ARENAS.length)+DAILY_ARENAS.length)%DAILY_ARENAS.length;}
-function dailyArena(){return DAILY_ARENAS[dailyArenaIndex()];}
+const EVENT_ARENAS166=[
+ {name:'深淵の魔王城',icon:'🌑',ground:['#422451','#160f2d'],grid:'#c47aff22',bush:['#47234e','#8855a2'],wall:['#25152f','#663b78','#d195ff'],shape:1,extra:3,bushDelta:0,event:4},
+ {name:'天界の雷神殿',icon:'⚡',ground:['#315b8e','#172d57'],grid:'#ffe6a333',bush:['#345e89','#87c6e9'],wall:['#304775','#a38b50','#ffe39a'],shape:3,extra:1,bushDelta:-2,event:5},
+ {name:'終焉の神域',icon:'👑',ground:['#632b45','#24142e'],grid:'#ffb36b22',bush:['#6a3148','#b85a71'],wall:['#3e233d','#92504e','#ffcb77'],shape:2,extra:2,bushDelta:0,event:6}
+];
+let map166State=null,map166Busy=false,map166Polling=false;
+function map166Active(){return map166State&&Number.isInteger(map166State.index)&&map166State.index>=0&&map166State.index<7&&Date.now()<map166State.endsAt;}
+function dailyArena(){return map166Active()?[...DAILY_ARENAS,...EVENT_ARENAS166][map166State.index]:DAILY_ARENAS[dailyArenaIndex()];}
+async function map166Api(method,payload){const token=await getCloudToken();return firebaseRequest(firebaseConfig.databaseURL.replace(/\/$/,'')+'/mapAdmin166.json?auth='+encodeURIComponent(token),{method,headers:{'Content-Type':'application/json'},...(payload===undefined?{}:{body:JSON.stringify(payload)})});}
+async function map166Poll(){if(!cloudReady||!cloudUid||map166Polling)return;map166Polling=true;const uid=cloudUid;try{const before=JSON.stringify(map166State);const v=await map166Api('GET');if(uid!==cloudUid)return;map166State=v||null;if(before!==JSON.stringify(map166State)&&!playing)render();}catch(e){console.warn('map sync',e)}finally{map166Polling=false;}}
+function mapAdmin166HTML(){return `<section class="panel"><h2>🗺️ マップ管理</h2><p>現在：${dailyArena().icon} ${dailyArena().name}${map166Active()?'（管理者指定）':''}</p><label>マップ<select id="map166Index">${[...DAILY_ARENAS,...EVENT_ARENAS166].map((a,i)=>`<option value="${i}" ${map166Active()&&map166State.index===i?'selected':''}>${i>=4?'【限定】':''}${a.icon} ${a.name}</option>`).join('')}</select></label><label>開催時間（分）<input id="map166Minutes" type="number" min="1" max="1440" value="60"></label><button onclick="map166Set(false)">全体マップを変更</button> <button onclick="map166Set(true)">日替わりに戻す</button><p>新規試合から適用。開催終了で自動復帰。</p></section>`;}
+async function map166Set(reset){if(!isAdmin()||!cloudReady||map166Busy)return;const index=Number($('map166Index')?.value),minutes=Number($('map166Minutes')?.value);if(!reset&&(!Number.isInteger(index)||index<0||index>6||!Number.isInteger(minutes)||minutes<1||minutes>1440))return alert('設定を確認してください');map166Busy=true;try{const v=reset?null:{index,endsAt:Date.now()+minutes*60000};await map166Api(reset?'DELETE':'PUT',reset?undefined:v);map166State=v;render();alert('マップ設定を更新しました');}catch(e){alert('マップ設定失敗：'+e.message)}finally{map166Busy=false;}}
+
 let matchArena=dailyArena();
 let mapHazards=[],mapHazardTick=0;
 function spawnVolcanoZones(){
@@ -2047,7 +2097,7 @@ function spawnVolcanoZones(){
  const zones=[];
  for(let i=0;i<350&&zones.length<count;i++){
   const x=rand(r+10,worldW-r-10),y=rand(r+10,worldH-r-10);
-  if(!blocked(x,y,12)&&zones.every(z=>Math.hypot(z.x-x,z.y-y)>r*1.8))zones.push({x,y,r});
+  if(!blocked(x,y,12)&&zones.every(z=>Math.hypot(z.x-x,z.y-y)>r*1.8))zones.push({x,y,r,kind:matchArena.event===6?1+zones.length%3:matchArena.shape});
  }
  mapHazards=zones;
 }
@@ -2060,12 +2110,13 @@ function mapGimmickUpdate(dt){
  if(!playing||xmasRun||!matchArena||matchArena.shape===0)return;
  mapHazardTick+=dt;
  const phase=matchArena.shape;
+ if(matchArena.event===6){if(Math.floor(elapsed/8)!==Math.floor(Math.max(0,elapsed-dt)/8))spawnVolcanoZones();for(const e of entities){if(e.dead)continue;const zs=mapHazards.filter(z=>Math.hypot(e.x-z.x,e.y-z.y)<z.r);if(zs.some(z=>z.kind===2))e.mapIceSlowUntil=elapsed+.2;if(mapHazardTick>=1){if(zs.some(z=>z.kind===1)&&e.invuln<=elapsed)hit(e,e.maxhp*.25,null);if(zs.some(z=>z.kind===3))e.super=Math.min(100,(e.super||0)+25);}}if(mapHazardTick>=1)mapHazardTick=0;return;} 
  if(Math.floor(elapsed/8)!==Math.floor(Math.max(0,elapsed-dt)/8)){spawnVolcanoZones();if(phase===1)mapHazardTick=0;}
  if(phase===1&&mapHazardTick>=.5){mapHazardTick=0;
   const active=(elapsed%8)>=1.5&&(elapsed%8)<4;
   if(active)for(const e of entities){if(e.dead||e.invuln>elapsed)continue;
    if(mapHazards.some(z=>Math.hypot(e.x-z.x,e.y-z.y)<z.r+e.r*.35)){
-    hit(e,Math.max(3,e.maxhp*.05),null);
+    hit(e,Math.max(3,e.maxhp*(matchArena.event===4?.15:.10)),null);
     effects.push({x:e.x,y:e.y,r:7,max:32,life:14,color:'#ff8a32'});
    }
   }
@@ -2075,15 +2126,15 @@ function mapGimmickUpdate(dt){
  }
  if(phase===3&&mapHazardTick>=1){mapHazardTick=0;
   for(const e of entities){if(e.dead)continue;
-   if(mapHazards.some(z=>Math.hypot(e.x-z.x,e.y-z.y)<z.r))e.super=Math.min(100,(e.super||0)+5);
+   if(mapHazards.some(z=>Math.hypot(e.x-z.x,e.y-z.y)<z.r))e.super=Math.min(100,(e.super||0)+(matchArena.event===5?30:15));
   }
  }
 }
 function drawMapGimmicks(){
  if(xmasRun||!matchArena||matchArena.shape===0)return;
- const phase=matchArena.shape,active=elapsed%8>=1.5&&elapsed%8<4;
- if(phase===1&&elapsed%8>=4)return;
- for(const z of mapHazards){ctx.save();ctx.beginPath();ctx.arc(z.x,z.y,z.r,0,Math.PI*2);
+ const active=matchArena.event===6||(elapsed%8>=1.5&&elapsed%8<4);
+ if(matchArena.shape===1&&elapsed%8>=4)return;
+ for(const z of mapHazards){const phase=z.kind||matchArena.shape;ctx.save();ctx.beginPath();ctx.arc(z.x,z.y,z.r,0,Math.PI*2);
   ctx.fillStyle=phase===1?(active?'#ff532b72':'#c4492830'):phase===2?'#b8f2ff55':'#9e83ff4a';ctx.fill();
   ctx.lineWidth=3;ctx.strokeStyle=phase===1?(active?'#ffcd58':'#e7774d'):phase===2?'#d5f9ff':'#c5a8ff';ctx.stroke();
   ctx.font='bold 22px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#fff';
@@ -2091,7 +2142,7 @@ function drawMapGimmicks(){
  }
 }
 
-function dailyArenaHTML(){const a=dailyArena();return `<section class="panel" style="border:2px solid #718ee0"><h3>🗺️ 本日の日替わりマップ</h3><p style="font-size:1.25em"><b>${a.icon} ${a.name}</b></p><p class="muted">日本時間の午前0時に切り替わります。通常バトルの地形・壁・草むら・背景と特殊ギミックが日替わりになります。火山：噴火中0.5秒ごとに最大HPの5%ダメージ（最低3）／雪原：氷エリアで移動速度45%低下／星影の遺跡：魔力エリアで必殺ゲージ毎秒5%回復。各エリアは8秒ごとにランダム再配置／翠緑の遺跡：ギミックなし。試合途中では切り替わりません。</p><p class="small">対象：バトルロイヤル／3vs3／デュエル／ボスバトル／ガチバトル。期間限定の雪イベントは専用マップを優先します。</p></section>`;}
+function dailyArenaHTML(){const a=dailyArena();return `<section class="panel" style="border:2px solid #718ee0"><h3>🗺️ ${map166Active()?'管理者指定マップ':'本日の日替わりマップ'}</h3><p style="font-size:1.25em"><b>${a.icon} ${a.name}</b></p><p class="muted">${map166Active()?'管理者指定終了：'+new Date(map166State.endsAt).toLocaleString('ja-JP',{timeZone:'Asia/Tokyo'})+'（日本時間）':'日本時間の午前0時に切り替わります。'} ${a.event===4?'暗黒ゾーン：0.5秒ごとに最大HP15%ダメージ。':a.event===5?'雷ゾーン：必殺ゲージ毎秒30%。':a.event===6?'混合ゾーン：毎秒25%ダメージ・80%減速・毎秒25%チャージ。':''} 通常バトルの地形・壁・草むら・背景と特殊ギミックが日替わりになります。火山：噴火中0.5秒ごとに最大HPの10%ダメージ（最低3）／雪原：氷エリアで移動速度70%低下／星影の遺跡：魔力エリアで必殺ゲージ毎秒15%回復。各エリアは8秒ごとにランダム再配置／翠緑の遺跡：ギミックなし。試合途中では切り替わりません。</p><p class="small">対象：バトルロイヤル／3vs3／デュエル／ボスバトル／ガチバトル。期間限定の雪イベントは専用マップを優先します。</p></section>`;}
 function mapBuild(){
 worldW=mode==='starball'?1188:mode==='royale'?3000:mode==='boss'||mode==='waves'?1300:1080;
 worldH=mode==='starball'?792:mode==='royale'?2200:mode==='boss'||mode==='waves'?850:720;
@@ -2258,7 +2309,7 @@ function drawAttackProjectile(b){
  ctx.restore();
 }
 function attackMuzzleFlash(e,dx,dy,superShot){
- const p=attackPalette(e.id),angle=Math.atan2(dy,dx),x=e.x+dx*(e.r+8),y=e.y+dy*(e.r+8);
+ const p=attackPalette(e.id,e.skinId),angle=Math.atan2(dy,dx),x=e.x+dx*(e.r+8),y=e.y+dy*(e.r+8);
  effects.push({x,y,r:5,max:superShot?36:19,life:superShot?16:9,color:p.main});
  for(let k=0;k<(superShot?9:4);k++){
   const a=angle+(Math.random()-.5)*1.1,spd=1.5+Math.random()*(superShot?4.5:2.5);
@@ -2266,18 +2317,18 @@ function attackMuzzleFlash(e,dx,dy,superShot){
  }
 }
 function azAttack(e,n,superShot){
- const add=(x,y,r,damage,angle=null,len=0,time=.22)=>azWarnings.push({x,y,r,damage,angle,len,time,owner:e,superShot});
+ const add=(x,y,r,damage,angle=null,len=0,time=.22,inner=0)=>azWarnings.push({x,y,r,damage,angle,len,time,inner,owner:e,superShot});
  const d=e.damage*(e.gadgetDamageUntil>elapsed?1.25:1), a=Math.atan2(n.y,n.x);
  if(superShot){e.gadgetShieldUntil=Math.max(e.gadgetShieldUntil||0,elapsed+4);for(let k=0;k<4;k++)add(e.x,e.y,230,d*.85,null,0,.22+k*.85);return;}
  const phase=e.azPhase||0;e.azPhase=(phase+1)%3;
- if(phase===0){add(e.x,e.y,105,d*.85);add(e.x,e.y,205,d*.75);}
- if(phase===1){const targets=[...entities.filter(t=>t!==e&&!t.dead&&t.team!==e.team&&canSee(e,t)),...(mode==='royale'?powerBoxes:[])].filter(t=>dist(e,t)<=e.range).sort((u,v)=>Math.abs(Math.atan2(Math.sin(Math.atan2(u.y-e.y,u.x-e.x)-a),Math.cos(Math.atan2(u.y-e.y,u.x-e.x)-a)))-Math.abs(Math.atan2(Math.sin(Math.atan2(v.y-e.y,v.x-e.x)-a),Math.cos(Math.atan2(v.y-e.y,v.x-e.x)-a))));const t=targets[0];const x=t?t.x:e.x+n.x*e.range,y=t?t.y:e.y+n.y*e.range;for(let k=0;k<5;k++){const b=k*Math.PI*2/5;add(x+Math.cos(b)*38,y+Math.sin(b)*38,48,d*.42);}}
+ if(phase===0){add(e.x,e.y,105,d*.85,null,0,.22,65);add(e.x,e.y,205,d*.75,null,0,.22,155);}
+ if(phase===1){const targets=[...entities.filter(t=>t!==e&&!t.dead&&t.team!==e.team&&canSee(e,t)),...(mode==='royale'?powerBoxes:[])].filter(t=>dist(e,t)<=e.range).sort((u,v)=>Math.abs(Math.atan2(Math.sin(Math.atan2(u.y-e.y,u.x-e.x)-a),Math.cos(Math.atan2(u.y-e.y,u.x-e.x)-a)))-Math.abs(Math.atan2(Math.sin(Math.atan2(v.y-e.y,v.x-e.x)-a),Math.cos(Math.atan2(v.y-e.y,v.x-e.x)-a))));const t=targets[0];const x=t?t.x:e.x+n.x*e.range,y=t?t.y:e.y+n.y*e.range;for(let k=0;k<5;k++){const b=k*Math.PI*2/5;add(x+Math.cos(b)*85,y+Math.sin(b)*85,48,d*.42);}}
  if(phase===2)for(let k=-2;k<=2;k++)add(e.x,e.y,23,d*.62,a+k*.25,e.range);
 }
-function azContains(w,t){const x=t.x-w.x,y=t.y-w.y,r=t.r||0;if(w.angle===null)return Math.hypot(x,y)<=w.r+r;const along=x*Math.cos(w.angle)+y*Math.sin(w.angle),side=-x*Math.sin(w.angle)+y*Math.cos(w.angle);return along>=-r&&along<=w.len+r&&Math.abs(side)<=w.r+r;}
+function azContains(w,t){const x=t.x-w.x,y=t.y-w.y,r=t.r||0;if(w.angle===null){const d=Math.hypot(x,y);return d<=w.r+r&&d+r>=(w.inner||0);}const along=x*Math.cos(w.angle)+y*Math.sin(w.angle),side=-x*Math.sin(w.angle)+y*Math.cos(w.angle);return along>=-r&&along<=w.len+r&&Math.abs(side)<=w.r+r;}
 function azUpdate(dt){for(let i=azWarnings.length-1;i>=0;i--){const w=azWarnings[i];if(!entities.includes(w.owner)||w.owner.dead){azWarnings.splice(i,1);continue;}w.time-=dt;if(w.time>0)continue;azWarnings.splice(i,1);for(const t of entities){if(t.dead||t.team===w.owner.team||!azContains(w,t))continue;hit(t,w.damage,w.owner,w.superShot);if(w.superShot)t.slowUntil=Math.max(t.slowUntil||0,elapsed+1.2);}if(mode==='royale')for(const b of [...powerBoxes])if(azContains(w,b))damagePowerBox(b,w.damage,w.owner);w.flash=.16;azFlashes.push(w); }for(let i=azFlashes.length-1;i>=0;i--){azFlashes[i].flash-=dt;if(azFlashes[i].flash<=0||!entities.includes(azFlashes[i].owner))azFlashes.splice(i,1);}}
 let azFlashes=[];
-function azDraw(){for(const w of [...azWarnings,...azFlashes]){if(!w.flash&&w.time>.24)continue;ctx.save();ctx.translate(w.x,w.y);ctx.fillStyle=w.flash?'rgba(238,100,255,.55)':'rgba(120,100,255,.20)';ctx.strokeStyle=w.flash?'#ffe0ff':'#a8baff';ctx.lineWidth=w.flash?5:3;if(!w.flash)ctx.setLineDash([7,4]);ctx.beginPath();if(w.angle===null)ctx.arc(0,0,w.r,0,Math.PI*2);else{ctx.rotate(w.angle);ctx.rect(0,-w.r,w.len,w.r*2);}ctx.fill();ctx.stroke();ctx.restore();}}
+function azDraw(){for(const w of [...azWarnings,...azFlashes]){if(!w.flash&&w.time>.24)continue;ctx.save();ctx.translate(w.x,w.y);ctx.fillStyle=w.flash?'rgba(238,100,255,.55)':'rgba(120,100,255,.20)';ctx.strokeStyle=w.flash?'#ffe0ff':'#a8baff';ctx.lineWidth=w.flash?5:3;if(!w.flash)ctx.setLineDash([7,4]);ctx.beginPath();if(w.angle===null){ctx.arc(0,0,w.r,0,Math.PI*2);if(w.inner){ctx.moveTo(w.inner,0);ctx.arc(0,0,w.inner,0,Math.PI*2,true);}}else{ctx.rotate(w.angle);ctx.rect(0,-w.r,w.len,w.r*2);}ctx.fill();ctx.stroke();ctx.restore();divineAttackArea(ctx,w,!!w.flash);}}
 function shoot(e,dx,dy,superShot=false){
 let now=elapsed*1000,boost=e.boostUntil>elapsed;
 if(!superShot){if(e.ammo<1||now-e.lastShot<e.cooldown*(boost?(e.id===23?.70:.55):1))return;
@@ -2285,7 +2336,7 @@ e.ammo--;e.lastShot=now;
 }
 e.lastHit=elapsed; // 通常攻撃・必殺技の使用で自然回復を中断し、5秒カウントを再開
 e.revealedUntil=Math.max(e.revealedUntil,elapsed+1.2);e.stealthUntil=0;
-let n=norm(dx,dy),id=e.id,kind=id%5;e.dir=Math.atan2(n.y,n.x);attackMuzzleFlash(e,n.x,n.y,superShot);
+let n=norm(dx,dy),id=e.id,kind=id%5;e.dir=Math.atan2(n.y,n.x);attackMuzzleFlash(e,n.x,n.y,superShot);const dp=divinePalette(e);if(dp){for(let k=0;k<(superShot?18:9);k++){const a=e.dir+(k-4)*.36;particles.push({x:e.x,y:e.y,vx:Math.cos(a)*3,vy:Math.sin(a)*3,life:20,color:dp[k%2+1]});}effects.push({x:e.x,y:e.y,r:5,max:superShot?85:35,life:22,color:dp[1]});}
 if(superShot){e.super=0;if(e===player&&dmRun)dmRun.super++;
 if(id===24){azAttack(e,n,true);return;}
 if(id===22){e.abyssFieldUntil=elapsed+5;effects.push({x:e.x,y:e.y,r:20,max:165,life:35,color:'#b05cff'});return;}
@@ -2372,7 +2423,7 @@ function doAttack(superShot=false,manualDirection=null,forceAuto=false){if(!supe
  let v=manualDirection||(!forceAuto&&mouse.active?{x:mouse.x+camX-player.x,y:mouse.y+camY-player.y}:target?{x:target.x-player.x,y:target.y-player.y}:{x:Math.cos(player.dir),y:Math.sin(player.dir)});
  shoot(player,v.x,v.y,superShot);
 }
-function moveEntity(e,dx,dy,step){if(e.winterFrozenUntil>elapsed)return;let v=norm(dx,dy),s=e.speed*step*(e.snowSlowUntil>elapsed?.78:1)*(e.mapIceSlowUntil>elapsed?.55:1)*(e.winterSlowUntil>elapsed?.65:1);const inertia=event160Factor('lowgravity','gravityInertia');if(inertia>1){const moving=Math.hypot(dx,dy)>=.01,alpha=1-Math.exp(-Math.max(0,step)/(3*inertia));e.eventVx=(e.eventVx||0)*(1-alpha)+(moving?v.x:0)*alpha;e.eventVy=(e.eventVy||0)*(1-alpha)+(moving?v.y:0)*alpha;v={x:e.eventVx,y:e.eventVy};}else if(Math.hypot(dx,dy)<.01)return;let nx=e.x+v.x*s,ny=e.y+v.y*s;if(!blocked(nx,e.y,e.r))e.x=nx;if(!blocked(e.x,ny,e.r))e.y=ny}
+function moveEntity(e,dx,dy,step){if(e.winterFrozenUntil>elapsed)return;let v=norm(dx,dy),s=e.speed*step*(e.snowSlowUntil>elapsed?.78:1)*(e.mapIceSlowUntil>elapsed?(matchArena.event===6?.20:.30):1)*(e.winterSlowUntil>elapsed?.65:1);const inertia=event160Factor('lowgravity','gravityInertia');if(inertia>1){const moving=Math.hypot(dx,dy)>=.01,alpha=1-Math.exp(-Math.max(0,step)/(3*inertia));e.eventVx=(e.eventVx||0)*(1-alpha)+(moving?v.x:0)*alpha;e.eventVy=(e.eventVy||0)*(1-alpha)+(moving?v.y:0)*alpha;v={x:e.eventVx,y:e.eventVy};}else if(Math.hypot(dx,dy)<.01)return;let nx=e.x+v.x*s,ny=e.y+v.y*s;if(!blocked(nx,e.y,e.r))e.x=nx;if(!blocked(e.x,ny,e.r))e.y=ny}
 // Ver.81: camera-independent AI navigation. Grid A* routes around walls.
 function aiClearPath(x1,y1,x2,y2,r){
  const d=Math.hypot(x2-x1,y2-y1),steps=Math.max(1,Math.ceil(d/20));
@@ -2415,9 +2466,9 @@ function aiWaypoint(e,focus){
  chain.reverse();e.navPath=chain;
  return chain[0]||null;
 }
-function hit(e,damage,owner,isSuperHit=false){if(e.dead||e.invuln>elapsed)return;if(!Number.isFinite(damage)||damage<0||!Number.isFinite(e.hp)||!Number.isFinite(e.maxhp))return;if(e.star==='armor')damage*=.88;if(e.gadgetShieldUntil>elapsed)damage*=.5;if(eventBossRun?.type==='world'&&e.isBoss&&owner===player){const dealt=Math.max(0,Math.min(damage,e.hp));eventBossDamage+=dealt;bossPendingAdd(eventBossRun.id,dealt);}e.hp-=damage;
+function hit(e,damage,owner,isSuperHit=false){if(e.dead||e.invuln>elapsed)return;if(!Number.isFinite(damage)||damage<0||!Number.isFinite(e.hp)||!Number.isFinite(e.maxhp))return;if(e.star==='armor')damage*=.88;if(e.gadgetShieldUntil>elapsed)damage*=.5;if(eventBossRun?.type==='world'&&e.isBoss&&owner===player){const dealt=Math.max(0,Math.min(damage,e.hp));eventBossDamage+=dealt;bossPendingAdd(eventBossRun.id,dealt);}e.hp-=damage;const dp=divinePalette(owner);if(dp){effects.push({x:e.x,y:e.y,r:3,max:Math.min(55,e.r+15),life:16,color:dp[1]});for(let k=0;k<5;k++){const a=k*1.256;particles.push({x:e.x,y:e.y,vx:Math.cos(a)*2.5,vy:Math.sin(a)*2.5,life:15,color:dp[2]});}}
 if(owner&&owner.id===22&&owner!==e&&!owner.dead){const heal=Math.min(Math.max(0,damage),Math.max(0,e.hp+damage))*.15;owner.hp=Math.min(owner.maxhp,owner.hp+heal);}
-e.lastHit=elapsed;e.revealedUntil=Math.max(e.revealedUntil,elapsed+1);if(owner===player){const baseGain=player.star==='supergain'?19:12;const gain=(player.id===24?(isSuperHit?0:.45):1)*(isSuperHit&&[0,12,16].includes(player.id)?baseGain*.55:baseGain)*(player.id===22?.55:1);player.super=clamp(player.super+gain*(liveEventBattle.some(x=>x.type==='fever'&&Date.now()<x.endsAt)?2:1),0,100);}for(let i=0;i<6;i++)particles.push({x:e.x,y:e.y,vx:rand(-3,3),vy:rand(-3,3),life:25,color:h(e.id).color});if(e.hp<=0&&e.isBoss&&e.bossType==='secret152'&&e.secretPhase===1){
+e.lastHit=elapsed;e.revealedUntil=Math.max(e.revealedUntil,elapsed+1);if(owner===player){const baseGain=player.star==='supergain'?19:12;const gain=(player.id===24?(isSuperHit?0:.45):1)*(isSuperHit&&[0,12,16].includes(player.id)?baseGain*.55:baseGain)*(player.id===22?.55:player.id===23?.8:1);player.super=clamp(player.super+gain*(liveEventBattle.some(x=>x.type==='fever'&&Date.now()<x.endsAt)?2:1),0,100);}for(let i=0;i<6;i++)particles.push({x:e.x,y:e.y,vx:rand(-3,3),vy:rand(-3,3),life:25,color:h(e.id).color});if(e.hp<=0&&e.isBoss&&e.bossType==='secret152'&&e.secretPhase===1){
  e.secretPhase=2;e.bossName='虚無の真核';e.hp=e.secretPhase2Hp;e.maxhp=e.secretPhase2Hp;
  e.invuln=elapsed+1.8;e.dead=false;
  e.r*=1.18;e.damage=Math.round(e.damage*1.35);
@@ -2928,7 +2979,22 @@ function drawBossAppearance(e,bossCtx=ctx){
  bossCtx.restore();
 }
 // プレイアブルボス専用のスキン装飾。ボスのシルエットは全スキン共通。
+function drawBossDivine(c,id,skin,t,front){
+ const [base,a,light,dark]=skin.colors; c.save();c.lineJoin='round';c.lineCap='round';
+ const poly=(pts,fill,stroke,w=2)=>{c.beginPath();pts.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.closePath();c.fillStyle=fill;c.fill();c.strokeStyle=stroke;c.lineWidth=w;c.stroke();};
+ if(!front){
+ const g=c.createRadialGradient(0,0,18,0,0,90);g.addColorStop(0,base+'88');g.addColorStop(1,base+'00');c.fillStyle=g;c.fillRect(-90,-90,180,180);
+ c.shadowColor=a;c.shadowBlur=12;c.strokeStyle=a;c.lineWidth=2;for(let j=0;j<2;j++){c.save();c.rotate(t*(j?-.4:.5));c.setLineDash([8,5,2,5]);c.beginPath();c.arc(0,0,48+j*12,0,Math.PI*2);c.stroke();c.restore();}
+ for(const side of [-1,1]){c.save();c.scale(side,1);c.translate(24,0);c.rotate(.12*Math.sin(t*4));for(let j=0;j<3;j++){let y=j*19-12;let tip=64-j*8;let pts=id===23?[[0,y+8],[tip,y-35],[tip-13,y-9],[tip+3,y-12],[tip-24,y+17],[5,y+22]]:id===24?[[0,y+8],[tip,y-35],[tip-9,y-7],[tip+2,y+4],[tip-18,y+10],[tip-10,y+23],[5,y+22]]:[[0,y+8],[tip,y-30],[tip-8,y-9],[tip-20,y+12],[5,y+25]];poly(pts,j%2?base:dark,a,2.4);c.strokeStyle=light;c.lineWidth=1.5;c.beginPath();c.moveTo(7,y+12);c.lineTo(tip-10,y-19);c.stroke();}c.restore();}
+ }else{
+ c.shadowColor=a;c.shadowBlur=9;let bob=Math.sin(t*3)*3;c.save();c.translate(0,bob);poly([[-28,-38],[-33,-59],[-17,-50],[-12,-68],[0,-56],[12,-68],[17,-50],[33,-59],[28,-38]],dark,a,3);poly([[0,-69],[8,-57],[0,-45],[-8,-57]],light,a);c.restore();
+ c.strokeStyle=a;c.lineWidth=3;c.beginPath();c.moveTo(-28,12);c.lineTo(-19,29);c.lineTo(0,36);c.lineTo(19,29);c.lineTo(28,12);c.stroke();poly([[0,9],[10,22],[0,34],[-10,22]],base,light,2);
+ for(let j=0;j<12;j++){let q=t*.9+j*Math.PI/6,x=Math.cos(q)*(67+3*Math.sin(t*3+j)),y=Math.sin(q)*55;poly([[x,y-5],[x+3,y],[x,y+5],[x-3,y]],j%2?a:light,base,1);}
+ if(id===23){c.strokeStyle=light;c.lineWidth=2;for(let j=0;j<3;j++){let q=t*2+j*2.094,x=Math.cos(q)*64,y=Math.sin(q)*45;c.beginPath();c.moveTo(x-6,y-10);c.lineTo(x+2,y-2);c.lineTo(x-3,y+1);c.lineTo(x+5,y+9);c.stroke();}}
+ }c.restore();
+}
 function drawPlayableBossSkin(c,id,skin,t=0){
+ if(skin?.rarity==='ディバイン'){drawBossDivine(c,id,skin,t,true);return;}
  if(!skin||skin.id==='default')return;
  const abyss=id===22,grand=skin.id==='skin2';
  const accent=skin.colors?.[1]||'#e6b7ff',secondary=skin.colors?.[0]||'#ae70ff',light=skin.colors?.[2]||'#fff';
@@ -2975,7 +3041,8 @@ function drawPlayableBossSkin(c,id,skin,t=0){
 }
 function playableBossPortrait(id,skin){
  const c=document.createElement('canvas');c.width=124;c.height=124;
- const p=c.getContext('2d');p.save();p.translate(62,64);p.scale(.95,.95);
+ const p=c.getContext('2d');p.save();p.translate(62,64);p.scale(skin?.rarity==='ディバイン'?.62:.95,skin?.rarity==='ディバイン'?.62:.95);
+ if(skin?.rarity==='ディバイン')drawBossDivine(p,id,skin,0,false);
  drawBossAppearance({x:0,y:0,r:39,bossType:id===24?'demon':id===22?'abyss':'storm'},p);
  drawPlayableBossSkin(p,id,skin,0);p.restore();return c.toDataURL('image/png');
 }
@@ -3008,11 +3075,11 @@ for(let b of shots){
  ctx.save();ctx.strokeStyle=pal.main;ctx.lineWidth=Math.max(3,b.r*.85);ctx.lineCap='round';ctx.globalAlpha=b.superShot?.48:.3;ctx.shadowColor=pal.main;ctx.shadowBlur=b.superShot?17:9;
  ctx.beginPath();ctx.moveTo(b.x-b.vx/velocity*trailLen,b.y-b.vy/velocity*trailLen);ctx.lineTo(b.x,b.y);ctx.stroke();
  ctx.restore();
- drawAttackProjectile(b);
+ drawAttackProjectile(b);const dp=divinePalette(b.owner);if(dp){const a=Math.atan2(b.vy,b.vx);ctx.save();ctx.translate(b.x,b.y);ctx.rotate(a);ctx.strokeStyle=dp[1];ctx.shadowColor=dp[1];ctx.shadowBlur=10;ctx.lineWidth=2;for(const y of [-b.r,b.r]){ctx.beginPath();ctx.moveTo(-b.r*4,y*1.5);ctx.lineTo(0,y);ctx.stroke();}divineGem(ctx,0,0,b.r*1.3,dp[2],dp[1]);ctx.restore();}
 }
 for(let e of entities){if(e.dead||e!==player&&!canSee(player,e))continue;
 if(e.isBoss){drawBossAppearance(e);}else{
-drawHeroArt(ctx,e);}let bw=Math.max(69,e.r*2+34),barY=e.y-e.r-20;
+divineExtra(ctx,e);drawHeroArt(ctx,e);}let bw=Math.max(69,e.r*2+34),barY=e.y-e.r-20-(!e.isBoss&&getHeroSkin(e.id,e.skinId).rarity==='ディバイン'?Math.ceil(e.r*.85):0);
 if(mode==='royale'){
 ctx.textAlign='center';ctx.font='bold 14px system-ui';ctx.lineWidth=4;ctx.strokeStyle='#10221a';ctx.fillStyle='#d7ff86';
 const powerText='🟩 '+(e.power||0);
